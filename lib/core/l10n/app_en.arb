@@ -1,0 +1,9 @@
+{
+  "createProfileTitle": "Add your data",
+  "fullName": "Full name",
+  "sex": "Sex",
+  "weight": "Weight (Kg)",
+  "height": "Height (cm)",
+  "birthDate": "Date of birth",
+  "createButton": "Create"
+}
