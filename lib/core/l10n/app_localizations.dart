@@ -139,6 +139,60 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Crear'**
   String get createButton;
+
+  /// No description provided for @chooseProfileTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige tu perfil'**
+  String get chooseProfileTitle;
+
+  /// No description provided for @createProfileButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear perfil'**
+  String get createProfileButton;
+
+  /// No description provided for @noProfilesMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay perfiles aún. ¡Crea el primero!'**
+  String get noProfilesMessage;
+
+  /// No description provided for @profileSelected.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionaste a {profileName}'**
+  String profileSelected(String profileName);
+
+  /// No description provided for @male.
+  ///
+  /// In es, this message translates to:
+  /// **'Masculino'**
+  String get male;
+
+  /// No description provided for @female.
+  ///
+  /// In es, this message translates to:
+  /// **'Femenino'**
+  String get female;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In es, this message translates to:
+  /// **'Campo requerido'**
+  String get requiredField;
+
+  /// No description provided for @profileCreatedSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Perfil creado con éxito!'**
+  String get profileCreatedSuccess;
+
+  /// No description provided for @selectDateWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'Por favor, selecciona tu fecha de nacimiento'**
+  String get selectDateWarning;
 }
 
 class _AppLocalizationsDelegate

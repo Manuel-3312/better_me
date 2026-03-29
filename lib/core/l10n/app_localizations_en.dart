@@ -28,4 +28,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createButton => 'Create';
+
+  @override
+  String get chooseProfileTitle => 'Choose your profile';
+
+  @override
+  String get createProfileButton => 'Crearte profile';
+
+  @override
+  String get noProfilesMessage =>
+      'There are no profiles yet. Create the first one!';
+
+  @override
+  String profileSelected(String profileName) {
+    return 'You selected $profileName';
+  }
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get requiredField => 'Required field';
+
+  @override
+  String get profileCreatedSuccess => 'Profile created successfully!';
+
+  @override
+  String get selectDateWarning => 'Please select your birth date';
 }

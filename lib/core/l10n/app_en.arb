@@ -5,5 +5,23 @@
   "weight": "Weight (Kg)",
   "height": "Height (cm)",
   "birthDate": "Date of birth",
-  "createButton": "Create"
+  "createButton": "Create",
+
+  "chooseProfileTitle": "Choose your profile",
+  "createProfileButton": "Crearte profile",
+  "noProfilesMessage": "There are no profiles yet. Create the first one!",
+  "profileSelected": "You selected {profileName}",
+  "@profileSelected": {
+    "placeholders": {
+      "profileName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "male": "Male",
+  "female": "Female",
+  "requiredField": "Required field",
+  "profileCreatedSuccess": "Profile created successfully!",
+  "selectDateWarning": "Please select your birth date"
 }
