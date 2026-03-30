@@ -33,7 +33,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseProfileTitle => 'Choose your profile';
 
   @override
-  String get createProfileButton => 'Crearte profile';
+  String get createProfileButton => 'Create profile';
 
   @override
   String get noProfilesMessage =>
@@ -123,4 +123,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileUpdatedSuccess => 'Profile updated successfully!';
+
+  @override
+  String get dietsTitle => 'My Diets';
+
+  @override
+  String get noDietsMessage => 'No diets yet. Create your first one!';
+
+  @override
+  String get createDiet => 'Create Diet';
+
+  @override
+  String get featureInProgress => 'Creation form in progress...';
 }

@@ -1,29 +1,50 @@
 {
+  "@@locale": "es",
+
+  "// Welcome Screen Section": "",
+  "welcomeTitle": "Bienvenido a BetterMe",
+  "swipeToStart": "Desliza hacia arriba para comenzar",
+  "changeLanguage": "Cambiar idioma",
+
+  "// Profile Creation & Editing Section": "",
   "createProfileTitle": "Agrega tus datos",
+  "editProfileTitle": "Editar perfil",
   "fullName": "Nombre completo",
   "sex": "Sexo",
   "weight": "Peso (Kg)",
   "height": "Altura (cm)",
   "birthDate": "Fecha de nacimiento",
   "createButton": "Crear",
+  "updateButton": "Actualizar",
+  "profileCreatedSuccess": "¡Perfil creado con éxito!",
+  "profileUpdatedSuccess": "¡Perfil actualizado con éxito!",
+  "requiredField": "Campo requerido",
+  "selectDateWarning": "Por favor, selecciona tu fecha de nacimiento",
+  "male": "Masculino",
+  "female": "Femenino",
 
+  "// Profile Selection & Management Section": "",
   "chooseProfileTitle": "Elige tu perfil",
   "createProfileButton": "Crear perfil",
   "noProfilesMessage": "No hay perfiles aún. ¡Crea el primero!",
   "profileSelected": "Seleccionaste a {profileName}",
   "@profileSelected": {
+    "description": "Message shown when a profile is tapped in the list",
     "placeholders": {
       "profileName": {
-        "type": "String"
+        "type": "String",
+        "example": "Manuel"
       }
     }
   },
   "deleteProfileTitle": "Eliminar perfil",
   "deleteProfileContent": "¿Estás seguro de que deseas eliminar a {profileName}?",
   "@deleteProfileContent": {
+    "description": "Confirmation message for profile deletion",
     "placeholders": {
       "profileName": {
-        "type": "String"
+        "type": "String",
+        "example": "Manuel"
       }
     }
   },
@@ -32,40 +53,45 @@
   "profileDeleted": "Perfil eliminado",
   "undo": "Deshacer",
 
-  "male": "Masculino",
-  "female": "Femenino",
-  "requiredField": "Campo requerido",
-  "profileCreatedSuccess": "¡Perfil creado con éxito!",
-  "selectDateWarning": "Por favor, selecciona tu fecha de nacimiento",
-
-  "welcomeTitle": "Bienvenido a BetterMe",
-  "swipeToStart": "Desliza hacia arriba para comenzar",
-  "changeLanguage": "Cambiar idioma",
-
+  "// Dashboard Section": "",
   "dashboardTitle": "Resumen",
   "welcomeUser": "¡Hola, {name}!",
   "@welcomeUser": {
+    "description": "Personalized greeting in the dashboard",
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String",
+        "example": "Manuel"
+      }
     }
   },
   "ageLabel": "Edad: {years} años",
   "@ageLabel": {
+    "description": "Display label for user age",
     "placeholders": {
-      "years": { "type": "int" }
+      "years": {
+        "type": "int",
+        "example": "25"
+      }
     }
   },
   "bmiLabel": "IMC: {value}",
   "@bmiLabel": {
+    "description": "Display label for Body Mass Index",
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String",
+        "example": "22.5"
+      }
     }
   },
   "myDiets": "Mis Dietas",
   "myWorkouts": "Mis Entrenamientos",
   "editProfile": "Editar perfil",
 
-  "editProfileTitle": "Editar perfil",
-  "updateButton": "Actualizar",
-  "profileUpdatedSuccess": "¡Perfil actualizado con éxito!"
+  "// Diets Module Section": "",
+  "dietsTitle": "Mis Dietas",
+  "noDietsMessage": "Aún no tienes dietas. ¡Crea la primera!",
+  "createDiet": "Crear Dieta",
+  "featureInProgress": "Formulario de creación en progreso..."
 }

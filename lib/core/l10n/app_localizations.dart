@@ -307,6 +307,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'¡Perfil actualizado con éxito!'**
   String get profileUpdatedSuccess;
+
+  /// No description provided for @dietsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Dietas'**
+  String get dietsTitle;
+
+  /// No description provided for @noDietsMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes dietas. ¡Crea la primera!'**
+  String get noDietsMessage;
+
+  /// No description provided for @createDiet.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear Dieta'**
+  String get createDiet;
+
+  /// No description provided for @featureInProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'Formulario de creación en progreso...'**
+  String get featureInProgress;
 }
 
 class _AppLocalizationsDelegate

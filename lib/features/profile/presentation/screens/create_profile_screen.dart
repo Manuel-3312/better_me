@@ -28,7 +28,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
 
-  /// Internal state variable for biological sex selection ('M' or 'F').
+  /// Internal state variable for biological sex selection.
+  /// Strictly expects 'M' (Male) or 'F' (Female).
   String _selectedSex = 'M';
 
   /// Internal state variable for the user's date of birth.
@@ -37,23 +38,14 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // If a profile was passed, pre-fill the form fields (Edit Mode)
+    // If a profile was passed, pre-fill the form fields directly (Edit Mode)
     if (widget.profile != null) {
       _nameController.text = widget.profile!.name;
       _weightController.text = widget.profile!.weight.toString();
       _heightController.text = widget.profile!.height.toString();
       _selectedDate = widget.profile!.birthDate;
-
-      // Ensure legacy database values ('Masculino'/'Femenino') map correctly
-      // to the robust internal system keys ('M'/'F').
-      final String dbSex = widget.profile!.sex;
-      if (dbSex == 'Masculino' || dbSex == 'M') {
-        _selectedSex = 'M';
-      } else if (dbSex == 'Femenino' || dbSex == 'F') {
-        _selectedSex = 'F';
-      } else {
-        _selectedSex = 'M'; // Default fallback mechanism
-      }
+      // Direct assignment since the database now strictly uses 'M' or 'F'
+      _selectedSex = widget.profile!.sex;
     }
   }
 
@@ -99,7 +91,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       final profileToSave = Profile(
         idProfile: widget.profile?.idProfile,
         name: _nameController.text,
-        sex: _selectedSex, // Will securely store 'M' or 'F'
+        sex: _selectedSex,
         weight: double.parse(_weightController.text),
         height: double.parse(_heightController.text),
         birthDate: _selectedDate!,

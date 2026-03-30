@@ -123,4 +123,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileUpdatedSuccess => '¡Perfil actualizado con éxito!';
+
+  @override
+  String get dietsTitle => 'Mis Dietas';
+
+  @override
+  String get noDietsMessage => 'Aún no tienes dietas. ¡Crea la primera!';
+
+  @override
+  String get createDiet => 'Crear Dieta';
+
+  @override
+  String get featureInProgress => 'Formulario de creación en progreso...';
 }

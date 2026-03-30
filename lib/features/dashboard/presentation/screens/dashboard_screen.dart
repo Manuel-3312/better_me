@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import '../../../profile/domain/models/profile.dart';
 import '../../../profile/presentation/screens/create_profile_screen.dart';
+import '../../../diets/presentation/screens/diets_screen.dart';
 
 /// The main hub of the application displaying a summary of the selected profile.
 /// It calculates and presents biometric data (Age, BMI) and provides navigation
@@ -74,9 +75,10 @@ class DashboardScreen extends StatelessWidget {
                       icon: Icons.restaurant_menu,
                       color: Colors.orange,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Diets Module / Módulo Dietas'),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DietsScreen(profile: profile),
                           ),
                         );
                       },
