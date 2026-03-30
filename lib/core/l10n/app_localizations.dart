@@ -164,6 +164,42 @@ abstract class AppLocalizations {
   /// **'Seleccionaste a {profileName}'**
   String profileSelected(String profileName);
 
+  /// No description provided for @deleteProfileTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar perfil'**
+  String get deleteProfileTitle;
+
+  /// No description provided for @deleteProfileContent.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que deseas eliminar a {profileName}?'**
+  String deleteProfileContent(String profileName);
+
+  /// No description provided for @cancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar'**
+  String get delete;
+
+  /// No description provided for @profileDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Perfil eliminado'**
+  String get profileDeleted;
+
+  /// No description provided for @undo.
+  ///
+  /// In es, this message translates to:
+  /// **'Deshacer'**
+  String get undo;
+
   /// No description provided for @male.
   ///
   /// In es, this message translates to:
@@ -193,6 +229,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Por favor, selecciona tu fecha de nacimiento'**
   String get selectDateWarning;
+
+  /// No description provided for @welcomeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Bienvenido a BetterMe'**
+  String get welcomeTitle;
+
+  /// No description provided for @swipeToStart.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza hacia arriba para comenzar'**
+  String get swipeToStart;
+
+  /// No description provided for @changeLanguage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar idioma'**
+  String get changeLanguage;
 }
 
 class _AppLocalizationsDelegate

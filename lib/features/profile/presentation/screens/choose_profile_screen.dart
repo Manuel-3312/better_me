@@ -5,7 +5,8 @@ import '../../data/profile_repository.dart';
 import 'create_profile_screen.dart';
 
 /// Screen responsible for displaying a list of previously created profiles.
-/// It acts as the gateway to the main application dashboard.
+/// It acts as the gateway to the main application dashboard and allows
+/// profile deletion with an undo mechanism.
 class ChooseProfileScreen extends StatefulWidget {
   const ChooseProfileScreen({super.key});
 
@@ -34,6 +35,72 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
     });
   }
 
+  /// Displays a confirmation dialog before deleting a profile.
+  /// If confirmed, it proceeds to delete the profile and offers an undo option.
+  Future<void> _confirmDelete(BuildContext context, Profile profile) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.deleteProfileTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(l10n.deleteProfileContent(profile.name)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true && mounted) {
+      _deleteProfile(profile);
+    }
+  }
+
+  /// Deletes the profile from the database, refreshes the UI, and displays
+  /// a Snackbar with an action to undo the deletion.
+  Future<void> _deleteProfile(Profile profile) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Ensure the profile has a valid ID before attempting deletion
+    if (profile.idProfile == null) return;
+
+    // 1. Delete from database
+    await _repository.deleteProfile(profile.idProfile!);
+
+    // 2. Refresh the list
+    _loadProfiles();
+
+    if (!mounted) return;
+
+    // 3. Show Snackbar with Undo action
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.profileDeleted),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: l10n.undo,
+          textColor: Colors.greenAccent,
+          onPressed: () async {
+            // Re-insert the deleted profile to achieve the "Undo" effect
+            await _repository.createProfile(profile);
+            _loadProfiles();
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Access localized strings dynamically based on the current system locale.
@@ -47,19 +114,15 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
         ),
         centerTitle: true,
       ),
-      // FutureBuilder constructs the UI based on the database query state
       body: FutureBuilder<List<Profile>>(
         future: _profilesFuture,
         builder: (context, snapshot) {
-          // Display a loading indicator while data is being fetched
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          // Handle potential database errors gracefully
           else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-          // Display a placeholder message if the database yields no profiles
           else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
               child: Text(
@@ -69,7 +132,6 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
             );
           }
 
-          // Render the list of profiles once data is successfully retrieved
           final profiles = snapshot.data!;
 
           return ListView.builder(
@@ -90,10 +152,19 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
                   ),
                   subtitle: Text('${profile.weight} kg - ${profile.height} cm'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  // Replaced standard trailing icon with a Row containing delete and forward actions
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.grey),
+                        onPressed: () => _confirmDelete(context, profile),
+                        tooltip: l10n.delete,
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black45),
+                    ],
+                  ),
                   onTap: () {
-                    // TODO: Implement navigation to the main dashboard (Workouts / Diets)
-
                     // Display localized confirmation message with dynamic parameter
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(l10n.profileSelected(profile.name))),

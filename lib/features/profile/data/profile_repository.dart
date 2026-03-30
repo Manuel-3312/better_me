@@ -44,9 +44,13 @@ class ProfileRepository {
     );
   }
 
-  Future<int> deleteProfile(int id) async {
-    final db = await _dbHelper.database;
-
-    return await db.delete('profile', where: 'id_profile = ?', whereArgs: [id]);
+  /// Deletes a profile from the database using its unique identifier.
+  Future<int> deleteProfile(int idProfile) async {
+    final db = await DatabaseHelper.instance.database;
+    return await db.delete(
+      'profile',
+      where: 'id_profile = ?',
+      whereArgs: [idProfile],
+    );
   }
 }

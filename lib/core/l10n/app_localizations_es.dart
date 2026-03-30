@@ -44,6 +44,26 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get deleteProfileTitle => 'Eliminar perfil';
+
+  @override
+  String deleteProfileContent(String profileName) {
+    return '¿Estás seguro de que deseas eliminar a $profileName?';
+  }
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get delete => 'Eliminar';
+
+  @override
+  String get profileDeleted => 'Perfil eliminado';
+
+  @override
+  String get undo => 'Deshacer';
+
+  @override
   String get male => 'Masculino';
 
   @override
@@ -58,4 +78,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get selectDateWarning =>
       'Por favor, selecciona tu fecha de nacimiento';
+
+  @override
+  String get welcomeTitle => 'Bienvenido a BetterMe';
+
+  @override
+  String get swipeToStart => 'Desliza hacia arriba para comenzar';
+
+  @override
+  String get changeLanguage => 'Cambiar idioma';
 }

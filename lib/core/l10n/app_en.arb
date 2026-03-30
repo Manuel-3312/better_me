@@ -18,10 +18,27 @@
       }
     }
   },
+  "deleteProfileTitle": "Delete profile",
+  "deleteProfileContent": "Are you sure you want to delete {profileName}?",
+  "@deleteProfileContent": {
+    "placeholders": {
+      "profileName": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "profileDeleted": "Profile deleted",
+  "undo": "Undo",
 
   "male": "Male",
   "female": "Female",
   "requiredField": "Required field",
   "profileCreatedSuccess": "Profile created successfully!",
-  "selectDateWarning": "Please select your birth date"
+  "selectDateWarning": "Please select your birth date",
+
+  "welcomeTitle": "Welcome to BetterMe",
+  "swipeToStart": "Swipe up to start",
+  "changeLanguage": "Change language"
 }
