@@ -9,7 +9,25 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get headerWelcome => '--- PANTALLA BIENVENIDA ---';
+
+  @override
+  String get welcomeTitle => 'Bienvenido a BetterMe';
+
+  @override
+  String get swipeToStart => 'Desliza hacia arriba para comenzar';
+
+  @override
+  String get changeLanguage => 'Cambiar idioma';
+
+  @override
+  String get headerProfile => '--- GESTIÓN DE PERFIL ---';
+
+  @override
   String get createProfileTitle => 'Agrega tus datos';
+
+  @override
+  String get editProfileTitle => 'Editar perfil';
 
   @override
   String get fullName => 'Nombre completo';
@@ -28,6 +46,31 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get createButton => 'Crear';
+
+  @override
+  String get updateButton => 'Actualizar';
+
+  @override
+  String get profileCreatedSuccess => '¡Perfil creado con éxito!';
+
+  @override
+  String get profileUpdatedSuccess => '¡Perfil actualizado con éxito!';
+
+  @override
+  String get requiredField => 'Campo requerido';
+
+  @override
+  String get selectDateWarning =>
+      'Por favor, selecciona tu fecha de nacimiento';
+
+  @override
+  String get male => 'Masculino';
+
+  @override
+  String get female => 'Femenino';
+
+  @override
+  String get headerSelection => '--- SELECCIÓN DE PERFIL ---';
 
   @override
   String get chooseProfileTitle => 'Elige tu perfil';
@@ -64,29 +107,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get undo => 'Deshacer';
 
   @override
-  String get male => 'Masculino';
-
-  @override
-  String get female => 'Femenino';
-
-  @override
-  String get requiredField => 'Campo requerido';
-
-  @override
-  String get profileCreatedSuccess => '¡Perfil creado con éxito!';
-
-  @override
-  String get selectDateWarning =>
-      'Por favor, selecciona tu fecha de nacimiento';
-
-  @override
-  String get welcomeTitle => 'Bienvenido a BetterMe';
-
-  @override
-  String get swipeToStart => 'Desliza hacia arriba para comenzar';
-
-  @override
-  String get changeLanguage => 'Cambiar idioma';
+  String get headerDashboard => '--- PANEL DE CONTROL ---';
 
   @override
   String get dashboardTitle => 'Resumen';
@@ -116,13 +137,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editProfile => 'Editar perfil';
 
   @override
-  String get editProfileTitle => 'Editar perfil';
-
-  @override
-  String get updateButton => 'Actualizar';
-
-  @override
-  String get profileUpdatedSuccess => '¡Perfil actualizado con éxito!';
+  String get headerDiets => '--- MÓDULO DE DIETAS ---';
 
   @override
   String get dietsTitle => 'Mis Dietas';

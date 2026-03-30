@@ -98,11 +98,47 @@ abstract class AppLocalizations {
     Locale('es'),
   ];
 
+  /// No description provided for @headerWelcome.
+  ///
+  /// In es, this message translates to:
+  /// **'--- PANTALLA BIENVENIDA ---'**
+  String get headerWelcome;
+
+  /// No description provided for @welcomeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Bienvenido a BetterMe'**
+  String get welcomeTitle;
+
+  /// No description provided for @swipeToStart.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza hacia arriba para comenzar'**
+  String get swipeToStart;
+
+  /// No description provided for @changeLanguage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar idioma'**
+  String get changeLanguage;
+
+  /// No description provided for @headerProfile.
+  ///
+  /// In es, this message translates to:
+  /// **'--- GESTIÓN DE PERFIL ---'**
+  String get headerProfile;
+
   /// No description provided for @createProfileTitle.
   ///
   /// In es, this message translates to:
   /// **'Agrega tus datos'**
   String get createProfileTitle;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar perfil'**
+  String get editProfileTitle;
 
   /// No description provided for @fullName.
   ///
@@ -139,6 +175,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Crear'**
   String get createButton;
+
+  /// No description provided for @updateButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar'**
+  String get updateButton;
+
+  /// No description provided for @profileCreatedSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Perfil creado con éxito!'**
+  String get profileCreatedSuccess;
+
+  /// No description provided for @profileUpdatedSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Perfil actualizado con éxito!'**
+  String get profileUpdatedSuccess;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In es, this message translates to:
+  /// **'Campo requerido'**
+  String get requiredField;
+
+  /// No description provided for @selectDateWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'Por favor, selecciona tu fecha de nacimiento'**
+  String get selectDateWarning;
+
+  /// No description provided for @male.
+  ///
+  /// In es, this message translates to:
+  /// **'Masculino'**
+  String get male;
+
+  /// No description provided for @female.
+  ///
+  /// In es, this message translates to:
+  /// **'Femenino'**
+  String get female;
+
+  /// No description provided for @headerSelection.
+  ///
+  /// In es, this message translates to:
+  /// **'--- SELECCIÓN DE PERFIL ---'**
+  String get headerSelection;
 
   /// No description provided for @chooseProfileTitle.
   ///
@@ -200,53 +284,11 @@ abstract class AppLocalizations {
   /// **'Deshacer'**
   String get undo;
 
-  /// No description provided for @male.
+  /// No description provided for @headerDashboard.
   ///
   /// In es, this message translates to:
-  /// **'Masculino'**
-  String get male;
-
-  /// No description provided for @female.
-  ///
-  /// In es, this message translates to:
-  /// **'Femenino'**
-  String get female;
-
-  /// No description provided for @requiredField.
-  ///
-  /// In es, this message translates to:
-  /// **'Campo requerido'**
-  String get requiredField;
-
-  /// No description provided for @profileCreatedSuccess.
-  ///
-  /// In es, this message translates to:
-  /// **'¡Perfil creado con éxito!'**
-  String get profileCreatedSuccess;
-
-  /// No description provided for @selectDateWarning.
-  ///
-  /// In es, this message translates to:
-  /// **'Por favor, selecciona tu fecha de nacimiento'**
-  String get selectDateWarning;
-
-  /// No description provided for @welcomeTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'Bienvenido a BetterMe'**
-  String get welcomeTitle;
-
-  /// No description provided for @swipeToStart.
-  ///
-  /// In es, this message translates to:
-  /// **'Desliza hacia arriba para comenzar'**
-  String get swipeToStart;
-
-  /// No description provided for @changeLanguage.
-  ///
-  /// In es, this message translates to:
-  /// **'Cambiar idioma'**
-  String get changeLanguage;
+  /// **'--- PANEL DE CONTROL ---'**
+  String get headerDashboard;
 
   /// No description provided for @dashboardTitle.
   ///
@@ -290,23 +332,11 @@ abstract class AppLocalizations {
   /// **'Editar perfil'**
   String get editProfile;
 
-  /// No description provided for @editProfileTitle.
+  /// No description provided for @headerDiets.
   ///
   /// In es, this message translates to:
-  /// **'Editar perfil'**
-  String get editProfileTitle;
-
-  /// No description provided for @updateButton.
-  ///
-  /// In es, this message translates to:
-  /// **'Actualizar'**
-  String get updateButton;
-
-  /// No description provided for @profileUpdatedSuccess.
-  ///
-  /// In es, this message translates to:
-  /// **'¡Perfil actualizado con éxito!'**
-  String get profileUpdatedSuccess;
+  /// **'--- MÓDULO DE DIETAS ---'**
+  String get headerDiets;
 
   /// No description provided for @dietsTitle.
   ///

@@ -1,12 +1,12 @@
 {
   "@@locale": "es",
 
-  "// Welcome Screen Section": "",
+  "headerWelcome": "--- PANTALLA BIENVENIDA ---",
   "welcomeTitle": "Bienvenido a BetterMe",
   "swipeToStart": "Desliza hacia arriba para comenzar",
   "changeLanguage": "Cambiar idioma",
 
-  "// Profile Creation & Editing Section": "",
+  "headerProfile": "--- GESTIÓN DE PERFIL ---",
   "createProfileTitle": "Agrega tus datos",
   "editProfileTitle": "Editar perfil",
   "fullName": "Nombre completo",
@@ -23,29 +23,21 @@
   "male": "Masculino",
   "female": "Femenino",
 
-  "// Profile Selection & Management Section": "",
+  "headerSelection": "--- SELECCIÓN DE PERFIL ---",
   "chooseProfileTitle": "Elige tu perfil",
   "createProfileButton": "Crear perfil",
   "noProfilesMessage": "No hay perfiles aún. ¡Crea el primero!",
   "profileSelected": "Seleccionaste a {profileName}",
   "@profileSelected": {
-    "description": "Message shown when a profile is tapped in the list",
     "placeholders": {
-      "profileName": {
-        "type": "String",
-        "example": "Manuel"
-      }
+      "profileName": { "type": "String" }
     }
   },
   "deleteProfileTitle": "Eliminar perfil",
   "deleteProfileContent": "¿Estás seguro de que deseas eliminar a {profileName}?",
   "@deleteProfileContent": {
-    "description": "Confirmation message for profile deletion",
     "placeholders": {
-      "profileName": {
-        "type": "String",
-        "example": "Manuel"
-      }
+      "profileName": { "type": "String" }
     }
   },
   "cancel": "Cancelar",
@@ -53,43 +45,31 @@
   "profileDeleted": "Perfil eliminado",
   "undo": "Deshacer",
 
-  "// Dashboard Section": "",
+  "headerDashboard": "--- PANEL DE CONTROL ---",
   "dashboardTitle": "Resumen",
   "welcomeUser": "¡Hola, {name}!",
   "@welcomeUser": {
-    "description": "Personalized greeting in the dashboard",
     "placeholders": {
-      "name": {
-        "type": "String",
-        "example": "Manuel"
-      }
+      "name": { "type": "String" }
     }
   },
   "ageLabel": "Edad: {years} años",
   "@ageLabel": {
-    "description": "Display label for user age",
     "placeholders": {
-      "years": {
-        "type": "int",
-        "example": "25"
-      }
+      "years": { "type": "int" }
     }
   },
   "bmiLabel": "IMC: {value}",
   "@bmiLabel": {
-    "description": "Display label for Body Mass Index",
     "placeholders": {
-      "value": {
-        "type": "String",
-        "example": "22.5"
-      }
+      "value": { "type": "String" }
     }
   },
   "myDiets": "Mis Dietas",
   "myWorkouts": "Mis Entrenamientos",
   "editProfile": "Editar perfil",
 
-  "// Diets Module Section": "",
+  "headerDiets": "--- MÓDULO DE DIETAS ---",
   "dietsTitle": "Mis Dietas",
   "noDietsMessage": "Aún no tienes dietas. ¡Crea la primera!",
   "createDiet": "Crear Dieta",

@@ -9,7 +9,25 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get headerWelcome => '--- WELCOME SCREEN ---';
+
+  @override
+  String get welcomeTitle => 'Welcome to BetterMe';
+
+  @override
+  String get swipeToStart => 'Swipe up to start';
+
+  @override
+  String get changeLanguage => 'Change language';
+
+  @override
+  String get headerProfile => '--- PROFILE MANAGEMENT ---';
+
+  @override
   String get createProfileTitle => 'Add your data';
+
+  @override
+  String get editProfileTitle => 'Edit profile';
 
   @override
   String get fullName => 'Full name';
@@ -28,6 +46,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createButton => 'Create';
+
+  @override
+  String get updateButton => 'Update';
+
+  @override
+  String get profileCreatedSuccess => 'Profile created successfully!';
+
+  @override
+  String get profileUpdatedSuccess => 'Profile updated successfully!';
+
+  @override
+  String get requiredField => 'Required field';
+
+  @override
+  String get selectDateWarning => 'Please select your birth date';
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get headerSelection => '--- PROFILE SELECTION ---';
 
   @override
   String get chooseProfileTitle => 'Choose your profile';
@@ -65,28 +107,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get undo => 'Undo';
 
   @override
-  String get male => 'Male';
-
-  @override
-  String get female => 'Female';
-
-  @override
-  String get requiredField => 'Required field';
-
-  @override
-  String get profileCreatedSuccess => 'Profile created successfully!';
-
-  @override
-  String get selectDateWarning => 'Please select your birth date';
-
-  @override
-  String get welcomeTitle => 'Welcome to BetterMe';
-
-  @override
-  String get swipeToStart => 'Swipe up to start';
-
-  @override
-  String get changeLanguage => 'Change language';
+  String get headerDashboard => '--- DASHBOARD ---';
 
   @override
   String get dashboardTitle => 'Dashboard';
@@ -116,13 +137,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editProfile => 'Edit profile';
 
   @override
-  String get editProfileTitle => 'Edit profile';
-
-  @override
-  String get updateButton => 'Update';
-
-  @override
-  String get profileUpdatedSuccess => 'Profile updated successfully!';
+  String get headerDiets => '--- DIETS MODULE ---';
 
   @override
   String get dietsTitle => 'My Diets';
