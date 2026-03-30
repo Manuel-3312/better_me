@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
+import 'package:better_me/features/dashboard/presentation/screens/dashboard_screen.dart'; // Safe absolute import
 import '../../domain/models/profile.dart';
 import '../../data/profile_repository.dart';
 import 'create_profile_screen.dart';
@@ -152,7 +153,6 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
                   ),
                   subtitle: Text('${profile.weight} kg - ${profile.height} cm'),
-                  // Replaced standard trailing icon with a Row containing delete and forward actions
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -165,9 +165,13 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
                     ],
                   ),
                   onTap: () {
-                    // Display localized confirmation message with dynamic parameter
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.profileSelected(profile.name))),
+                    // Navigate to the Dashboard, passing the selected Profile entity.
+                    // This replaces the previous SnackBar placeholder.
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DashboardScreen(profile: profile),
+                      ),
                     );
                   },
                 ),
@@ -176,15 +180,12 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
           );
         },
       ),
-      // Floating Action Button to navigate to the profile creation flow
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          // Await the return from the CreateProfileScreen to refresh the list
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateProfileScreen()),
           );
-          // Reload profiles from the database to reflect newly added data
           _loadProfiles();
         },
         icon: const Icon(Icons.add, color: Colors.white),

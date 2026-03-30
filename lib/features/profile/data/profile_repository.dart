@@ -33,12 +33,21 @@ class ProfileRepository {
     return result.map((map) => Profile.fromMap(map)).toList();
   }
 
+  /// Updates an existing profile in the database.
+  /// Uses the profile's unique ID to target the correct record.
   Future<int> updateProfile(Profile profile) async {
-    final db = await _dbHelper.database;
+    final db = await DatabaseHelper.instance.database;
 
     return await db.update(
       'profile',
-      profile.toMap(),
+      {
+        'name': profile.name,
+        'sex': profile.sex,
+        'weight': profile.weight,
+        'height': profile.height,
+        // Assuming birthDate is stored as an ISO 8601 string in the database
+        'birth_date': profile.birthDate.toIso8601String(),
+      },
       where: 'id_profile = ?',
       whereArgs: [profile.idProfile],
     );

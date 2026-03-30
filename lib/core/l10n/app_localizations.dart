@@ -247,6 +247,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cambiar idioma'**
   String get changeLanguage;
+
+  /// No description provided for @dashboardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get dashboardTitle;
+
+  /// No description provided for @welcomeUser.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Hola, {name}!'**
+  String welcomeUser(String name);
+
+  /// No description provided for @ageLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Edad: {years} años'**
+  String ageLabel(int years);
+
+  /// No description provided for @bmiLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'IMC: {value}'**
+  String bmiLabel(String value);
+
+  /// No description provided for @myDiets.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Dietas'**
+  String get myDiets;
+
+  /// No description provided for @myWorkouts.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Entrenamientos'**
+  String get myWorkouts;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar perfil'**
+  String get editProfile;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar perfil'**
+  String get editProfileTitle;
+
+  /// No description provided for @updateButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar'**
+  String get updateButton;
+
+  /// No description provided for @profileUpdatedSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Perfil actualizado con éxito!'**
+  String get profileUpdatedSuccess;
 }
 
 class _AppLocalizationsDelegate

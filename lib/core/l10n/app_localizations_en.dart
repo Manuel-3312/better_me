@@ -87,4 +87,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changeLanguage => 'Change language';
+
+  @override
+  String get dashboardTitle => 'Dashboard';
+
+  @override
+  String welcomeUser(String name) {
+    return 'Hello, $name!';
+  }
+
+  @override
+  String ageLabel(int years) {
+    return 'Age: $years years';
+  }
+
+  @override
+  String bmiLabel(String value) {
+    return 'BMI: $value';
+  }
+
+  @override
+  String get myDiets => 'My Diets';
+
+  @override
+  String get myWorkouts => 'My Workouts';
+
+  @override
+  String get editProfile => 'Edit profile';
+
+  @override
+  String get editProfileTitle => 'Edit profile';
+
+  @override
+  String get updateButton => 'Update';
+
+  @override
+  String get profileUpdatedSuccess => 'Profile updated successfully!';
 }

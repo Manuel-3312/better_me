@@ -4,10 +4,13 @@ import '../../domain/models/profile.dart';
 import '../../data/profile_repository.dart';
 import 'choose_profile_screen.dart';
 
-/// Screen responsible for rendering the profile creation form.
-/// It captures user physical data and persists it into the local database.
+/// Screen responsible for both creating new profiles and editing existing ones.
+/// It dynamically adapts its UI and logic based on the presence of the [profile] parameter.
 class CreateProfileScreen extends StatefulWidget {
-  const CreateProfileScreen({super.key});
+  /// Optional profile object. If provided, the form switches to "Edit Mode".
+  final Profile? profile;
+
+  const CreateProfileScreen({super.key, this.profile});
 
   @override
   State<CreateProfileScreen> createState() => _CreateProfileScreenState();
@@ -17,7 +20,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   /// Global key used to validate the state of the form fields.
   final _formKey = GlobalKey<FormState>();
 
-  /// Repository instance handling SQLite database operations for the Profile entity.
+  /// Repository instance handling SQLite database operations.
   final ProfileRepository _repository = ProfileRepository();
 
   /// Controllers to manage and retrieve data from the text input fields.
@@ -25,28 +28,49 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
 
-  /// Internal state variable for the selected sex.
-  /// Stored as 'M' (Male) or 'F' (Female) in the database to remain language-agnostic.
+  /// Internal state variable for biological sex selection ('M' or 'F').
   String _selectedSex = 'M';
 
-  /// Internal state variable for the user's selected birth date.
+  /// Internal state variable for the user's date of birth.
   DateTime? _selectedDate;
 
   @override
+  void initState() {
+    super.initState();
+    // If a profile was passed, pre-fill the form fields (Edit Mode)
+    if (widget.profile != null) {
+      _nameController.text = widget.profile!.name;
+      _weightController.text = widget.profile!.weight.toString();
+      _heightController.text = widget.profile!.height.toString();
+      _selectedDate = widget.profile!.birthDate;
+
+      // Ensure legacy database values ('Masculino'/'Femenino') map correctly
+      // to the robust internal system keys ('M'/'F').
+      final String dbSex = widget.profile!.sex;
+      if (dbSex == 'Masculino' || dbSex == 'M') {
+        _selectedSex = 'M';
+      } else if (dbSex == 'Femenino' || dbSex == 'F') {
+        _selectedSex = 'F';
+      } else {
+        _selectedSex = 'M'; // Default fallback mechanism
+      }
+    }
+  }
+
+  @override
   void dispose() {
-    // Release resources used by controllers when the widget is unmounted.
+    // Release resources used by controllers to prevent memory leaks.
     _nameController.dispose();
     _weightController.dispose();
     _heightController.dispose();
     super.dispose();
   }
 
-  /// Triggers a native DatePicker dialog and updates the component's state
-  /// with the user's selected date.
+  /// Triggers a native DatePicker dialog to capture the user's birth date.
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(2000, 1, 1),
+      initialDate: _selectedDate ?? DateTime(2000, 1, 1),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
@@ -55,12 +79,11 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     }
   }
 
-  /// Validates the form data, constructs a Profile model, and saves it
-  /// to the persistent storage. On success, redirects to the selection screen.
+  /// Validates the form data and performs either an INSERT or UPDATE operation
+  /// in the SQLite database depending on the current mode.
   Future<void> _saveProfile() async {
     final l10n = AppLocalizations.of(context)!;
 
-    // Validate textual inputs and ensure a date has been selected.
     if (_formKey.currentState!.validate()) {
       if (_selectedDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -72,31 +95,42 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         return;
       }
 
-      // Construct the Profile entity with the validated data.
-      final newProfile = Profile(
+      // Construct the Profile entity. Retain the ID if editing an existing profile.
+      final profileToSave = Profile(
+        idProfile: widget.profile?.idProfile,
         name: _nameController.text,
-        sex: _selectedSex,
+        sex: _selectedSex, // Will securely store 'M' or 'F'
         weight: double.parse(_weightController.text),
         height: double.parse(_heightController.text),
         birthDate: _selectedDate!,
       );
 
-      // Persist data using the repository pattern.
-      await _repository.createProfile(newProfile);
+      final isEditing = widget.profile != null;
 
-      // Verify the widget is still mounted before interacting with the UI context.
+      // Execute the appropriate database transaction
+      if (isEditing) {
+        await _repository.updateProfile(profileToSave);
+      } else {
+        await _repository.createProfile(profileToSave);
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.profileCreatedSuccess, style: const TextStyle(color: Colors.white)),
+            content: Text(
+                isEditing ? l10n.profileUpdatedSuccess : l10n.profileCreatedSuccess,
+                style: const TextStyle(color: Colors.white)
+            ),
             backgroundColor: Colors.green,
           ),
         );
 
-        // Perform a push replacement to prevent the user from navigating back to the form.
-        Navigator.pushReplacement(
+        // Clear the navigation stack and return to the Choose Profile Screen
+        // to prevent returning to a stale Dashboard state.
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ChooseProfileScreen()),
+              (Route<dynamic> route) => false,
         );
       }
     }
@@ -104,15 +138,16 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Access localized strings dynamically based on the current system locale.
     final l10n = AppLocalizations.of(context)!;
+
+    // Determine dynamic UI elements based on the current mode
+    final isEditing = widget.profile != null;
+    final screenTitle = isEditing ? l10n.editProfileTitle : l10n.createProfileTitle;
+    final buttonText = isEditing ? l10n.updateButton : l10n.createButton;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.createProfileTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(screenTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -122,27 +157,42 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Full Name Input
+              // Full Name Text Input
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(labelText: l10n.fullName),
                 validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-              // Biological Sex Dropdown
-              DropdownButtonFormField<String>(
-                initialValue: _selectedSex,
-                decoration: InputDecoration(labelText: l10n.sex),
-                items: [
-                  DropdownMenuItem(value: 'M', child: Text(l10n.male)),
-                  DropdownMenuItem(value: 'F', child: Text(l10n.female)),
-                ],
-                onChanged: (newValue) => setState(() => _selectedSex = newValue!),
+              // Sex Selection Toggle Buttons
+              Text(
+                l10n.sex,
+                style: const TextStyle(fontSize: 16, color: Colors.black54),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSexToggleButton(
+                      value: 'M',
+                      label: l10n.male,
+                      icon: Icons.male,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildSexToggleButton(
+                      value: 'F',
+                      label: l10n.female,
+                      icon: Icons.female,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-              // Body Metrics Row (Weight and Height)
+              // Body Metrics Row
               Row(
                 children: [
                   Expanded(
@@ -166,7 +216,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Date of Birth Selector
+              // Birth Date Picker Button
               OutlinedButton.icon(
                 onPressed: () => _selectDate(context),
                 icon: const Icon(Icons.calendar_today),
@@ -175,18 +225,24 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       ? l10n.birthDate
                       : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
                 ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
               ),
               const SizedBox(height: 40),
 
-              // Form Submission Button
+              // Form Submission Action Button
               ElevatedButton(
                 onPressed: _saveProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: Text(
-                  l10n.createButton,
+                  buttonText,
                   style: const TextStyle(
                     fontSize: 18,
                     color: Colors.white,
@@ -196,6 +252,49 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Constructs a custom toggle button for sex selection.
+  /// Visual state adapts based on whether this specific [value] matches [_selectedSex].
+  Widget _buildSexToggleButton({
+    required String value,
+    required String label,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedSex == value;
+
+    return InkWell(
+      onTap: () => setState(() => _selectedSex = value),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green.withValues(alpha: 0.1) : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? Colors.green : Colors.grey.shade300,
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.green : Colors.grey.shade600,
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.green : Colors.grey.shade600,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -40,5 +40,32 @@
 
   "welcomeTitle": "Welcome to BetterMe",
   "swipeToStart": "Swipe up to start",
-  "changeLanguage": "Change language"
+  "changeLanguage": "Change language",
+
+  "dashboardTitle": "Dashboard",
+  "welcomeUser": "Hello, {name}!",
+  "@welcomeUser": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "ageLabel": "Age: {years} years",
+  "@ageLabel": {
+    "placeholders": {
+      "years": { "type": "int" }
+    }
+  },
+  "bmiLabel": "BMI: {value}",
+  "@bmiLabel": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "myDiets": "My Diets",
+  "myWorkouts": "My Workouts",
+  "editProfile": "Edit profile",
+
+  "editProfileTitle": "Edit profile",
+  "updateButton": "Update",
+  "profileUpdatedSuccess": "Profile updated successfully!"
 }
