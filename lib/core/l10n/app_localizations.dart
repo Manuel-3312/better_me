@@ -427,6 +427,84 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ej: No me gusta el brócoli'**
   String get dietAdditionalDataHint;
+
+  /// No description provided for @headerTrainings.
+  ///
+  /// In es, this message translates to:
+  /// **'--- MÓDULO DE ENTRENAMIENTOS ---'**
+  String get headerTrainings;
+
+  /// No description provided for @trainingsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Entrenamientos'**
+  String get trainingsTitle;
+
+  /// No description provided for @noTrainingsMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes rutinas. ¡Crea la primera!'**
+  String get noTrainingsMessage;
+
+  /// No description provided for @createTraining.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear Rutina'**
+  String get createTraining;
+
+  /// No description provided for @createTrainingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear nueva rutina'**
+  String get createTrainingTitle;
+
+  /// No description provided for @trainingName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la rutina'**
+  String get trainingName;
+
+  /// No description provided for @trainingObjective.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivo principal'**
+  String get trainingObjective;
+
+  /// No description provided for @hypertrophy.
+  ///
+  /// In es, this message translates to:
+  /// **'Hipertrofia'**
+  String get hypertrophy;
+
+  /// No description provided for @strength.
+  ///
+  /// In es, this message translates to:
+  /// **'Fuerza'**
+  String get strength;
+
+  /// No description provided for @endurance.
+  ///
+  /// In es, this message translates to:
+  /// **'Resistencia'**
+  String get endurance;
+
+  /// No description provided for @maxDaysLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Días por semana: {days}'**
+  String maxDaysLabel(int days);
+
+  /// No description provided for @maxTimeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiempo por sesión: {minutes} min'**
+  String maxTimeLabel(int minutes);
+
+  /// No description provided for @trainingCreatedSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Rutina creada con éxito!'**
+  String get trainingCreatedSuccess;
 }
 
 class _AppLocalizationsDelegate

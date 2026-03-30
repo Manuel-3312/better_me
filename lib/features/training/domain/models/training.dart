@@ -1,12 +1,24 @@
+/// Represents a training plan assigned to a specific user profile.
 class Training {
+  /// Unique identifier for the training routine (Auto-incremented by SQLite).
   final int? idTraining;
+
+  /// Foreign key linking this training to a specific user profile.
   final int idProfile;
+
+  /// The descriptive name of the training plan (e.g., "Summer Cutting Routine").
   final String name;
+
+  /// The main goal of the routine (e.g., "Hypertrophy", "Strength", "Endurance").
   final String objective;
+
+  /// Maximum number of days per week the user can commit to training.
   final int maxDays;
+
+  /// Maximum duration in minutes the user can train per session.
   final double maxTime;
 
-  Training({
+  const Training({
     this.idTraining,
     required this.idProfile,
     required this.name,
@@ -14,4 +26,28 @@ class Training {
     required this.maxDays,
     required this.maxTime,
   });
+
+  /// Converts a [Training] instance into a Map for SQLite insertion.
+  Map<String, dynamic> toMap() {
+    return {
+      'id_training': idTraining,
+      'id_profile': idProfile,
+      'name': name,
+      'objective': objective,
+      'max_days': maxDays,
+      'max_time': maxTime,
+    };
+  }
+
+  /// Constructs a [Training] instance from a SQLite Map object.
+  factory Training.fromMap(Map<String, dynamic> map) {
+    return Training(
+      idTraining: map['id_training'] as int?,
+      idProfile: map['id_profile'] as int,
+      name: map['name'] as String,
+      objective: map['objective'] as String,
+      maxDays: map['max_days'] as int,
+      maxTime: (map['max_time'] as num).toDouble(), // Safely handles both int and float from DB
+    );
+  }
 }

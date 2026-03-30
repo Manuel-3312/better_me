@@ -84,5 +84,29 @@
   "maintenance": "Maintenance",
   "dietCreatedSuccess": "Diet created successfully!",
   "dietAllergiesHint": "Ex: Peanuts, lactose...",
-  "dietAdditionalDataHint": "Ex: I don't like broccoli"
+  "dietAdditionalDataHint": "Ex: I don't like broccoli",
+
+  "headerTrainings": "--- TRAINING MODULE ---",
+  "trainingsTitle": "My Trainings",
+  "noTrainingsMessage": "No routines yet. Create your first one!",
+  "createTraining": "Create Routine",
+  "createTrainingTitle": "Create new routine",
+  "trainingName": "Routine name",
+  "trainingObjective": "Main objective",
+  "hypertrophy": "Hypertrophy",
+  "strength": "Strength",
+  "endurance": "Endurance",
+  "maxDaysLabel": "Days per week: {days}",
+  "@maxDaysLabel": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "maxTimeLabel": "Time per session: {minutes} min",
+  "@maxTimeLabel": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "trainingCreatedSuccess": "Routine created successfully!"
 }

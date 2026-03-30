@@ -4,10 +4,11 @@ import 'package:better_me/core/l10n/app_localizations.dart';
 import '../../../profile/domain/models/profile.dart';
 import '../../../profile/presentation/screens/create_profile_screen.dart';
 import '../../../diets/presentation/screens/diets_screen.dart';
+import '../../../training/presentation/screens/trainings_screen.dart';
 
 /// The main hub of the application displaying a summary of the selected profile.
 /// It calculates and presents biometric data (Age, BMI) and provides navigation
-/// access to the core feature modules: Diets and Workouts.
+/// access to the core feature modules: Diets and Trainings.
 class DashboardScreen extends StatelessWidget {
   /// The active profile passed from the profile selection screen.
   final Profile profile;
@@ -85,15 +86,14 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     _buildModuleCard(
                       context: context,
-                      title: l10n.myWorkouts,
+                      title: l10n.myWorkouts, // Kept for the ARB translation key mapping
                       icon: Icons.fitness_center,
                       color: Colors.blue,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Workouts Module / Módulo Entrenamientos',
-                            ),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TrainingsScreen(profile: profile),
                           ),
                         );
                       },
@@ -111,11 +111,11 @@ class DashboardScreen extends StatelessWidget {
   /// Constructs the top biometric summary card containing user metrics
   /// and the profile edit action button.
   Widget _buildSummaryCard(
-    BuildContext context,
-    AppLocalizations l10n,
-    int age,
-    String bmiString,
-  ) {
+      BuildContext context,
+      AppLocalizations l10n,
+      int age,
+      String bmiString,
+      ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -202,7 +202,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  /// Constructs a clickable, stylized card for application modules (Diets/Workouts).
+  /// Constructs a clickable, stylized card for application modules (Diets/Trainings).
   Widget _buildModuleCard({
     required BuildContext context,
     required String title,

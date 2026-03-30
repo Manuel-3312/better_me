@@ -84,5 +84,29 @@
   "maintenance": "Mantenimiento",
   "dietCreatedSuccess": "¡Dieta creada con éxito!",
   "dietAllergiesHint": "Ej: Cacahuetes, lactosa...",
-  "dietAdditionalDataHint": "Ej: No me gusta el brócoli"
+  "dietAdditionalDataHint": "Ej: No me gusta el brócoli",
+
+  "headerTrainings": "--- MÓDULO DE ENTRENAMIENTOS ---",
+  "trainingsTitle": "Mis Entrenamientos",
+  "noTrainingsMessage": "Aún no tienes rutinas. ¡Crea la primera!",
+  "createTraining": "Crear Rutina",
+  "createTrainingTitle": "Crear nueva rutina",
+  "trainingName": "Nombre de la rutina",
+  "trainingObjective": "Objetivo principal",
+  "hypertrophy": "Hipertrofia",
+  "strength": "Fuerza",
+  "endurance": "Resistencia",
+  "maxDaysLabel": "Días por semana: {days}",
+  "@maxDaysLabel": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "maxTimeLabel": "Tiempo por sesión: {minutes} min",
+  "@maxTimeLabel": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "trainingCreatedSuccess": "¡Rutina creada con éxito!"
 }

@@ -183,4 +183,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dietAdditionalDataHint => 'Ex: I don\'t like broccoli';
+
+  @override
+  String get headerTrainings => '--- TRAINING MODULE ---';
+
+  @override
+  String get trainingsTitle => 'My Trainings';
+
+  @override
+  String get noTrainingsMessage => 'No routines yet. Create your first one!';
+
+  @override
+  String get createTraining => 'Create Routine';
+
+  @override
+  String get createTrainingTitle => 'Create new routine';
+
+  @override
+  String get trainingName => 'Routine name';
+
+  @override
+  String get trainingObjective => 'Main objective';
+
+  @override
+  String get hypertrophy => 'Hypertrophy';
+
+  @override
+  String get strength => 'Strength';
+
+  @override
+  String get endurance => 'Endurance';
+
+  @override
+  String maxDaysLabel(int days) {
+    return 'Days per week: $days';
+  }
+
+  @override
+  String maxTimeLabel(int minutes) {
+    return 'Time per session: $minutes min';
+  }
+
+  @override
+  String get trainingCreatedSuccess => 'Routine created successfully!';
 }
