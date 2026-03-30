@@ -73,5 +73,16 @@
   "dietsTitle": "My Diets",
   "noDietsMessage": "No diets yet. Create your first one!",
   "createDiet": "Create Diet",
-  "featureInProgress": "Creation form in progress..."
+  "featureInProgress": "Creation form in progress...",
+  "createDietTitle": "Create new diet",
+  "dietName": "Diet name",
+  "dietObjective": "Main objective",
+  "dietAllergies": "Allergies or intolerances (Optional)",
+  "dietAdditionalData": "Additional data (Optional)",
+  "weightLoss": "Weight loss",
+  "muscleGain": "Muscle gain",
+  "maintenance": "Maintenance",
+  "dietCreatedSuccess": "Diet created successfully!",
+  "dietAllergiesHint": "Ex: Peanuts, lactose...",
+  "dietAdditionalDataHint": "Ex: I don't like broccoli"
 }

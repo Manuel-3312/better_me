@@ -361,6 +361,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Formulario de creación en progreso...'**
   String get featureInProgress;
+
+  /// No description provided for @createDietTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear nueva dieta'**
+  String get createDietTitle;
+
+  /// No description provided for @dietName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la dieta'**
+  String get dietName;
+
+  /// No description provided for @dietObjective.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivo principal'**
+  String get dietObjective;
+
+  /// No description provided for @dietAllergies.
+  ///
+  /// In es, this message translates to:
+  /// **'Alergias o intolerancias (Opcional)'**
+  String get dietAllergies;
+
+  /// No description provided for @dietAdditionalData.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos adicionales (Opcional)'**
+  String get dietAdditionalData;
+
+  /// No description provided for @weightLoss.
+  ///
+  /// In es, this message translates to:
+  /// **'Pérdida de peso'**
+  String get weightLoss;
+
+  /// No description provided for @muscleGain.
+  ///
+  /// In es, this message translates to:
+  /// **'Ganancia muscular'**
+  String get muscleGain;
+
+  /// No description provided for @maintenance.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantenimiento'**
+  String get maintenance;
+
+  /// No description provided for @dietCreatedSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Dieta creada con éxito!'**
+  String get dietCreatedSuccess;
+
+  /// No description provided for @dietAllergiesHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: Cacahuetes, lactosa...'**
+  String get dietAllergiesHint;
+
+  /// No description provided for @dietAdditionalDataHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: No me gusta el brócoli'**
+  String get dietAdditionalDataHint;
 }
 
 class _AppLocalizationsDelegate

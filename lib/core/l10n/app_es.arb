@@ -73,5 +73,16 @@
   "dietsTitle": "Mis Dietas",
   "noDietsMessage": "Aún no tienes dietas. ¡Crea la primera!",
   "createDiet": "Crear Dieta",
-  "featureInProgress": "Formulario de creación en progreso..."
+  "featureInProgress": "Formulario de creación en progreso...",
+  "createDietTitle": "Crear nueva dieta",
+  "dietName": "Nombre de la dieta",
+  "dietObjective": "Objetivo principal",
+  "dietAllergies": "Alergias o intolerancias (Opcional)",
+  "dietAdditionalData": "Datos adicionales (Opcional)",
+  "weightLoss": "Pérdida de peso",
+  "muscleGain": "Ganancia muscular",
+  "maintenance": "Mantenimiento",
+  "dietCreatedSuccess": "¡Dieta creada con éxito!",
+  "dietAllergiesHint": "Ej: Cacahuetes, lactosa...",
+  "dietAdditionalDataHint": "Ej: No me gusta el brócoli"
 }

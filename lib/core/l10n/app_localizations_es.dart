@@ -150,4 +150,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get featureInProgress => 'Formulario de creación en progreso...';
+
+  @override
+  String get createDietTitle => 'Crear nueva dieta';
+
+  @override
+  String get dietName => 'Nombre de la dieta';
+
+  @override
+  String get dietObjective => 'Objetivo principal';
+
+  @override
+  String get dietAllergies => 'Alergias o intolerancias (Opcional)';
+
+  @override
+  String get dietAdditionalData => 'Datos adicionales (Opcional)';
+
+  @override
+  String get weightLoss => 'Pérdida de peso';
+
+  @override
+  String get muscleGain => 'Ganancia muscular';
+
+  @override
+  String get maintenance => 'Mantenimiento';
+
+  @override
+  String get dietCreatedSuccess => '¡Dieta creada con éxito!';
+
+  @override
+  String get dietAllergiesHint => 'Ej: Cacahuetes, lactosa...';
+
+  @override
+  String get dietAdditionalDataHint => 'Ej: No me gusta el brócoli';
 }
