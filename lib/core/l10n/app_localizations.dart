@@ -317,13 +317,13 @@ abstract class AppLocalizations {
   /// No description provided for @myDiets.
   ///
   /// In es, this message translates to:
-  /// **'Mis Dietas'**
+  /// **'Dietas'**
   String get myDiets;
 
   /// No description provided for @myWorkouts.
   ///
   /// In es, this message translates to:
-  /// **'Mis Entrenamientos'**
+  /// **'Entrenamientos'**
   String get myWorkouts;
 
   /// No description provided for @editProfile.
@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @dietsTitle.
   ///
   /// In es, this message translates to:
-  /// **'Mis Dietas'**
+  /// **'Dietas'**
   String get dietsTitle;
 
   /// No description provided for @noDietsMessage.
@@ -437,7 +437,7 @@ abstract class AppLocalizations {
   /// No description provided for @trainingsTitle.
   ///
   /// In es, this message translates to:
-  /// **'Mis Entrenamientos'**
+  /// **'Entrenamientos'**
   String get trainingsTitle;
 
   /// No description provided for @noTrainingsMessage.
@@ -505,6 +505,216 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'¡Rutina creada con éxito!'**
   String get trainingCreatedSuccess;
+
+  /// No description provided for @generatingDiet.
+  ///
+  /// In es, this message translates to:
+  /// **'Generando tu plan personalizado...'**
+  String get generatingDiet;
+
+  /// No description provided for @errorGeneratingDiet.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo generar la dieta. Por favor, inténtalo de nuevo.'**
+  String get errorGeneratingDiet;
+
+  /// No description provided for @retry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get retry;
+
+  /// No description provided for @noDietData.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay datos de dieta disponibles.'**
+  String get noDietData;
+
+  /// No description provided for @dayNumber.
+  ///
+  /// In es, this message translates to:
+  /// **'Día {number}'**
+  String dayNumber(int number);
+
+  /// No description provided for @kcal.
+  ///
+  /// In es, this message translates to:
+  /// **'kcal'**
+  String get kcal;
+
+  /// No description provided for @generatingTraining.
+  ///
+  /// In es, this message translates to:
+  /// **'Diseñando tu rutina ideal...'**
+  String get generatingTraining;
+
+  /// No description provided for @errorGeneratingTraining.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo generar la rutina. Por favor, inténtalo de nuevo.'**
+  String get errorGeneratingTraining;
+
+  /// No description provided for @sets.
+  ///
+  /// In es, this message translates to:
+  /// **'Series'**
+  String get sets;
+
+  /// No description provided for @reps.
+  ///
+  /// In es, this message translates to:
+  /// **'Reps'**
+  String get reps;
+
+  /// No description provided for @rest.
+  ///
+  /// In es, this message translates to:
+  /// **'Descanso'**
+  String get rest;
+
+  /// No description provided for @seconds.
+  ///
+  /// In es, this message translates to:
+  /// **'s'**
+  String get seconds;
+
+  /// No description provided for @noTrainingData.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay datos de entrenamiento disponibles.'**
+  String get noTrainingData;
+
+  /// No description provided for @setupPlanTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Configurar Plan'**
+  String get setupPlanTitle;
+
+  /// No description provided for @todayTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get todayTitle;
+
+  /// No description provided for @changeActivePlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar plan activo'**
+  String get changeActivePlan;
+
+  /// No description provided for @chooseCurrentFocus.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige tu enfoque actual'**
+  String get chooseCurrentFocus;
+
+  /// No description provided for @setupPlanDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona qué dieta y entrenamiento quieres seguir día a día.'**
+  String get setupPlanDescription;
+
+  /// No description provided for @activeDiet.
+  ///
+  /// In es, this message translates to:
+  /// **'Dieta Activa'**
+  String get activeDiet;
+
+  /// No description provided for @selectDietHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona una dieta'**
+  String get selectDietHint;
+
+  /// No description provided for @activeTraining.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrenamiento Activo'**
+  String get activeTraining;
+
+  /// No description provided for @selectTrainingHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona un entrenamiento'**
+  String get selectTrainingHint;
+
+  /// No description provided for @saveAndStart.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar y Empezar'**
+  String get saveAndStart;
+
+  /// No description provided for @yourMeals.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus Comidas'**
+  String get yourMeals;
+
+  /// No description provided for @noDietDataForToday.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay datos de dieta para hoy.'**
+  String get noDietDataForToday;
+
+  /// No description provided for @yourTraining.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu Entrenamiento'**
+  String get yourTraining;
+
+  /// No description provided for @restDayOrNoData.
+  ///
+  /// In es, this message translates to:
+  /// **'Día de descanso o sin datos.'**
+  String get restDayOrNoData;
+
+  /// No description provided for @scheduledExercises.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} ejercicios programados'**
+  String scheduledExercises(int count);
+
+  /// No description provided for @monday.
+  ///
+  /// In es, this message translates to:
+  /// **'Lunes'**
+  String get monday;
+
+  /// No description provided for @tuesday.
+  ///
+  /// In es, this message translates to:
+  /// **'Martes'**
+  String get tuesday;
+
+  /// No description provided for @wednesday.
+  ///
+  /// In es, this message translates to:
+  /// **'Miércoles'**
+  String get wednesday;
+
+  /// No description provided for @thursday.
+  ///
+  /// In es, this message translates to:
+  /// **'Jueves'**
+  String get thursday;
+
+  /// No description provided for @friday.
+  ///
+  /// In es, this message translates to:
+  /// **'Viernes'**
+  String get friday;
+
+  /// No description provided for @saturday.
+  ///
+  /// In es, this message translates to:
+  /// **'Sábado'**
+  String get saturday;
+
+  /// No description provided for @sunday.
+  ///
+  /// In es, this message translates to:
+  /// **'Domingo'**
+  String get sunday;
 }
 
 class _AppLocalizationsDelegate

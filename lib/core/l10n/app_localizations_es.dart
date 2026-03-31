@@ -128,10 +128,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get myDiets => 'Mis Dietas';
+  String get myDiets => 'Dietas';
 
   @override
-  String get myWorkouts => 'Mis Entrenamientos';
+  String get myWorkouts => 'Entrenamientos';
 
   @override
   String get editProfile => 'Editar perfil';
@@ -140,7 +140,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get headerDiets => '--- MÓDULO DE DIETAS ---';
 
   @override
-  String get dietsTitle => 'Mis Dietas';
+  String get dietsTitle => 'Dietas';
 
   @override
   String get noDietsMessage => 'Aún no tienes dietas. ¡Crea la primera!';
@@ -188,7 +188,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get headerTrainings => '--- MÓDULO DE ENTRENAMIENTOS ---';
 
   @override
-  String get trainingsTitle => 'Mis Entrenamientos';
+  String get trainingsTitle => 'Entrenamientos';
 
   @override
   String get noTrainingsMessage => 'Aún no tienes rutinas. ¡Crea la primera!';
@@ -226,4 +226,116 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get trainingCreatedSuccess => '¡Rutina creada con éxito!';
+
+  @override
+  String get generatingDiet => 'Generando tu plan personalizado...';
+
+  @override
+  String get errorGeneratingDiet =>
+      'No se pudo generar la dieta. Por favor, inténtalo de nuevo.';
+
+  @override
+  String get retry => 'Reintentar';
+
+  @override
+  String get noDietData => 'No hay datos de dieta disponibles.';
+
+  @override
+  String dayNumber(int number) {
+    return 'Día $number';
+  }
+
+  @override
+  String get kcal => 'kcal';
+
+  @override
+  String get generatingTraining => 'Diseñando tu rutina ideal...';
+
+  @override
+  String get errorGeneratingTraining =>
+      'No se pudo generar la rutina. Por favor, inténtalo de nuevo.';
+
+  @override
+  String get sets => 'Series';
+
+  @override
+  String get reps => 'Reps';
+
+  @override
+  String get rest => 'Descanso';
+
+  @override
+  String get seconds => 's';
+
+  @override
+  String get noTrainingData => 'No hay datos de entrenamiento disponibles.';
+
+  @override
+  String get setupPlanTitle => 'Configurar Plan';
+
+  @override
+  String get todayTitle => 'Hoy';
+
+  @override
+  String get changeActivePlan => 'Cambiar plan activo';
+
+  @override
+  String get chooseCurrentFocus => 'Elige tu enfoque actual';
+
+  @override
+  String get setupPlanDescription =>
+      'Selecciona qué dieta y entrenamiento quieres seguir día a día.';
+
+  @override
+  String get activeDiet => 'Dieta Activa';
+
+  @override
+  String get selectDietHint => 'Selecciona una dieta';
+
+  @override
+  String get activeTraining => 'Entrenamiento Activo';
+
+  @override
+  String get selectTrainingHint => 'Selecciona un entrenamiento';
+
+  @override
+  String get saveAndStart => 'Guardar y Empezar';
+
+  @override
+  String get yourMeals => 'Tus Comidas';
+
+  @override
+  String get noDietDataForToday => 'No hay datos de dieta para hoy.';
+
+  @override
+  String get yourTraining => 'Tu Entrenamiento';
+
+  @override
+  String get restDayOrNoData => 'Día de descanso o sin datos.';
+
+  @override
+  String scheduledExercises(int count) {
+    return '$count ejercicios programados';
+  }
+
+  @override
+  String get monday => 'Lunes';
+
+  @override
+  String get tuesday => 'Martes';
+
+  @override
+  String get wednesday => 'Miércoles';
+
+  @override
+  String get thursday => 'Jueves';
+
+  @override
+  String get friday => 'Viernes';
+
+  @override
+  String get saturday => 'Sábado';
+
+  @override
+  String get sunday => 'Domingo';
 }

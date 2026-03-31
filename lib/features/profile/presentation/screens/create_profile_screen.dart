@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
-import '../../domain/models/profile.dart';
-import '../../data/profile_repository.dart';
-import 'choose_profile_screen.dart';
+
+// Absolute imports for clarity and consistency
+import 'package:better_me/features/profile/domain/models/profile.dart';
+import 'package:better_me/features/profile/data/profile_repository.dart';
+import 'package:better_me/features/home/presentation/screens/main_screen.dart';
 
 /// Screen responsible for both creating new profiles and editing existing ones.
-/// It dynamically adapts its UI and logic based on the presence of the [profile] parameter.
+/// It dynamically adapts its UI and navigation logic based on the [profile] parameter.
 class CreateProfileScreen extends StatefulWidget {
   /// Optional profile object. If provided, the form switches to "Edit Mode".
   final Profile? profile;
@@ -28,8 +30,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
 
-  /// Internal state variable for biological sex selection.
-  /// Strictly expects 'M' (Male) or 'F' (Female).
+  /// Internal state variable for biological sex selection ('M' or 'F').
   String _selectedSex = 'M';
 
   /// Internal state variable for the user's date of birth.
@@ -38,20 +39,18 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // If a profile was passed, pre-fill the form fields directly (Edit Mode)
+    // If a profile was passed, pre-fill the form fields (Edit Mode)
     if (widget.profile != null) {
       _nameController.text = widget.profile!.name;
       _weightController.text = widget.profile!.weight.toString();
       _heightController.text = widget.profile!.height.toString();
       _selectedDate = widget.profile!.birthDate;
-      // Direct assignment since the database now strictly uses 'M' or 'F'
       _selectedSex = widget.profile!.sex;
     }
   }
 
   @override
   void dispose() {
-    // Release resources used by controllers to prevent memory leaks.
     _nameController.dispose();
     _weightController.dispose();
     _heightController.dispose();
@@ -71,8 +70,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     }
   }
 
-  /// Validates the form data and performs either an INSERT or UPDATE operation
-  /// in the SQLite database depending on the current mode.
+  /// Validates form data and performs either an INSERT or UPDATE.
+  /// Navigation logic depends on whether the user is editing or creating a profile.
   Future<void> _saveProfile() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -80,50 +79,62 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       if (_selectedDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.selectDateWarning, style: const TextStyle(color: Colors.white)),
+            content: Text(
+              l10n.selectDateWarning,
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
 
-      // Construct the Profile entity. Retain the ID if editing an existing profile.
-      final profileToSave = Profile(
+      final isEditing = widget.profile != null;
+
+      // Prepare the profile object to be saved
+      var profileToSave = Profile(
         idProfile: widget.profile?.idProfile,
-        name: _nameController.text,
+        name: _nameController.text.trim(),
         sex: _selectedSex,
         weight: double.parse(_weightController.text),
         height: double.parse(_heightController.text),
         birthDate: _selectedDate!,
       );
 
-      final isEditing = widget.profile != null;
-
-      // Execute the appropriate database transaction
       if (isEditing) {
         await _repository.updateProfile(profileToSave);
       } else {
-        await _repository.createProfile(profileToSave);
+        // For new profiles, we capture the generated ID to enter the MainScreen immediately
+        final newId = await _repository.createProfile(profileToSave);
+        profileToSave = profileToSave.copyWith(idProfile: newId);
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                isEditing ? l10n.profileUpdatedSuccess : l10n.profileCreatedSuccess,
-                style: const TextStyle(color: Colors.white)
+              isEditing
+                  ? l10n.profileUpdatedSuccess
+                  : l10n.profileCreatedSuccess,
+              style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: Colors.green,
           ),
         );
 
-        // Clear the navigation stack and return to the Choose Profile Screen
-        // to prevent returning to a stale Dashboard state.
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const ChooseProfileScreen()),
-              (Route<dynamic> route) => false,
-        );
+        if (isEditing) {
+          // Return to the Profile Tab within MainScreen and trigger a data refresh
+          Navigator.pop(context, true);
+        } else {
+          // New profile: Enter the application directly with the fresh profile
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainScreen(profile: profileToSave),
+            ),
+            (route) => false,
+          );
+        }
       }
     }
   }
@@ -131,15 +142,18 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-
-    // Determine dynamic UI elements based on the current mode
     final isEditing = widget.profile != null;
-    final screenTitle = isEditing ? l10n.editProfileTitle : l10n.createProfileTitle;
+    final screenTitle = isEditing
+        ? l10n.editProfileTitle
+        : l10n.createProfileTitle;
     final buttonText = isEditing ? l10n.updateButton : l10n.createButton;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(screenTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          screenTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -149,15 +163,18 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Full Name Text Input
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: l10n.fullName),
-                validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
+                decoration: InputDecoration(
+                  labelText: l10n.fullName,
+                  prefixIcon: const Icon(Icons.person_outline),
+                ),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? l10n.requiredField
+                    : null,
               ),
               const SizedBox(height: 24),
 
-              // Sex Selection Toggle Buttons
               Text(
                 l10n.sex,
                 style: const TextStyle(fontSize: 16, color: Colors.black54),
@@ -184,31 +201,43 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Body Metrics Row
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _weightController,
-                      decoration: InputDecoration(labelText: l10n.weight),
-                      keyboardType: TextInputType.number,
-                      validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
+                      decoration: InputDecoration(
+                        labelText: l10n.weight,
+                        suffixText: 'kg',
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? l10n.requiredField
+                          : null,
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: TextFormField(
                       controller: _heightController,
-                      decoration: InputDecoration(labelText: l10n.height),
-                      keyboardType: TextInputType.number,
-                      validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
+                      decoration: InputDecoration(
+                        labelText: l10n.height,
+                        suffixText: 'cm',
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? l10n.requiredField
+                          : null,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
 
-              // Birth Date Picker Button
               OutlinedButton.icon(
                 onPressed: () => _selectDate(context),
                 icon: const Icon(Icons.calendar_today),
@@ -223,7 +252,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               ),
               const SizedBox(height: 40),
 
-              // Form Submission Action Button
               ElevatedButton(
                 onPressed: _saveProfile,
                 style: ElevatedButton.styleFrom(
@@ -249,22 +277,21 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     );
   }
 
-  /// Constructs a custom toggle button for sex selection.
-  /// Visual state adapts based on whether this specific [value] matches [_selectedSex].
   Widget _buildSexToggleButton({
     required String value,
     required String label,
     required IconData icon,
   }) {
     final isSelected = _selectedSex == value;
-
     return InkWell(
       onTap: () => setState(() => _selectedSex = value),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.green.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? Colors.green.withValues(alpha: 0.1)
+              : Colors.transparent,
           border: Border.all(
             color: isSelected ? Colors.green : Colors.grey.shade300,
             width: 2,

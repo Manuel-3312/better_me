@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
-import 'package:better_me/features/dashboard/presentation/screens/dashboard_screen.dart'; // Safe absolute import
+
+// 1. IMPORT UPDATED: Now pointing to the new MainScreen
+import 'package:better_me/features/home/presentation/screens/main_screen.dart';
 import '../../domain/models/profile.dart';
 import '../../data/profile_repository.dart';
 import 'create_profile_screen.dart';
@@ -165,12 +167,11 @@ class _ChooseProfileScreenState extends State<ChooseProfileScreen> {
                     ],
                   ),
                   onTap: () {
-                    // Navigate to the Dashboard, passing the selected Profile entity.
-                    // This replaces the previous SnackBar placeholder.
-                    Navigator.push(
+                    // 2. NAVIGATION UPDATED: Route to MainScreen with pushReplacement
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DashboardScreen(profile: profile),
+                        builder: (context) => MainScreen(profile: profile),
                       ),
                     );
                   },

@@ -41,9 +41,8 @@ class DatabaseHelper {
 
   /// Executes the SQL scripts to create all tables and relationships.
   Future _createDB(Database db, int version) async {
-
     // 1. PROFILE TABLE
-    // FIXED: Added the 'name' column to match the UI and Domain model.
+    // UPGRADED: Added active plan tracking fields with foreign keys.
     await db.execute('''
       CREATE TABLE profile (
         id_profile INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +50,11 @@ class DatabaseHelper {
         sex TEXT NOT NULL,
         weight REAL NOT NULL,
         height REAL NOT NULL,
-        birth_date TEXT NOT NULL
+        birth_date TEXT NOT NULL,
+        active_diet_id INTEGER,
+        active_training_id INTEGER,
+        FOREIGN KEY (active_diet_id) REFERENCES diet (id_diet) ON DELETE SET NULL,
+        FOREIGN KEY (active_training_id) REFERENCES training (id_training) ON DELETE SET NULL
       )
     ''');
 
@@ -65,6 +68,7 @@ class DatabaseHelper {
 
     // 3. DIET TABLE
     // Contains a Foreign Key referencing the profile table.
+    // ADDED: 'generated_content' to persistently store the AI-generated JSON response.
     await db.execute('''
       CREATE TABLE diet (
         id_diet INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,6 +77,7 @@ class DatabaseHelper {
         objective TEXT NOT NULL,
         allergies TEXT,
         additional_data TEXT,
+        generated_content TEXT, 
         FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
       )
     ''');
@@ -100,6 +105,8 @@ class DatabaseHelper {
     ''');
 
     // 6. TRAINING TABLE
+    // Contains a Foreign Key referencing the profile table.
+    // ADDED: 'generated_content' to persistently store the AI-generated JSON response.
     await db.execute('''
       CREATE TABLE training (
         id_training INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -108,6 +115,7 @@ class DatabaseHelper {
         objective TEXT NOT NULL,
         max_days INTEGER NOT NULL,
         max_time REAL NOT NULL,
+        generated_content TEXT,
         FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
       )
     ''');

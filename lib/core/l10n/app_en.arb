@@ -65,12 +65,12 @@
       "value": { "type": "String" }
     }
   },
-  "myDiets": "My Diets",
-  "myWorkouts": "My Workouts",
+  "myDiets": "Diets",
+  "myWorkouts": "Workouts",
   "editProfile": "Edit profile",
 
   "headerDiets": "--- DIETS MODULE ---",
-  "dietsTitle": "My Diets",
+  "dietsTitle": "Diets",
   "noDietsMessage": "No diets yet. Create your first one!",
   "createDiet": "Create Diet",
   "featureInProgress": "Creation form in progress...",
@@ -87,7 +87,7 @@
   "dietAdditionalDataHint": "Ex: I don't like broccoli",
 
   "headerTrainings": "--- TRAINING MODULE ---",
-  "trainingsTitle": "My Trainings",
+  "trainingsTitle": "Trainings",
   "noTrainingsMessage": "No routines yet. Create your first one!",
   "createTraining": "Create Routine",
   "createTrainingTitle": "Create new routine",
@@ -108,5 +108,55 @@
       "minutes": { "type": "int" }
     }
   },
-  "trainingCreatedSuccess": "Routine created successfully!"
+  "trainingCreatedSuccess": "Routine created successfully!",
+
+  "generatingDiet": "Generating your personalized plan...",
+  "errorGeneratingDiet": "Failed to generate the diet plan. Please try again.",
+  "retry": "Retry",
+  "noDietData": "No diet data available.",
+  "dayNumber": "Day {number}",
+  "@dayNumber": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "kcal": "kcal",
+  "generatingTraining": "Designing your ideal routine...",
+  "errorGeneratingTraining": "Failed to generate the routine. Please try again.",
+  "sets": "Sets",
+  "reps": "Reps",
+  "rest": "Rest",
+  "seconds": "s",
+  "noTrainingData": "No training data available.",
+
+  "setupPlanTitle": "Setup Plan",
+  "todayTitle": "Today",
+  "changeActivePlan": "Change active plan",
+  "chooseCurrentFocus": "Choose your current focus",
+  "setupPlanDescription": "Select which diet and training routine you want to follow day by day.",
+  "activeDiet": "Active Diet",
+  "selectDietHint": "Select a diet",
+  "activeTraining": "Active Training",
+  "selectTrainingHint": "Select a training",
+  "saveAndStart": "Save and Start",
+  "yourMeals": "Your Meals",
+  "noDietDataForToday": "No diet data for today.",
+  "yourTraining": "Your Training",
+  "restDayOrNoData": "Rest day or no data available.",
+  "scheduledExercises": "{count} scheduled exercises",
+  "@scheduledExercises": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "monday": "Lunes",
+  "tuesday": "Martes",
+  "wednesday": "Miércoles",
+  "thursday": "Jueves",
+  "friday": "Viernes",
+  "saturday": "Sábado",
+  "sunday": "Domingo"
 }

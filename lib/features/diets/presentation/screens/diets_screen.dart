@@ -4,10 +4,11 @@ import '../../../profile/domain/models/profile.dart';
 import '../../data/diet_repository.dart';
 import '../../domain/models/diet.dart';
 import 'create_diet_screen.dart';
+import 'package:better_me/features/diets/presentation/screens/diet_detail_screen.dart';
 
 /// Screen responsible for displaying all dietary plans associated with a specific profile.
+/// Refactored to support dynamic theming and high-contrast accessibility.
 class DietsScreen extends StatefulWidget {
-  /// The active profile used to filter the diets.
   final Profile profile;
 
   const DietsScreen({super.key, required this.profile});
@@ -17,10 +18,7 @@ class DietsScreen extends StatefulWidget {
 }
 
 class _DietsScreenState extends State<DietsScreen> {
-  /// Repository instance handling Diet database operations.
   final DietRepository _repository = DietRepository();
-
-  /// Future that holds the list of diets for the active profile.
   late Future<List<Diet>> _dietsFuture;
 
   @override
@@ -29,28 +27,28 @@ class _DietsScreenState extends State<DietsScreen> {
     _loadDiets();
   }
 
-  /// Initiates the database query to fetch diets associated with the current profile ID.
   void _loadDiets() {
     setState(() {
-      // Ensure we only query diets belonging to the selected user
       _dietsFuture = _repository.getDietsByProfile(widget.profile.idProfile!);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Access localized strings dynamically based on the current system locale.
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      // Uses the theme's background color (White/Grey or Deep Grey/Black)
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           l10n.dietsTitle,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
       body: FutureBuilder<List<Diet>>(
@@ -68,12 +66,13 @@ class _DietsScreenState extends State<DietsScreen> {
                   Icon(
                     Icons.restaurant_menu,
                     size: 80,
-                    color: Colors.grey.shade400,
+                    // Subtle icon color that adapts to the theme
+                    color: theme.hintColor.withValues(alpha: 0.3),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     l10n.noDietsMessage,
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 16, color: theme.hintColor),
                   ),
                 ],
               ),
@@ -83,30 +82,67 @@ class _DietsScreenState extends State<DietsScreen> {
           final diets = snapshot.data!;
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: diets.length,
             itemBuilder: (context, index) {
               final diet = diets[index];
               return Card(
-                elevation: 2,
+                elevation: 0,
                 margin: const EdgeInsets.only(bottom: 12),
+                color: theme.cardColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
+                  // Subtle border for definition in Dark Mode
+                  side: BorderSide(
+                    color: theme.dividerColor.withValues(alpha: 0.1),
+                    width: 1,
+                  ),
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.orange.withValues(alpha: 0.1),
-                    child: const Icon(Icons.restaurant, color: Colors.orange),
+                  contentPadding: const EdgeInsets.all(12),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.orangeAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.restaurant,
+                      color: Colors.orangeAccent,
+                      size: 28,
+                    ),
                   ),
                   title: Text(
                     diet.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                  subtitle: Text(diet.objective),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      diet.objective,
+                      style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: theme.hintColor,
+                  ),
                   onTap: () {
-                    // TODO: Navigate to diet details / days
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DietDetailScreen(
+                          diet: diet,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
                   },
                 ),
               );
@@ -116,8 +152,6 @@ class _DietsScreenState extends State<DietsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          // Wait for the result of the creation screen.
-          // If true is returned, a new diet was created and we must reload the list.
           final bool? shouldRefresh = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -132,9 +166,13 @@ class _DietsScreenState extends State<DietsScreen> {
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           l10n.createDiet,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.orange,
+        // OrangeAccent looks much better and more vivid in Night Mode
+        backgroundColor: Colors.orangeAccent,
       ),
     );
   }

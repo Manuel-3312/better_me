@@ -65,12 +65,12 @@
       "value": { "type": "String" }
     }
   },
-  "myDiets": "Mis Dietas",
-  "myWorkouts": "Mis Entrenamientos",
+  "myDiets": "Dietas",
+  "myWorkouts": "Entrenamientos",
   "editProfile": "Editar perfil",
 
   "headerDiets": "--- MÓDULO DE DIETAS ---",
-  "dietsTitle": "Mis Dietas",
+  "dietsTitle": "Dietas",
   "noDietsMessage": "Aún no tienes dietas. ¡Crea la primera!",
   "createDiet": "Crear Dieta",
   "featureInProgress": "Formulario de creación en progreso...",
@@ -87,7 +87,7 @@
   "dietAdditionalDataHint": "Ej: No me gusta el brócoli",
 
   "headerTrainings": "--- MÓDULO DE ENTRENAMIENTOS ---",
-  "trainingsTitle": "Mis Entrenamientos",
+  "trainingsTitle": "Entrenamientos",
   "noTrainingsMessage": "Aún no tienes rutinas. ¡Crea la primera!",
   "createTraining": "Crear Rutina",
   "createTrainingTitle": "Crear nueva rutina",
@@ -108,5 +108,55 @@
       "minutes": { "type": "int" }
     }
   },
-  "trainingCreatedSuccess": "¡Rutina creada con éxito!"
+  "trainingCreatedSuccess": "¡Rutina creada con éxito!",
+
+  "generatingDiet": "Generando tu plan personalizado...",
+  "errorGeneratingDiet": "No se pudo generar la dieta. Por favor, inténtalo de nuevo.",
+  "retry": "Reintentar",
+  "noDietData": "No hay datos de dieta disponibles.",
+  "dayNumber": "Día {number}",
+  "@dayNumber": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "kcal": "kcal",
+  "generatingTraining": "Diseñando tu rutina ideal...",
+  "errorGeneratingTraining": "No se pudo generar la rutina. Por favor, inténtalo de nuevo.",
+  "sets": "Series",
+  "reps": "Reps",
+  "rest": "Descanso",
+  "seconds": "s",
+  "noTrainingData": "No hay datos de entrenamiento disponibles.",
+
+  "setupPlanTitle": "Configurar Plan",
+  "todayTitle": "Hoy",
+  "changeActivePlan": "Cambiar plan activo",
+  "chooseCurrentFocus": "Elige tu enfoque actual",
+  "setupPlanDescription": "Selecciona qué dieta y entrenamiento quieres seguir día a día.",
+  "activeDiet": "Dieta Activa",
+  "selectDietHint": "Selecciona una dieta",
+  "activeTraining": "Entrenamiento Activo",
+  "selectTrainingHint": "Selecciona un entrenamiento",
+  "saveAndStart": "Guardar y Empezar",
+  "yourMeals": "Tus Comidas",
+  "noDietDataForToday": "No hay datos de dieta para hoy.",
+  "yourTraining": "Tu Entrenamiento",
+  "restDayOrNoData": "Día de descanso o sin datos.",
+  "scheduledExercises": "{count} ejercicios programados",
+  "@scheduledExercises": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "monday": "Lunes",
+  "tuesday": "Martes",
+  "wednesday": "Miércoles",
+  "thursday": "Jueves",
+  "friday": "Viernes",
+  "saturday": "Sábado",
+  "sunday": "Domingo"
 }

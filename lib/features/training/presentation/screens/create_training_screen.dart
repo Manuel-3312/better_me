@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
-import '../../../profile/domain/models/profile.dart';
-import '../../data/training_repository.dart';
-import '../../domain/models/training.dart';
+import 'package:better_me/features/profile/domain/models/profile.dart';
+import 'package:better_me/features/training/data/training_repository.dart';
+import 'package:better_me/features/training/domain/models/training.dart';
+import 'package:better_me/features/training/domain/utils/training_prompt_builder.dart';
+import 'package:better_me/core/network/gemini_service.dart';
 
-/// Screen responsible for capturing user input to generate a new training plan.
-/// It utilizes interactive sliders for numerical inputs and custom SVG assets
-/// for objective selection. Includes dynamic color intensity feedback for both
-/// frequency (days) and volume (time).
+/// Screen responsible for capturing user input to generate a new training plan via AI.
+/// Features dynamic intensity color feedback and full Night Mode support.
 class CreateTrainingScreen extends StatefulWidget {
-  /// The active user profile to which this training routine will be assigned.
   final Profile profile;
 
   const CreateTrainingScreen({super.key, required this.profile});
@@ -20,24 +19,21 @@ class CreateTrainingScreen extends StatefulWidget {
 }
 
 class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
-  /// Global key used to validate the state of the text form fields.
   final _formKey = GlobalKey<FormState>();
-
-  /// Repository instance handling SQLite database operations for Trainings.
-  final TrainingRepository _repository = TrainingRepository();
-
-  /// Controller to manage the training routine name input.
+  final _repository = TrainingRepository();
+  late final GeminiService _geminiService;
   final _nameController = TextEditingController();
 
-  /// Internal state tracking the selected training objective.
-  /// Defaults to 'hypertrophy'.
   String _selectedObjective = 'hypertrophy';
-
-  /// Internal state for the maximum number of days per week (1 to 7).
   double _maxDays = 3.0;
-
-  /// Internal state for the maximum time per session in minutes (15 to 180).
   double _maxTime = 60.0;
+  bool _isGenerating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _geminiService = GeminiService();
+  }
 
   @override
   void dispose() {
@@ -45,38 +41,31 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
     super.dispose();
   }
 
-  /// Calculates a dynamic color based on the selected training duration (time).
-  /// Transitions from a light, calm blue (light workout) to an intense red (heavy workout).
-  Color _getTimeIntensityColor(double currentMinutes) {
-    const double minTime = 15.0;
-    const double maxTime = 180.0;
-
-    // Calculate the percentage of intensity (0.0 to 1.0)
-    final double percentage = (currentMinutes - minTime) / (maxTime - minTime);
-
-    return Color.lerp(Colors.lightBlue.shade300, Colors.red.shade700, percentage) ?? Colors.blue;
+  /// Calculates intensity color using 'Accent' variants for better visibility in Dark Mode.
+  Color _getIntensityColor(
+    double value,
+    double min,
+    double max,
+    bool isDarkMode,
+  ) {
+    final double percentage = (value - min) / (max - min);
+    return Color.lerp(
+          isDarkMode ? Colors.cyanAccent : Colors.lightBlue.shade300,
+          isDarkMode ? Colors.orangeAccent : Colors.red.shade700,
+          percentage,
+        ) ??
+        Colors.blue;
   }
 
-  /// Calculates a dynamic color based on the selected training frequency (days).
-  /// Transitions from a light blue (1 day) to an intense red (7 days).
-  Color _getDaysIntensityColor(double currentDays) {
-    const double minDays = 1.0;
-    const double maxDays = 7.0;
-
-    // Calculate the percentage of intensity (0.0 to 1.0)
-    final double percentage = (currentDays - minDays) / (maxDays - minDays);
-
-    return Color.lerp(Colors.lightBlue.shade300, Colors.red.shade700, percentage) ?? Colors.blue;
-  }
-
-  /// Validates the form and persists the new Training entity to the local database.
   Future<void> _saveTraining() async {
     final l10n = AppLocalizations.of(context)!;
+    if (!_formKey.currentState!.validate()) return;
+    if (widget.profile.idProfile == null) return;
 
-    if (_formKey.currentState!.validate()) {
-      if (widget.profile.idProfile == null) return;
+    setState(() => _isGenerating = true);
 
-      final newTraining = Training(
+    try {
+      final preliminaryTraining = Training(
         idProfile: widget.profile.idProfile!,
         name: _nameController.text.trim(),
         objective: _selectedObjective,
@@ -84,194 +73,295 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
         maxTime: _maxTime,
       );
 
-      await _repository.createTraining(newTraining);
+      final locale = Localizations.localeOf(context).languageCode;
+      final languageInstruction = locale == 'es' ? 'Spanish' : 'English';
+
+      final prompt = TrainingPromptBuilder.buildTrainingPrompt(
+        widget.profile,
+        preliminaryTraining,
+        languageInstruction,
+      );
+
+      final responseText = await _geminiService.generateContent(prompt);
+      if (responseText == null || responseText.isEmpty)
+        throw Exception('Empty AI response');
+
+      final cleanJsonString = responseText
+          .replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim();
+
+      final finalTraining = Training(
+        idProfile: preliminaryTraining.idProfile,
+        name: preliminaryTraining.name,
+        objective: preliminaryTraining.objective,
+        maxDays: preliminaryTraining.maxDays,
+        maxTime: preliminaryTraining.maxTime,
+        generatedContent: cleanJsonString,
+      );
+
+      await _repository.createTraining(finalTraining);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.trainingCreatedSuccess, style: const TextStyle(color: Colors.white)),
-            backgroundColor: Colors.green,
+            content: Text(l10n.trainingCreatedSuccess),
+            backgroundColor: Colors.green.shade700,
           ),
         );
-
-        // Return to the Trainings list, passing true to trigger a UI refresh
         Navigator.pop(context, true);
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.errorGeneratingTraining),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isGenerating = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
-    // Get the dynamic colors for the current slider values
-    final timeIntensityColor = _getTimeIntensityColor(_maxTime);
-    final daysIntensityColor = _getDaysIntensityColor(_maxDays);
+    final daysColor = _getIntensityColor(_maxDays, 1, 7, isDarkMode);
+    final timeColor = _getIntensityColor(_maxTime, 15, 180, isDarkMode);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.createTrainingTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.createTrainingTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Training Name Field
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.trainingName,
-                  prefixIcon: const Icon(Icons.fitness_center),
-                ),
-                validator: (value) => value == null || value.trim().isEmpty ? l10n.requiredField : null,
-              ),
-              const SizedBox(height: 32),
-
-              // Custom Segmented Control for Training Objective with SVGs
-              Text(
-                l10n.trainingObjective,
-                style: const TextStyle(fontSize: 16, color: Colors.black54),
-              ),
-              const SizedBox(height: 12),
-              Row(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: _buildObjectiveButton(
-                      value: 'hypertrophy',
-                      label: l10n.hypertrophy,
-                      assetPath: 'assets/icons/hypertrophy.svg',
+                  // Training Name
+                  TextFormField(
+                    controller: _nameController,
+                    enabled: !_isGenerating,
+                    decoration: InputDecoration(
+                      labelText: l10n.trainingName,
+                      prefixIcon: const Icon(Icons.fitness_center),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? l10n.requiredField
+                        : null,
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Objective Selection
+                  Text(
+                    l10n.trainingObjective,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: theme.hintColor,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildObjectiveButton(
-                      value: 'strength',
-                      label: l10n.strength,
-                      assetPath: 'assets/icons/strength.svg',
-                    ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildObjectiveButton(
+                          'hypertrophy',
+                          l10n.hypertrophy,
+                          'assets/icons/hypertrophy.svg',
+                          theme,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildObjectiveButton(
+                          'strength',
+                          l10n.strength,
+                          'assets/icons/strength.svg',
+                          theme,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildObjectiveButton(
+                          'endurance',
+                          l10n.endurance,
+                          'assets/icons/endurance.svg',
+                          theme,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildObjectiveButton(
-                      value: 'endurance',
-                      label: l10n.endurance,
-                      assetPath: 'assets/icons/endurance.svg',
+                  const SizedBox(height: 40),
+
+                  // Days Slider
+                  _buildSliderLabel(
+                    l10n.maxDaysLabel(_maxDays.toInt()),
+                    daysColor,
+                  ),
+                  Slider(
+                    value: _maxDays,
+                    min: 1,
+                    max: 7,
+                    divisions: 6,
+                    activeColor: daysColor,
+                    inactiveColor: daysColor.withValues(alpha: 0.2),
+                    onChanged: _isGenerating
+                        ? null
+                        : (v) => setState(() => _maxDays = v),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Time Slider
+                  _buildSliderLabel(
+                    l10n.maxTimeLabel(_maxTime.toInt()),
+                    timeColor,
+                  ),
+                  Slider(
+                    value: _maxTime,
+                    min: 15,
+                    max: 180,
+                    divisions: 11,
+                    activeColor: timeColor,
+                    inactiveColor: timeColor.withValues(alpha: 0.2),
+                    onChanged: _isGenerating
+                        ? null
+                        : (v) => setState(() => _maxTime = v),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Generate Button
+                  ElevatedButton(
+                    onPressed: _isGenerating ? null : _saveTraining,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      l10n.createButton,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 40),
-
-              // Max Days Slider (1 to 7) with dynamic coloring
-              Text(
-                l10n.maxDaysLabel(_maxDays.toInt()),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: daysIntensityColor,
-                ),
-              ),
-              Slider(
-                value: _maxDays,
-                min: 1,
-                max: 7,
-                divisions: 6,
-                activeColor: daysIntensityColor,
-                thumbColor: daysIntensityColor,
-                label: _maxDays.toInt().toString(),
-                onChanged: (value) {
-                  setState(() => _maxDays = value);
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Max Time Slider (15 to 180 minutes) with dynamic coloring
-              Text(
-                l10n.maxTimeLabel(_maxTime.toInt()),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: timeIntensityColor,
-                ),
-              ),
-              Slider(
-                value: _maxTime,
-                min: 15,
-                max: 180,
-                divisions: 11, // 15 min increments up to 180
-                activeColor: timeIntensityColor,
-                thumbColor: timeIntensityColor,
-                label: '${_maxTime.toInt()} min',
-                onChanged: (value) {
-                  setState(() => _maxTime = value);
-                },
-              ),
-              const SizedBox(height: 40),
-
-              // Submit Button
-              ElevatedButton(
-                onPressed: _saveTraining,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  l10n.createButton,
-                  style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
+            ),
           ),
+
+          // Loading Overlay
+          if (_isGenerating)
+            Container(
+              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.7),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      "Generando plan con IA...",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliderLabel(String text, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: color,
         ),
       ),
     );
   }
 
-  /// Constructs a custom toggle button for the training objective selection using SVG assets.
-  Widget _buildObjectiveButton({
-    required String value,
-    required String label,
-    required String assetPath,
-  }) {
+  Widget _buildObjectiveButton(
+    String value,
+    String label,
+    String assetPath,
+    ThemeData theme,
+  ) {
     final isSelected = _selectedObjective == value;
-    final color = isSelected ? Colors.blue : Colors.grey.shade600;
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Custom colors for Night Mode
+    final activeColor = isDarkMode
+        ? theme.colorScheme.primary
+        : Colors.blue.shade700;
+    final inactiveBorder = theme.dividerColor.withValues(alpha: 0.1);
 
     return InkWell(
-      onTap: () => setState(() => _selectedObjective = value),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      onTap: _isGenerating
+          ? null
+          : () => setState(() => _selectedObjective = value),
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? activeColor.withValues(alpha: 0.1)
+              : theme.cardColor,
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey.shade300,
+            color: isSelected ? activeColor : inactiveBorder,
             width: 2,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
             SvgPicture.asset(
               assetPath,
-              height: 28,
-              width: 28,
-              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              height: 32,
+              width: 32,
+              colorFilter: ColorFilter.mode(
+                isSelected ? activeColor : theme.hintColor,
+                BlendMode.srcIn,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+                color: isSelected ? activeColor : theme.hintColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 11,
               ),
             ),
           ],

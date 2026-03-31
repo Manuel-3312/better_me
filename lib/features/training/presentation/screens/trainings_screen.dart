@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Added SVG import
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import '../../../profile/domain/models/profile.dart';
 import '../../data/training_repository.dart';
 import '../../domain/models/training.dart';
 import 'create_training_screen.dart';
+import './training_detail_screen.dart';
 
 /// Screen responsible for displaying all training plans associated with a specific profile.
-/// It visually differentiates training routines by displaying their specific objective SVG icon.
+/// Refactored for modern high-precision color values and dynamic theme support.
 class TrainingsScreen extends StatefulWidget {
-  /// The active profile used to filter the training plans.
   final Profile profile;
 
   const TrainingsScreen({super.key, required this.profile});
@@ -19,10 +19,7 @@ class TrainingsScreen extends StatefulWidget {
 }
 
 class _TrainingsScreenState extends State<TrainingsScreen> {
-  /// Repository instance handling Training database operations.
   final TrainingRepository _repository = TrainingRepository();
-
-  /// Future that holds the list of training plans for the active profile.
   late Future<List<Training>> _trainingsFuture;
 
   @override
@@ -31,62 +28,53 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     _loadTrainings();
   }
 
-  /// Initiates the database query to fetch training plans associated with the current profile ID.
   void _loadTrainings() {
     setState(() {
       _trainingsFuture = _repository.getTrainingsByProfile(widget.profile.idProfile!);
     });
   }
 
-  /// Helper method to return the correct SVG icon based on the training objective.
-  /// Falls back to the hypertrophy icon if the objective is unrecognized.
-  Widget _buildObjectiveIcon(String objective) {
+  /// Renders the SVG icon with a theme-aware color filter.
+  Widget _buildObjectiveIcon(String objective, ThemeData theme) {
     String assetPath;
-
     switch (objective) {
-      case 'strength':
-        assetPath = 'assets/icons/strength.svg';
-        break;
-      case 'endurance':
-        assetPath = 'assets/icons/endurance.svg';
-        break;
-      case 'hypertrophy':
-      default:
-        assetPath = 'assets/icons/hypertrophy.svg';
-        break;
+      case 'strength': assetPath = 'assets/icons/strength.svg'; break;
+      case 'endurance': assetPath = 'assets/icons/endurance.svg'; break;
+      default: assetPath = 'assets/icons/hypertrophy.svg'; break;
     }
 
     return SvgPicture.asset(
       assetPath,
       width: 24,
       height: 24,
-      colorFilter: const ColorFilter.mode(Colors.blue, BlendMode.srcIn),
+      // blueAccent provides better contrast in Dark Mode than standard blue
+      colorFilter: const ColorFilter.mode(Colors.blueAccent, BlendMode.srcIn),
     );
   }
 
-  /// Helper method to translate the database objective key into localized text.
   String _getLocalizedObjective(String objective, AppLocalizations l10n) {
     switch (objective) {
-      case 'strength':
-        return l10n.strength;
-      case 'endurance':
-        return l10n.endurance;
-      case 'hypertrophy':
-      default:
-        return l10n.hypertrophy;
+      case 'strength': return l10n.strength;
+      case 'endurance': return l10n.endurance;
+      default: return l10n.hypertrophy;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(l10n.trainingsTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.trainingsTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
       body: FutureBuilder<List<Training>>(
@@ -94,20 +82,22 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          }
-          else if (snapshot.hasError) {
+          } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.fitness_center, size: 80, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.fitness_center,
+                    size: 80,
+                    color: theme.hintColor.withValues(alpha: 0.3),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     l10n.noTrainingsMessage,
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 16, color: theme.hintColor),
                   ),
                 ],
               ),
@@ -117,30 +107,61 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
           final trainings = snapshot.data!;
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: trainings.length,
             itemBuilder: (context, index) {
               final training = trainings[index];
-
-              // Get localized text for the objective
               final localizedObjective = _getLocalizedObjective(training.objective, l10n);
 
               return Card(
-                elevation: 2,
+                elevation: 0,
                 margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                    // Use the helper method to render the SVG dynamically
-                    child: _buildObjectiveIcon(training.objective),
+                color: theme.cardColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: theme.dividerColor.withValues(alpha: 0.1),
+                    width: 1,
                   ),
-                  title: Text(training.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('$localizedObjective • ${training.maxDays} days/week'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(12),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: _buildObjectiveIcon(training.objective, theme),
+                  ),
+                  title: Text(
+                    training.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      '$localizedObjective • ${training.maxDays} days/week',
+                      style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: theme.hintColor,
+                  ),
                   onTap: () {
-                    // Navigate to training details / days (Next Step)
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TrainingDetailScreen(
+                          training: training,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
                   },
                 ),
               );
@@ -162,8 +183,14 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
           }
         },
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(l10n.createTraining, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blue,
+        label: Text(
+          l10n.createTraining,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.blueAccent,
       ),
     );
   }

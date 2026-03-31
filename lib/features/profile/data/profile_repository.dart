@@ -1,4 +1,3 @@
-import 'package:sqflite/sqflite.dart';
 import '../../../core/database/database_helper.dart';
 import '../domain/models/profile.dart';
 
@@ -60,6 +59,21 @@ class ProfileRepository {
       'profile',
       where: 'id_profile = ?',
       whereArgs: [idProfile],
+    );
+  }
+
+  /// Updates the active diet and training plans for a specific profile.
+  Future<void> updateActivePlans(
+    int profileId,
+    int? dietId,
+    int? trainingId,
+  ) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.update(
+      'profile',
+      {'active_diet_id': dietId, 'active_training_id': trainingId},
+      where: 'id_profile = ?',
+      whereArgs: [profileId],
     );
   }
 }

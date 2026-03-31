@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'features/profile/presentation/screens/welcome_screen.dart';
+import 'features/profile/presentation/screens/animated_splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
-  // Desktop initialization for SQLite
+  // Desktop initialization for SQLite (Windows/Linux)
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -19,15 +22,26 @@ void main() async {
 }
 
 /// The root widget of the application.
-/// It manages the global state for the application's locale (language).
+/// Manages global state for localization and theme mode (Light/Dark).
 class BetterMeApp extends StatefulWidget {
   const BetterMeApp({super.key});
 
-  /// Allows descendant widgets to update the application's locale.
-  /// This is a common and efficient pattern in Flutter for global state toggles.
+  /// Updates the application's locale from any descendant widget.
   static void setLocale(BuildContext context, Locale newLocale) {
     _BetterMeAppState? state = context.findAncestorStateOfType<_BetterMeAppState>();
     state?.setLocale(newLocale);
+  }
+
+  /// Updates the application's theme mode globally.
+  static void setTheme(BuildContext context, ThemeMode newTheme) {
+    _BetterMeAppState? state = context.findAncestorStateOfType<_BetterMeAppState>();
+    state?.setTheme(newTheme);
+  }
+
+  /// Returns the current theme mode to help UI elements react to changes.
+  static ThemeMode getTheme(BuildContext context) {
+    _BetterMeAppState? state = context.findAncestorStateOfType<_BetterMeAppState>();
+    return state?._themeMode ?? ThemeMode.light;
   }
 
   @override
@@ -35,14 +49,19 @@ class BetterMeApp extends StatefulWidget {
 }
 
 class _BetterMeAppState extends State<BetterMeApp> {
-  // Default locale is Spanish
+  // Default states: Spanish locale and Light theme.
   Locale _locale = const Locale('es');
+  ThemeMode _themeMode = ThemeMode.light;
 
-  /// Updates the internal locale state and triggers a full app rebuild
-  /// to reflect the new language strings.
   void setLocale(Locale locale) {
     setState(() {
       _locale = locale;
+    });
+  }
+
+  void setTheme(ThemeMode themeMode) {
+    setState(() {
+      _themeMode = themeMode;
     });
   }
 
@@ -51,7 +70,32 @@ class _BetterMeAppState extends State<BetterMeApp> {
     return MaterialApp(
       title: 'BetterMe',
       debugShowCheckedModeBanner: false,
-      locale: _locale, // Bind the current locale state to the app
+
+      // Theme & Localization Configuration
+      locale: _locale,
+      themeMode: _themeMode,
+
+      // Light Theme Definition
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        colorSchemeSeed: Colors.green,
+        scaffoldBackgroundColor: Colors.grey.shade50,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+        ),
+      ),
+
+      // Dark Theme Definition
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorSchemeSeed: Colors.green,
+        scaffoldBackgroundColor: const Color(0xFF121212), // Deep grey for Dark Mode
+      ),
+
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -62,8 +106,9 @@ class _BetterMeAppState extends State<BetterMeApp> {
         Locale('es'),
         Locale('en'),
       ],
-      // The app always boots directly to the Welcome Screen
-      home: const WelcomeScreen(),
+
+      // THE ENTRY POINT: Now starts with the sequential animation sequence.
+      home: const AnimatedSplashScreen(),
     );
   }
 }
