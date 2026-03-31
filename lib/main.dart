@@ -1,47 +1,61 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import for persistence
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'features/profile/presentation/screens/welcome_screen.dart';
-import 'features/profile/presentation/screens/animated_splash_screen.dart';
+import 'package:better_me/features/profile/presentation/screens/animated_splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
-  // Desktop initialization for SQLite (Windows/Linux)
+  // Load the saved theme preference before the app runs
+  final prefs = await SharedPreferences.getInstance();
+  final String? savedTheme = prefs.getString('theme_mode');
+
+  // Convert the saved string back to ThemeMode, default to Dark if null
+  ThemeMode initialTheme;
+  if (savedTheme == 'light') {
+    initialTheme = ThemeMode.light;
+  } else if (savedTheme == 'dark') {
+    initialTheme = ThemeMode.dark;
+  } else {
+    initialTheme = ThemeMode.dark; // Default to Dark Mode as requested
+  }
+
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
-  runApp(const BetterMeApp());
+  runApp(BetterMeApp(initialTheme: initialTheme));
 }
 
-/// The root widget of the application.
-/// Manages global state for localization and theme mode (Light/Dark).
+/// The root widget of the application with theme persistence.
 class BetterMeApp extends StatefulWidget {
-  const BetterMeApp({super.key});
+  final ThemeMode initialTheme;
 
-  /// Updates the application's locale from any descendant widget.
+  const BetterMeApp({super.key, required this.initialTheme});
+
   static void setLocale(BuildContext context, Locale newLocale) {
-    _BetterMeAppState? state = context.findAncestorStateOfType<_BetterMeAppState>();
+    _BetterMeAppState? state = context
+        .findAncestorStateOfType<_BetterMeAppState>();
     state?.setLocale(newLocale);
   }
 
-  /// Updates the application's theme mode globally.
   static void setTheme(BuildContext context, ThemeMode newTheme) {
-    _BetterMeAppState? state = context.findAncestorStateOfType<_BetterMeAppState>();
+    _BetterMeAppState? state = context
+        .findAncestorStateOfType<_BetterMeAppState>();
     state?.setTheme(newTheme);
   }
 
-  /// Returns the current theme mode to help UI elements react to changes.
   static ThemeMode getTheme(BuildContext context) {
-    _BetterMeAppState? state = context.findAncestorStateOfType<_BetterMeAppState>();
-    return state?._themeMode ?? ThemeMode.light;
+    _BetterMeAppState? state = context
+        .findAncestorStateOfType<_BetterMeAppState>();
+    return state?._themeMode ?? ThemeMode.dark;
   }
 
   @override
@@ -49,9 +63,15 @@ class BetterMeApp extends StatefulWidget {
 }
 
 class _BetterMeAppState extends State<BetterMeApp> {
-  // Default states: Spanish locale and Light theme.
+  late ThemeMode _themeMode;
   Locale _locale = const Locale('es');
-  ThemeMode _themeMode = ThemeMode.light;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with the value loaded in main()
+    _themeMode = widget.initialTheme;
+  }
 
   void setLocale(Locale locale) {
     setState(() {
@@ -59,10 +79,18 @@ class _BetterMeAppState extends State<BetterMeApp> {
     });
   }
 
-  void setTheme(ThemeMode themeMode) {
+  /// Updates the theme mode and saves the choice to SharedPreferences.
+  void setTheme(ThemeMode themeMode) async {
     setState(() {
       _themeMode = themeMode;
     });
+
+    // Persist the choice
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'theme_mode',
+      themeMode.name,
+    ); // Saves 'light' or 'dark'
   }
 
   @override
@@ -70,8 +98,6 @@ class _BetterMeAppState extends State<BetterMeApp> {
     return MaterialApp(
       title: 'BetterMe',
       debugShowCheckedModeBanner: false,
-
-      // Theme & Localization Configuration
       locale: _locale,
       themeMode: _themeMode,
 
@@ -93,7 +119,7 @@ class _BetterMeAppState extends State<BetterMeApp> {
         useMaterial3: true,
         brightness: Brightness.dark,
         colorSchemeSeed: Colors.green,
-        scaffoldBackgroundColor: const Color(0xFF121212), // Deep grey for Dark Mode
+        scaffoldBackgroundColor: const Color(0xFF121212),
       ),
 
       localizationsDelegates: const [
@@ -102,12 +128,7 @@ class _BetterMeAppState extends State<BetterMeApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('es'),
-        Locale('en'),
-      ],
-
-      // THE ENTRY POINT: Now starts with the sequential animation sequence.
+      supportedLocales: const [Locale('es'), Locale('en')],
       home: const AnimatedSplashScreen(),
     );
   }

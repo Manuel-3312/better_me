@@ -14,7 +14,8 @@ class AnimatedSplashScreen extends StatefulWidget {
   State<AnimatedSplashScreen> createState() => _AnimatedSplashScreenState();
 }
 
-class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> with SingleTickerProviderStateMixin {
+class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _drawingAnimation;
   late Animation<double> _starFadeAnimation;
@@ -46,15 +47,22 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> with Single
       ),
     );
 
-    _starScaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: 1.2), weight: 70),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.2, end: 1.0), weight: 30),
-    ]).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.7, 0.9, curve: Curves.elasticOut),
-      ),
-    );
+    _starScaleAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 0.0, end: 1.2),
+            weight: 70,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.2, end: 1.0),
+            weight: 30,
+          ),
+        ]).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.7, 0.9, curve: Curves.elasticOut),
+          ),
+        );
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -68,20 +76,49 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> with Single
   }
 
   /// Handles the upward swipe gesture to transition to the Profile Selection.
+  /// Handles the transition to the Profile Selection screen.
+  /// Implements a "Reveal" transition that mimics removing a physical cover.
   void _onSwipeUp(BuildContext context) {
     if (!_showWelcomeUI) return;
 
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
+        // 500ms provides a snappier, more "mechanical" feel for a cover removal
+        transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) => const ChooseProfileScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOutExpo;
 
-          final tween = Tween<Offset>(begin: begin, end: end).chain(CurveTween(curve: curve));
-          return SlideTransition(position: animation.drive(tween), child: child);
+          /// The 'easeOutQuart' curve mimics the physics of a fast-moving
+          /// object slowing down quickly once the "pull" is released.
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutQuart,
+          );
+
+          /// Vertical offset starting from the bottom (1.0) to the center (0.0).
+          final slideTween = Tween<Offset>(
+            begin: const Offset(0.0, 1.0),
+            end: Offset.zero,
+          ).animate(curvedAnimation);
+
+          return SlideTransition(
+            position: slideTween,
+            child: Container(
+              /// Adding a subtle shadow at the top of the incoming screen
+              /// enhances the "layer" effect, making it look like a physical cover.
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: child,
+            ),
+          );
         },
       ),
     );
@@ -207,16 +244,13 @@ class _LanguageDropdown extends StatelessWidget {
           icon: const Icon(Icons.translate, color: Color(0xFF0052FF), size: 18),
           dropdownColor: const Color(0xFF000814),
           borderRadius: BorderRadius.circular(16),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
           items: const [
-            DropdownMenuItem(
-              value: 'es',
-              child: Text('🇪🇸 Español'),
-            ),
-            DropdownMenuItem(
-              value: 'en',
-              child: Text('🇬🇧 English'),
-            ),
+            DropdownMenuItem(value: 'es', child: Text('🇪🇸 Español')),
+            DropdownMenuItem(value: 'en', child: Text('🇬🇧 English')),
           ],
           onChanged: (String? newLocale) {
             if (newLocale != null) {
@@ -270,7 +304,10 @@ class SvgLogoPainter extends CustomPainter {
 
     final ui.PathMetrics metrics = path.computeMetrics();
     for (final ui.PathMetric metric in metrics) {
-      final animatedPath = metric.extractPath(0.0, metric.length * drawingPercent.value);
+      final animatedPath = metric.extractPath(
+        0.0,
+        metric.length * drawingPercent.value,
+      );
       canvas.drawPath(animatedPath, neonPaint);
       canvas.drawPath(animatedPath, mainPaint);
     }
