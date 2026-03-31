@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Absolute imports for clarity and consistency
+// Profile Imports
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/profile/data/profile_repository.dart';
+
+// NEW: Weight Tracking Imports
+import 'package:better_me/features/profile/domain/models/weight_entry.dart';
+import 'package:better_me/features/profile/data/weight_repository.dart';
+
+// Other Screen Imports
 import 'package:better_me/features/home/presentation/screens/main_screen.dart';
 
 /// Screen responsible for both creating new profiles and editing existing ones.
 /// It dynamically adapts its UI and navigation logic based on the [profile] parameter.
 class CreateProfileScreen extends StatefulWidget {
-  /// Optional profile object. If provided, the form switches to "Edit Mode".
   final Profile? profile;
 
   const CreateProfileScreen({super.key, this.profile});
@@ -19,27 +25,22 @@ class CreateProfileScreen extends StatefulWidget {
 }
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
-  /// Global key used to validate the state of the form fields.
   final _formKey = GlobalKey<FormState>();
+  final _repository = ProfileRepository();
 
-  /// Repository instance handling SQLite database operations.
-  final ProfileRepository _repository = ProfileRepository();
+  // NEW: Weight repository instance
+  final _weightRepository = WeightRepository();
 
-  /// Controllers to manage and retrieve data from the text input fields.
   final _nameController = TextEditingController();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
 
-  /// Internal state variable for biological sex selection ('M' or 'F').
   String _selectedSex = 'M';
-
-  /// Internal state variable for the user's date of birth.
   DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
-    // If a profile was passed, pre-fill the form fields (Edit Mode)
     if (widget.profile != null) {
       _nameController.text = widget.profile!.name;
       _weightController.text = widget.profile!.weight.toString();
@@ -57,7 +58,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     super.dispose();
   }
 
-  /// Triggers a native DatePicker dialog to capture the user's birth date.
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -70,8 +70,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     }
   }
 
-  /// Validates form data and performs either an INSERT or UPDATE.
-  /// Navigation logic depends on whether the user is editing or creating a profile.
+  /// Validates form data, saves the profile to SQLite, and persists the session.
+  /// If it's a new profile, it also initializes the weight history with the starting weight.
   Future<void> _saveProfile() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -83,7 +83,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               l10n.selectDateWarning,
               style: const TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.redAccent,
           ),
         );
         return;
@@ -91,50 +91,64 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
       final isEditing = widget.profile != null;
 
-      // Prepare the profile object to be saved
       var profileToSave = Profile(
         idProfile: widget.profile?.idProfile,
         name: _nameController.text.trim(),
         sex: _selectedSex,
-        weight: double.parse(_weightController.text),
-        height: double.parse(_heightController.text),
+        weight: double.parse(_weightController.text.replaceFirst(',', '.')),
+        height: double.parse(_heightController.text.replaceFirst(',', '.')),
         birthDate: _selectedDate!,
       );
 
+      // Async gap starts here
       if (isEditing) {
         await _repository.updateProfile(profileToSave);
       } else {
-        // For new profiles, we capture the generated ID to enter the MainScreen immediately
         final newId = await _repository.createProfile(profileToSave);
         profileToSave = profileToSave.copyWith(idProfile: newId);
+
+        // Record the initial weight in history
+        await _weightRepository.addWeightEntry(WeightEntry(
+          idProfile: newId,
+          weight: profileToSave.weight,
+          date: DateTime.now(),
+        ));
       }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isEditing
-                  ? l10n.profileUpdatedSuccess
-                  : l10n.profileCreatedSuccess,
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
+      // Check if context is still valid after async operations
+      if (!mounted) return;
 
-        if (isEditing) {
-          // Return to the Profile Tab within MainScreen and trigger a data refresh
-          Navigator.pop(context, true);
-        } else {
-          // New profile: Enter the application directly with the fresh profile
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MainScreen(profile: profileToSave),
-            ),
-            (route) => false,
-          );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isEditing
+                ? l10n.profileUpdatedSuccess
+                : l10n.profileCreatedSuccess,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green.shade600,
+        ),
+      );
+
+      if (isEditing) {
+        Navigator.pop(context, true);
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+
+        if (profileToSave.idProfile != null) {
+          await prefs.setInt('last_profile_id', profileToSave.idProfile!);
         }
+
+        // Re-check mounted status before final navigation
+        if (!mounted) return;
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainScreen(profile: profileToSave),
+          ),
+              (route) => false,
+        );
       }
     }
   }
@@ -142,19 +156,17 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     final isEditing = widget.profile != null;
-    final screenTitle = isEditing
-        ? l10n.editProfileTitle
-        : l10n.createProfileTitle;
+    final screenTitle = isEditing ? l10n.editProfileTitle : l10n.createProfileTitle;
     final buttonText = isEditing ? l10n.updateButton : l10n.createButton;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          screenTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(screenTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -168,18 +180,16 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.fullName,
                   prefixIcon: const Icon(Icons.person_outline),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? l10n.requiredField
-                    : null,
+                validator: (value) => value == null || value.trim().isEmpty ? l10n.requiredField : null,
               ),
               const SizedBox(height: 24),
-
               Text(
                 l10n.sex,
-                style: const TextStyle(fontSize: 16, color: Colors.black54),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.hintColor),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -187,6 +197,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       value: 'M',
                       label: l10n.male,
                       icon: Icons.male,
+                      theme: theme,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -195,12 +206,12 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       value: 'F',
                       label: l10n.female,
                       icon: Icons.female,
+                      theme: theme,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-
               Row(
                 children: [
                   Expanded(
@@ -209,13 +220,10 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       decoration: InputDecoration(
                         labelText: l10n.weight,
                         suffixText: 'kg',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (value) => value == null || value.isEmpty
-                          ? l10n.requiredField
-                          : null,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -225,19 +233,15 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       decoration: InputDecoration(
                         labelText: l10n.height,
                         suffixText: 'cm',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (value) => value == null || value.isEmpty
-                          ? l10n.requiredField
-                          : null,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) => value == null || value.isEmpty ? l10n.requiredField : null,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-
               OutlinedButton.icon(
                 onPressed: () => _selectDate(context),
                 icon: const Icon(Icons.calendar_today),
@@ -245,29 +249,27 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   _selectedDate == null
                       ? l10n.birthDate
                       : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                 ),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 40),
-
               ElevatedButton(
                 onPressed: _saveProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
                 child: Text(
                   buttonText,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -281,19 +283,22 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     required String value,
     required String label,
     required IconData icon,
+    required ThemeData theme,
   }) {
     final isSelected = _selectedSex == value;
+    final activeColor = theme.colorScheme.primary;
+    final inactiveColor = theme.hintColor;
+
     return InkWell(
       onTap: () => setState(() => _selectedSex = value),
       borderRadius: BorderRadius.circular(16),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.green.withValues(alpha: 0.1)
-              : Colors.transparent,
+          color: isSelected ? activeColor.withValues(alpha: 0.15) : theme.cardColor,
           border: Border.all(
-            color: isSelected ? Colors.green : Colors.grey.shade300,
+            color: isSelected ? activeColor : theme.dividerColor.withValues(alpha: 0.1),
             width: 2,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -302,15 +307,15 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.green : Colors.grey.shade600,
+              color: isSelected ? activeColor : inactiveColor,
               size: 32,
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.green : Colors.grey.shade600,
-                fontWeight: FontWeight.bold,
+                color: isSelected ? activeColor : inactiveColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],

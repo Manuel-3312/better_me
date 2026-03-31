@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @headerWelcome.
   ///
   /// In es, this message translates to:
-  /// **'--- PANTALLA BIENVENIDA ---'**
+  /// **'--- PANTALLA DE BIENVENIDA ---'**
   String get headerWelcome;
 
   /// No description provided for @welcomeTitle.
@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @swipeToStart.
   ///
   /// In es, this message translates to:
-  /// **'Desliza hacia arriba para comenzar'**
+  /// **'Desliza hacia arriba para empezar'**
   String get swipeToStart;
 
   /// No description provided for @changeLanguage.
@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @createProfileTitle.
   ///
   /// In es, this message translates to:
-  /// **'Agrega tus datos'**
+  /// **'Añade tus datos'**
   String get createProfileTitle;
 
   /// No description provided for @editProfileTitle.
@@ -197,7 +197,7 @@ abstract class AppLocalizations {
   /// No description provided for @requiredField.
   ///
   /// In es, this message translates to:
-  /// **'Campo requerido'**
+  /// **'Campo obligatorio'**
   String get requiredField;
 
   /// No description provided for @selectDateWarning.
@@ -209,13 +209,13 @@ abstract class AppLocalizations {
   /// No description provided for @male.
   ///
   /// In es, this message translates to:
-  /// **'Masculino'**
+  /// **'Hombre'**
   String get male;
 
   /// No description provided for @female.
   ///
   /// In es, this message translates to:
-  /// **'Femenino'**
+  /// **'Mujer'**
   String get female;
 
   /// No description provided for @headerSelection.
@@ -239,13 +239,13 @@ abstract class AppLocalizations {
   /// No description provided for @noProfilesMessage.
   ///
   /// In es, this message translates to:
-  /// **'No hay perfiles aún. ¡Crea el primero!'**
+  /// **'Aún no hay perfiles. ¡Crea el primero!'**
   String get noProfilesMessage;
 
   /// No description provided for @profileSelected.
   ///
   /// In es, this message translates to:
-  /// **'Seleccionaste a {profileName}'**
+  /// **'Has seleccionado a {profileName}'**
   String profileSelected(String profileName);
 
   /// No description provided for @deleteProfileTitle.
@@ -257,7 +257,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteProfileContent.
   ///
   /// In es, this message translates to:
-  /// **'¿Estás seguro de que deseas eliminar a {profileName}?'**
+  /// **'¿Estás seguro de que quieres eliminar a {profileName}?'**
   String deleteProfileContent(String profileName);
 
   /// No description provided for @cancel.
@@ -287,13 +287,13 @@ abstract class AppLocalizations {
   /// No description provided for @headerDashboard.
   ///
   /// In es, this message translates to:
-  /// **'--- PANEL DE CONTROL ---'**
+  /// **'--- DASHBOARD ---'**
   String get headerDashboard;
 
   /// No description provided for @dashboardTitle.
   ///
   /// In es, this message translates to:
-  /// **'Resumen'**
+  /// **'Panel de Control'**
   String get dashboardTitle;
 
   /// No description provided for @welcomeUser.
@@ -323,7 +323,7 @@ abstract class AppLocalizations {
   /// No description provided for @myWorkouts.
   ///
   /// In es, this message translates to:
-  /// **'Entrenamientos'**
+  /// **'Rutinas'**
   String get myWorkouts;
 
   /// No description provided for @editProfile.
@@ -347,7 +347,7 @@ abstract class AppLocalizations {
   /// No description provided for @noDietsMessage.
   ///
   /// In es, this message translates to:
-  /// **'Aún no tienes dietas. ¡Crea la primera!'**
+  /// **'Aún no hay dietas. ¡Crea la primera!'**
   String get noDietsMessage;
 
   /// No description provided for @createDiet.
@@ -431,7 +431,7 @@ abstract class AppLocalizations {
   /// No description provided for @headerTrainings.
   ///
   /// In es, this message translates to:
-  /// **'--- MÓDULO DE ENTRENAMIENTOS ---'**
+  /// **'--- MÓDULO DE ENTRENAMIENTO ---'**
   String get headerTrainings;
 
   /// No description provided for @trainingsTitle.
@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @noTrainingsMessage.
   ///
   /// In es, this message translates to:
-  /// **'Aún no tienes rutinas. ¡Crea la primera!'**
+  /// **'Aún no hay rutinas. ¡Crea la primera!'**
   String get noTrainingsMessage;
 
   /// No description provided for @createTraining.
@@ -515,7 +515,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorGeneratingDiet.
   ///
   /// In es, this message translates to:
-  /// **'No se pudo generar la dieta. Por favor, inténtalo de nuevo.'**
+  /// **'Error al generar la dieta. Inténtalo de nuevo.'**
   String get errorGeneratingDiet;
 
   /// No description provided for @retry.
@@ -551,7 +551,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorGeneratingTraining.
   ///
   /// In es, this message translates to:
-  /// **'No se pudo generar la rutina. Por favor, inténtalo de nuevo.'**
+  /// **'Error al generar la rutina. Inténtalo de nuevo.'**
   String get errorGeneratingTraining;
 
   /// No description provided for @sets.
@@ -611,7 +611,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupPlanDescription.
   ///
   /// In es, this message translates to:
-  /// **'Selecciona qué dieta y entrenamiento quieres seguir día a día.'**
+  /// **'Selecciona qué dieta y rutina de entrenamiento quieres seguir día a día.'**
   String get setupPlanDescription;
 
   /// No description provided for @activeDiet.
@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// No description provided for @selectTrainingHint.
   ///
   /// In es, this message translates to:
-  /// **'Selecciona un entrenamiento'**
+  /// **'Selecciona una rutina'**
   String get selectTrainingHint;
 
   /// No description provided for @saveAndStart.
@@ -653,7 +653,7 @@ abstract class AppLocalizations {
   /// No description provided for @noDietDataForToday.
   ///
   /// In es, this message translates to:
-  /// **'No hay datos de dieta para hoy.'**
+  /// **'Sin datos de dieta para hoy.'**
   String get noDietDataForToday;
 
   /// No description provided for @yourTraining.
@@ -715,6 +715,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Domingo'**
   String get sunday;
+
+  /// No description provided for @generatingAiPlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Generando plan con IA...'**
+  String get generatingAiPlan;
+
+  /// No description provided for @daysPerWeek.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1 {1 día/semana} other {{count} días/semana}}'**
+  String daysPerWeek(int count);
+
+  /// No description provided for @cookingAiPlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Cocinando tu plan con IA...'**
+  String get cookingAiPlan;
+
+  /// No description provided for @logWeightTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar peso actual'**
+  String get logWeightTitle;
+
+  /// No description provided for @invalidWeight.
+  ///
+  /// In es, this message translates to:
+  /// **'Por favor, introduce un peso válido'**
+  String get invalidWeight;
+
+  /// No description provided for @weightHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial de peso'**
+  String get weightHistory;
+
+  /// No description provided for @nightMode.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo Noche'**
+  String get nightMode;
+
+  /// No description provided for @switchProfile.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar Perfil'**
+  String get switchProfile;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Perfil'**
+  String get profileTitle;
+
+  /// No description provided for @save.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get save;
 }
 
 class _AppLocalizationsDelegate

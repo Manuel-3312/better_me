@@ -38,9 +38,15 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
   Widget _buildObjectiveIcon(String objective, ThemeData theme) {
     String assetPath;
     switch (objective) {
-      case 'strength': assetPath = 'assets/icons/strength.svg'; break;
-      case 'endurance': assetPath = 'assets/icons/endurance.svg'; break;
-      default: assetPath = 'assets/icons/hypertrophy.svg'; break;
+      case 'strength':
+        assetPath = 'assets/icons/strength.svg';
+        break;
+      case 'endurance':
+        assetPath = 'assets/icons/endurance.svg';
+        break;
+      default:
+        assetPath = 'assets/icons/hypertrophy.svg';
+        break;
     }
 
     return SvgPicture.asset(
@@ -141,7 +147,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      '$localizedObjective • ${training.maxDays} days/week',
+                      '$localizedObjective • ${l10n.daysPerWeek(training.maxDays)}',
                       style: TextStyle(
                         color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                       ),

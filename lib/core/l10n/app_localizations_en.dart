@@ -319,23 +319,61 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get monday => 'Lunes';
+  String get monday => 'Monday';
 
   @override
-  String get tuesday => 'Martes';
+  String get tuesday => 'Tuesday';
 
   @override
-  String get wednesday => 'Miércoles';
+  String get wednesday => 'Wednesday';
 
   @override
-  String get thursday => 'Jueves';
+  String get thursday => 'Thursday';
 
   @override
-  String get friday => 'Viernes';
+  String get friday => 'Friday';
 
   @override
-  String get saturday => 'Sábado';
+  String get saturday => 'Saturday';
 
   @override
-  String get sunday => 'Domingo';
+  String get sunday => 'Sunday';
+
+  @override
+  String get generatingAiPlan => 'Generating AI plan...';
+
+  @override
+  String daysPerWeek(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days/week',
+      one: '1 day/week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookingAiPlan => 'Cooking your AI plan...';
+
+  @override
+  String get logWeightTitle => 'Log current weight';
+
+  @override
+  String get invalidWeight => 'Please enter a valid weight';
+
+  @override
+  String get weightHistory => 'Weight history';
+
+  @override
+  String get nightMode => 'Night Mode';
+
+  @override
+  String get switchProfile => 'Switch Profile';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get save => 'Save';
 }

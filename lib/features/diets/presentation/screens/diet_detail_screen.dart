@@ -5,10 +5,10 @@ import 'package:better_me/core/l10n/app_localizations.dart';
 // Absolute imports
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
-import 'package:better_me/features/diets/domain/models/diet_plan.dart';
+import 'package:better_me/features/diets/domain/models/ai_diet_plan.dart';
 
 /// Screen responsible for displaying an already generated diet plan.
-/// Refactored for modern theme support and high-precision color values.
+/// Refactored to use the AiDietPlan DTO and modern theme support.
 class DietDetailScreen extends StatefulWidget {
   final Diet diet;
   final Profile profile;
@@ -24,7 +24,7 @@ class DietDetailScreen extends StatefulWidget {
 }
 
 class _DietDetailScreenState extends State<DietDetailScreen> {
-  DietPlan? _dietPlan;
+  AiDietPlan? _dietPlan;
   bool _hasError = false;
   late final PageController _pageController;
   int _currentPage = 0;
@@ -42,6 +42,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     super.dispose();
   }
 
+  /// Parses the AI-generated JSON content using the secure AiDietPlan model.
   void _loadSavedDiet() {
     try {
       final jsonString = widget.diet.generatedContent;
@@ -50,7 +51,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
       }
       final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
       setState(() {
-        _dietPlan = DietPlan.fromJson(jsonMap);
+        _dietPlan = AiDietPlan.fromJson(jsonMap);
       });
     } catch (e) {
       debugPrint('--- ERROR PARSING SAVED DIET --- $e');
@@ -99,11 +100,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.redAccent,
-              ),
+              const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
               const SizedBox(height: 16),
               Text(
                 l10n.errorGeneratingDiet,
@@ -122,10 +119,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
 
     return Column(
       children: [
-        // 1. Dashboard Summary (Header)
-        _buildDashboardSummary(context, theme),
-
-        // 2. Swipeable Cards
+        _buildDashboardSummary(context, theme, l10n),
         Expanded(
           child: PageView.builder(
             controller: _pageController,
@@ -136,15 +130,13 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
             },
           ),
         ),
-
-        // 3. Page Indicator
         _buildPageIndicator(theme),
         const SizedBox(height: 24),
       ],
     );
   }
 
-  Widget _buildDashboardSummary(BuildContext context, ThemeData theme) {
+  Widget _buildDashboardSummary(BuildContext context, ThemeData theme, AppLocalizations l10n) {
     final hasAllergies = widget.diet.allergies?.isNotEmpty ?? false;
 
     return Container(
@@ -158,11 +150,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
               color: Colors.orangeAccent.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              _getObjectiveIcon(),
-              size: 32,
-              color: Colors.orangeAccent,
-            ),
+            child: Icon(_getObjectiveIcon(), size: 32, color: Colors.orangeAccent),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -184,14 +172,14 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                     _buildQuickStat(
                       theme,
                       Icons.calendar_month,
-                      '${_dietPlan?.days.length ?? 0} Days',
+                      l10n.daysPerWeek(_dietPlan?.days.length ?? 0).replaceFirst('/', ' '),
                     ),
                     if (hasAllergies) ...[
                       const SizedBox(width: 16),
                       _buildQuickStat(
                         theme,
                         Icons.warning_amber_rounded,
-                        'Restrictions',
+                        l10n.dietAllergies, // Usamos clave de traducción
                         color: Colors.redAccent,
                       ),
                     ],
@@ -205,27 +193,15 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     );
   }
 
-  Widget _buildQuickStat(
-    ThemeData theme,
-    IconData icon,
-    String text, {
-    Color? color,
-  }) {
-    final displayColor =
-        color ??
-        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ??
-        Colors.grey;
+  Widget _buildQuickStat(ThemeData theme, IconData icon, String text, {Color? color}) {
+    final displayColor = color ?? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ?? Colors.grey;
     return Row(
       children: [
         Icon(icon, size: 16, color: displayColor),
         const SizedBox(width: 4),
         Text(
           text,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: displayColor,
-          ),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: displayColor),
         ),
       ],
     );
@@ -247,10 +223,9 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Card Header Gradient
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
                   begin: Alignment.topLeft,
@@ -262,36 +237,24 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      _getWeekdayName(day.dayNumber, l10n),
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      _getWeekdayName(day.day, l10n),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${day.totalCalories} ${l10n.kcal}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Meals List
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.all(24),
@@ -300,8 +263,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                   height: 48,
                   color: theme.dividerColor.withValues(alpha: 0.1),
                 ),
-                itemBuilder: (context, index) =>
-                    _buildMealItem(day.meals[index], l10n, theme),
+                itemBuilder: (context, index) => _buildMealItem(day.meals[index], l10n, theme),
               ),
             ),
           ],
@@ -310,7 +272,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     );
   }
 
-  Widget _buildMealItem(Meal meal, AppLocalizations l10n, ThemeData theme) {
+  Widget _buildMealItem(DietMeal meal, AppLocalizations l10n, ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -341,21 +303,14 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                   ),
                   Text(
                     '${meal.calories} ${l10n.kcal}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orangeAccent,
-                    ),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orangeAccent),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Text(
                 meal.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -363,9 +318,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,
-                  color: theme.textTheme.bodyMedium?.color?.withValues(
-                    alpha: 0.8,
-                  ),
+                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -376,22 +329,18 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
   }
 
   Widget _buildPageIndicator(ThemeData theme) {
-    if (_dietPlan == null || _dietPlan!.days.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (_dietPlan == null || _dietPlan!.days.isEmpty) return const SizedBox.shrink();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         _dietPlan!.days.length,
-        (index) => AnimatedContainer(
+            (index) => AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 4.0),
           height: 6.0,
           width: _currentPage == index ? 24.0 : 6.0,
           decoration: BoxDecoration(
-            color: _currentPage == index
-                ? Colors.orangeAccent
-                : theme.dividerColor.withValues(alpha: 0.2),
+            color: _currentPage == index ? Colors.orangeAccent : theme.dividerColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(3.0),
           ),
         ),
@@ -402,22 +351,14 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
   String _getWeekdayName(int dayNumber, AppLocalizations l10n) {
     final int normalizedDay = ((dayNumber - 1) % 7) + 1;
     switch (normalizedDay) {
-      case 1:
-        return l10n.monday;
-      case 2:
-        return l10n.tuesday;
-      case 3:
-        return l10n.wednesday;
-      case 4:
-        return l10n.thursday;
-      case 5:
-        return l10n.friday;
-      case 6:
-        return l10n.saturday;
-      case 7:
-        return l10n.sunday;
-      default:
-        return '';
+      case 1: return l10n.monday;
+      case 2: return l10n.tuesday;
+      case 3: return l10n.wednesday;
+      case 4: return l10n.thursday;
+      case 5: return l10n.friday;
+      case 6: return l10n.saturday;
+      case 7: return l10n.sunday;
+      default: return '';
     }
   }
 }

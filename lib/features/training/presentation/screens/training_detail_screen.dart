@@ -6,7 +6,7 @@ import 'package:better_me/core/l10n/app_localizations.dart';
 // Absolute imports
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
-import 'package:better_me/features/training/domain/models/training_plan.dart';
+import 'package:better_me/features/training/domain/models/ai_training_plan.dart';
 
 /// Screen responsible for displaying an already generated training plan.
 /// Features a night-mode optimized UI with deep gradients and high-precision colors.
@@ -25,7 +25,7 @@ class TrainingDetailScreen extends StatefulWidget {
 }
 
 class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
-  TrainingPlan? _trainingPlan;
+  AiTrainingPlan? _trainingPlan;
   bool _hasError = false;
 
   @override
@@ -34,7 +34,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
     _loadSavedTraining();
   }
 
-  /// Parses the AI-generated JSON content from the local database.
+  /// Parses the AI-generated JSON content from the local database using the DTO.
   void _loadSavedTraining() {
     try {
       final jsonString = widget.training.generatedContent;
@@ -42,8 +42,9 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
         throw Exception('No generated content found.');
       }
       final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+
       setState(() {
-        _trainingPlan = TrainingPlan.fromJson(jsonMap);
+        _trainingPlan = AiTrainingPlan.fromJson(jsonMap);
       });
     } catch (e) {
       debugPrint('--- ERROR PARSING SAVED TRAINING --- $e');
@@ -56,6 +57,14 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
       case 'strength': return 'assets/icons/strength.svg';
       case 'endurance': return 'assets/icons/endurance.svg';
       default: return 'assets/icons/hypertrophy.svg';
+    }
+  }
+
+  String _getLocalizedObjective(String objective, AppLocalizations l10n) {
+    switch (objective) {
+      case 'strength': return l10n.strength;
+      case 'endurance': return l10n.endurance;
+      default: return l10n.hypertrophy;
     }
   }
 
@@ -103,7 +112,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
       length: _trainingPlan!.days.length,
       child: Column(
         children: [
-          _buildDashboardSummary(context, theme),
+          _buildDashboardSummary(context, theme, l10n),
 
           // Adaptive TabBar
           Container(
@@ -116,7 +125,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
               unselectedLabelColor: theme.hintColor,
               dividerColor: theme.dividerColor.withValues(alpha: 0.1),
               tabs: _trainingPlan!.days.map((day) {
-                return Tab(text: _getWeekdayName(day.dayNumber, l10n));
+                return Tab(text: _getWeekdayName(day.day, l10n));
               }).toList(),
             ),
           ),
@@ -133,7 +142,9 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
     );
   }
 
-  Widget _buildDashboardSummary(BuildContext context, ThemeData theme) {
+  Widget _buildDashboardSummary(BuildContext context, ThemeData theme, AppLocalizations l10n) {
+    final localizedObjective = _getLocalizedObjective(widget.training.objective, l10n);
+
     return Container(
       color: theme.scaffoldBackgroundColor,
       padding: const EdgeInsets.all(20.0),
@@ -158,7 +169,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.training.objective.toUpperCase(),
+                  localizedObjective.toUpperCase(),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -169,7 +180,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    _buildQuickStat(theme, Icons.calendar_month, '${widget.training.maxDays} days/wk'),
+                    _buildQuickStat(theme, Icons.calendar_month, l10n.daysPerWeek(widget.training.maxDays)),
                     const SizedBox(width: 16),
                     _buildQuickStat(theme, Icons.timer, '${widget.training.maxTime.toInt()} min'),
                   ],
@@ -196,7 +207,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
   }
 
   /// Builds the view for a single day.
-  /// The Day Banner is now significantly darker in Night Mode for better integration.
   Widget _buildDayView(TrainingDay day, BuildContext context, ThemeData theme) {
     final l10n = AppLocalizations.of(context)!;
     final isDarkMode = theme.brightness == Brightness.dark;
@@ -247,7 +257,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _getWeekdayName(day.dayNumber, l10n).toUpperCase(),
+                      _getWeekdayName(day.day, l10n).toUpperCase(),
                       style: TextStyle(
                         color: isDarkMode ? theme.hintColor : Colors.white.withValues(alpha: 0.7),
                         fontSize: 12,
@@ -275,7 +285,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
     );
   }
 
-  Widget _buildExerciseAccordion(Exercise exercise, AppLocalizations l10n, ThemeData theme) {
+  Widget _buildExerciseAccordion(TrainingExercise exercise, AppLocalizations l10n, ThemeData theme) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,

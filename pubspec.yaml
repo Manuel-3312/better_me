@@ -13,6 +13,7 @@ dependencies:
   # SQLite dependencies for Mobile and Desktop/Windows
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.0
+  fl_chart: ^0.70.0
 
   path: ^1.8.3
   flutter_localizations:

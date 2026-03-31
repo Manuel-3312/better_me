@@ -1,12 +1,21 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/main.dart';
-import 'choose_profile_screen.dart';
+
+// Repositories and Models
+import 'package:better_me/features/profile/data/profile_repository.dart';
+import 'package:better_me/features/profile/domain/models/profile.dart';
+
+// Screens
+import 'package:better_me/features/home/presentation/screens/main_screen.dart';
+import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
+import 'package:better_me/features/profile/presentation/screens/create_profile_screen.dart';
 
 /// A unified entry screen that combines a high-fidelity SVG animation
-/// with the core welcome interactions (language selection and swipe navigation).
+/// with intelligent routing based on database state and user session persistence.
 class AnimatedSplashScreen extends StatefulWidget {
   const AnimatedSplashScreen({super.key});
 
@@ -21,12 +30,19 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   late Animation<double> _starFadeAnimation;
   late Animation<double> _starScaleAnimation;
 
-  /// Controls the visibility of the interactive Welcome UI after the logo finishes.
   bool _showWelcomeUI = false;
+
+  /// Stores the last active profile if one is found in local storage.
+  Profile? _lastActiveProfile;
+
+  /// Tracks whether the local database contains any user profiles.
+  bool _hasProfiles = false;
 
   @override
   void initState() {
     super.initState();
+
+    _checkApplicationState();
 
     _controller = AnimationController(
       vsync: this,
@@ -75,28 +91,61 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
     _controller.forward();
   }
 
-  /// Handles the upward swipe gesture to transition to the Profile Selection.
-  /// Handles the transition to the Profile Selection screen.
-  /// Implements a "Reveal" transition that mimics removing a physical cover.
+  /// Determines the routing state by checking SharedPreferences and SQLite.
+  /// First checks for a saved session, fallback to checking total profile count.
+  Future<void> _checkApplicationState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastProfileId = prefs.getInt('last_profile_id');
+      final repository = ProfileRepository();
+
+      if (lastProfileId != null) {
+        _lastActiveProfile = await repository.getProfileById(lastProfileId);
+      }
+
+      // If no valid session was found, check if ANY profiles exist for fallback routing
+      if (_lastActiveProfile == null) {
+        final profiles = await repository.getAllProfiles();
+        if (mounted) {
+          setState(() {
+            _hasProfiles = profiles.isNotEmpty;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking application state: $e');
+      _hasProfiles = false;
+    }
+  }
+
+  /// Handles the upward swipe gesture and routes the user intelligently.
   void _onSwipeUp(BuildContext context) {
     if (!_showWelcomeUI) return;
+
+    Widget targetScreen;
+
+    if (_lastActiveProfile != null) {
+      // Route 1: Direct to Home with the saved profile
+      targetScreen = MainScreen(profile: _lastActiveProfile!);
+    } else if (_hasProfiles) {
+      // Route 2: Choose profile screen
+      targetScreen = const ChooseProfileScreen();
+    } else {
+      // Route 3: Force creation of a new profile
+      targetScreen = const CreateProfileScreen();
+    }
 
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        // 500ms provides a snappier, more "mechanical" feel for a cover removal
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => const ChooseProfileScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) => targetScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-
-          /// The 'easeOutQuart' curve mimics the physics of a fast-moving
-          /// object slowing down quickly once the "pull" is released.
           final curvedAnimation = CurvedAnimation(
             parent: animation,
             curve: Curves.easeOutQuart,
           );
 
-          /// Vertical offset starting from the bottom (1.0) to the center (0.0).
           final slideTween = Tween<Offset>(
             begin: const Offset(0.0, 1.0),
             end: Offset.zero,
@@ -105,8 +154,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
           return SlideTransition(
             position: slideTween,
             child: Container(
-              /// Adding a subtle shadow at the top of the incoming screen
-              /// enhances the "layer" effect, making it look like a physical cover.
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
@@ -145,7 +192,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
         body: SafeArea(
           child: Stack(
             children: [
-              // 1. The Animated Logo Layer
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -161,8 +207,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                         ),
                       ),
                     ),
-
-                    // 2. Welcome Text (Fades in after logo)
                     AnimatedOpacity(
                       opacity: _showWelcomeUI ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 800),
@@ -185,8 +229,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                   ],
                 ),
               ),
-
-              // 3. Swipe Instructions (Anchored to Bottom)
               Positioned(
                 bottom: 40,
                 left: 0,
@@ -223,7 +265,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   }
 }
 
-/// A styled dropdown for language selection optimized for a dark background.
 class _LanguageDropdown extends StatelessWidget {
   const _LanguageDropdown();
 
@@ -263,7 +304,6 @@ class _LanguageDropdown extends StatelessWidget {
   }
 }
 
-/// CustomPainter that renders the sequential SVG tracing animation.
 class SvgLogoPainter extends CustomPainter {
   final Animation<double> drawingPercent;
   final Animation<double> starOpacity;

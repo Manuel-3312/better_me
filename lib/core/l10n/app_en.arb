@@ -1,6 +1,5 @@
 {
   "@@locale": "en",
-
   "headerWelcome": "--- WELCOME SCREEN ---",
   "welcomeTitle": "Welcome to BetterMe",
   "swipeToStart": "Swipe up to start",
@@ -30,14 +29,18 @@
   "profileSelected": "You selected {profileName}",
   "@profileSelected": {
     "placeholders": {
-      "profileName": { "type": "String" }
+      "profileName": {
+        "type": "String"
+      }
     }
   },
   "deleteProfileTitle": "Delete profile",
   "deleteProfileContent": "Are you sure you want to delete {profileName}?",
   "@deleteProfileContent": {
     "placeholders": {
-      "profileName": { "type": "String" }
+      "profileName": {
+        "type": "String"
+      }
     }
   },
   "cancel": "Cancel",
@@ -50,24 +53,33 @@
   "welcomeUser": "Hello, {name}!",
   "@welcomeUser": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "ageLabel": "Age: {years} years",
   "@ageLabel": {
     "placeholders": {
-      "years": { "type": "int" }
+      "years": {
+        "type": "int"
+      }
     }
   },
   "bmiLabel": "BMI: {value}",
   "@bmiLabel": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "myDiets": "Diets",
   "myWorkouts": "Workouts",
   "editProfile": "Edit profile",
+  "nightMode": "Night Mode",
+  "switchProfile": "Switch Profile",
+  "profileTitle": "Profile",
 
   "headerDiets": "--- DIETS MODULE ---",
   "dietsTitle": "Diets",
@@ -99,17 +111,20 @@
   "maxDaysLabel": "Days per week: {days}",
   "@maxDaysLabel": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "maxTimeLabel": "Time per session: {minutes} min",
   "@maxTimeLabel": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "trainingCreatedSuccess": "Routine created successfully!",
-
   "generatingDiet": "Generating your personalized plan...",
   "errorGeneratingDiet": "Failed to generate the diet plan. Please try again.",
   "retry": "Retry",
@@ -117,10 +132,13 @@
   "dayNumber": "Day {number}",
   "@dayNumber": {
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "kcal": "kcal",
+
   "generatingTraining": "Designing your ideal routine...",
   "errorGeneratingTraining": "Failed to generate the routine. Please try again.",
   "sets": "Sets",
@@ -152,11 +170,28 @@
     }
   },
 
-  "monday": "Lunes",
-  "tuesday": "Martes",
-  "wednesday": "Miércoles",
-  "thursday": "Jueves",
-  "friday": "Viernes",
-  "saturday": "Sábado",
-  "sunday": "Domingo"
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+
+  "generatingAiPlan": "Generating AI plan...",
+  "daysPerWeek": "{count, plural, =1 {1 day/week} other {{count} days/week}}",
+  "@daysPerWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingAiPlan": "Cooking your AI plan...",
+
+  "headerWeight": "--- WEIGHT TRACKING ---",
+  "logWeightTitle": "Log current weight",
+  "invalidWeight": "Please enter a valid weight",
+  "weightHistory": "Weight history",
+  "save": "Save"
 }

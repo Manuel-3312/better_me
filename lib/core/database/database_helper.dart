@@ -144,6 +144,16 @@ class DatabaseHelper {
         FOREIGN KEY (day_name) REFERENCES week_day (name) ON DELETE CASCADE
       )
     ''');
+    // 9. WEIGHT_HISTORY TABLE
+    await db.execute('''
+      CREATE TABLE weight_history (
+        id_weight INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_profile INTEGER NOT NULL,
+        weight REAL NOT NULL,
+        date TEXT NOT NULL,
+        FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
+      )
+    ''');
 
     // Seed the database with default days of the week upon creation
     await _insertDefaultDays(db);

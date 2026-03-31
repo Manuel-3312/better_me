@@ -9,13 +9,13 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get headerWelcome => '--- PANTALLA BIENVENIDA ---';
+  String get headerWelcome => '--- PANTALLA DE BIENVENIDA ---';
 
   @override
   String get welcomeTitle => 'Bienvenido a BetterMe';
 
   @override
-  String get swipeToStart => 'Desliza hacia arriba para comenzar';
+  String get swipeToStart => 'Desliza hacia arriba para empezar';
 
   @override
   String get changeLanguage => 'Cambiar idioma';
@@ -24,7 +24,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get headerProfile => '--- GESTIÓN DE PERFIL ---';
 
   @override
-  String get createProfileTitle => 'Agrega tus datos';
+  String get createProfileTitle => 'Añade tus datos';
 
   @override
   String get editProfileTitle => 'Editar perfil';
@@ -57,17 +57,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileUpdatedSuccess => '¡Perfil actualizado con éxito!';
 
   @override
-  String get requiredField => 'Campo requerido';
+  String get requiredField => 'Campo obligatorio';
 
   @override
   String get selectDateWarning =>
       'Por favor, selecciona tu fecha de nacimiento';
 
   @override
-  String get male => 'Masculino';
+  String get male => 'Hombre';
 
   @override
-  String get female => 'Femenino';
+  String get female => 'Mujer';
 
   @override
   String get headerSelection => '--- SELECCIÓN DE PERFIL ---';
@@ -79,11 +79,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get createProfileButton => 'Crear perfil';
 
   @override
-  String get noProfilesMessage => 'No hay perfiles aún. ¡Crea el primero!';
+  String get noProfilesMessage => 'Aún no hay perfiles. ¡Crea el primero!';
 
   @override
   String profileSelected(String profileName) {
-    return 'Seleccionaste a $profileName';
+    return 'Has seleccionado a $profileName';
   }
 
   @override
@@ -91,7 +91,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String deleteProfileContent(String profileName) {
-    return '¿Estás seguro de que deseas eliminar a $profileName?';
+    return '¿Estás seguro de que quieres eliminar a $profileName?';
   }
 
   @override
@@ -107,10 +107,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get undo => 'Deshacer';
 
   @override
-  String get headerDashboard => '--- PANEL DE CONTROL ---';
+  String get headerDashboard => '--- DASHBOARD ---';
 
   @override
-  String get dashboardTitle => 'Resumen';
+  String get dashboardTitle => 'Panel de Control';
 
   @override
   String welcomeUser(String name) {
@@ -131,7 +131,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get myDiets => 'Dietas';
 
   @override
-  String get myWorkouts => 'Entrenamientos';
+  String get myWorkouts => 'Rutinas';
 
   @override
   String get editProfile => 'Editar perfil';
@@ -143,7 +143,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dietsTitle => 'Dietas';
 
   @override
-  String get noDietsMessage => 'Aún no tienes dietas. ¡Crea la primera!';
+  String get noDietsMessage => 'Aún no hay dietas. ¡Crea la primera!';
 
   @override
   String get createDiet => 'Crear Dieta';
@@ -185,13 +185,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dietAdditionalDataHint => 'Ej: No me gusta el brócoli';
 
   @override
-  String get headerTrainings => '--- MÓDULO DE ENTRENAMIENTOS ---';
+  String get headerTrainings => '--- MÓDULO DE ENTRENAMIENTO ---';
 
   @override
   String get trainingsTitle => 'Entrenamientos';
 
   @override
-  String get noTrainingsMessage => 'Aún no tienes rutinas. ¡Crea la primera!';
+  String get noTrainingsMessage => 'Aún no hay rutinas. ¡Crea la primera!';
 
   @override
   String get createTraining => 'Crear Rutina';
@@ -232,7 +232,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorGeneratingDiet =>
-      'No se pudo generar la dieta. Por favor, inténtalo de nuevo.';
+      'Error al generar la dieta. Inténtalo de nuevo.';
 
   @override
   String get retry => 'Reintentar';
@@ -253,7 +253,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorGeneratingTraining =>
-      'No se pudo generar la rutina. Por favor, inténtalo de nuevo.';
+      'Error al generar la rutina. Inténtalo de nuevo.';
 
   @override
   String get sets => 'Series';
@@ -284,7 +284,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get setupPlanDescription =>
-      'Selecciona qué dieta y entrenamiento quieres seguir día a día.';
+      'Selecciona qué dieta y rutina de entrenamiento quieres seguir día a día.';
 
   @override
   String get activeDiet => 'Dieta Activa';
@@ -296,7 +296,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get activeTraining => 'Entrenamiento Activo';
 
   @override
-  String get selectTrainingHint => 'Selecciona un entrenamiento';
+  String get selectTrainingHint => 'Selecciona una rutina';
 
   @override
   String get saveAndStart => 'Guardar y Empezar';
@@ -305,7 +305,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get yourMeals => 'Tus Comidas';
 
   @override
-  String get noDietDataForToday => 'No hay datos de dieta para hoy.';
+  String get noDietDataForToday => 'Sin datos de dieta para hoy.';
 
   @override
   String get yourTraining => 'Tu Entrenamiento';
@@ -338,4 +338,42 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sunday => 'Domingo';
+
+  @override
+  String get generatingAiPlan => 'Generando plan con IA...';
+
+  @override
+  String daysPerWeek(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días/semana',
+      one: '1 día/semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookingAiPlan => 'Cocinando tu plan con IA...';
+
+  @override
+  String get logWeightTitle => 'Registrar peso actual';
+
+  @override
+  String get invalidWeight => 'Por favor, introduce un peso válido';
+
+  @override
+  String get weightHistory => 'Historial de peso';
+
+  @override
+  String get nightMode => 'Modo Noche';
+
+  @override
+  String get switchProfile => 'Cambiar Perfil';
+
+  @override
+  String get profileTitle => 'Perfil';
+
+  @override
+  String get save => 'Guardar';
 }

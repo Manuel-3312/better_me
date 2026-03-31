@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/training/data/training_repository.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
+import 'package:better_me/features/training/domain/models/ai_training_plan.dart'; // <-- Añadido
 import 'package:better_me/features/training/domain/utils/training_prompt_builder.dart';
 import 'package:better_me/core/network/gemini_service.dart';
 
@@ -43,22 +45,24 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
 
   /// Calculates intensity color using 'Accent' variants for better visibility in Dark Mode.
   Color _getIntensityColor(
-    double value,
-    double min,
-    double max,
-    bool isDarkMode,
-  ) {
+      double value,
+      double min,
+      double max,
+      bool isDarkMode,
+      ) {
     final double percentage = (value - min) / (max - min);
     return Color.lerp(
-          isDarkMode ? Colors.cyanAccent : Colors.lightBlue.shade300,
-          isDarkMode ? Colors.orangeAccent : Colors.red.shade700,
-          percentage,
-        ) ??
+      isDarkMode ? Colors.cyanAccent : Colors.lightBlue.shade300,
+      isDarkMode ? Colors.orangeAccent : Colors.red.shade700,
+      percentage,
+    ) ??
         Colors.blue;
   }
 
+  /// Generates the AI plan, serializes it, and saves it into the relational database.
   Future<void> _saveTraining() async {
     final l10n = AppLocalizations.of(context)!;
+
     if (!_formKey.currentState!.validate()) return;
     if (widget.profile.idProfile == null) return;
 
@@ -83,13 +87,18 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
       );
 
       final responseText = await _geminiService.generateContent(prompt);
-      if (responseText == null || responseText.isEmpty)
+
+      if (responseText == null || responseText.isEmpty) {
         throw Exception('Empty AI response');
+      }
 
       final cleanJsonString = responseText
           .replaceAll('```json', '')
           .replaceAll('```', '')
           .trim();
+
+      final Map<String, dynamic> jsonMap = jsonDecode(cleanJsonString);
+      AiTrainingPlan.fromJson(jsonMap);
 
       final finalTraining = Training(
         idProfile: preliminaryTraining.idProfile,
@@ -112,6 +121,7 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
+      debugPrint('Error creating AI training: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -277,15 +287,15 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
           if (_isGenerating)
             Container(
               color: theme.scaffoldBackgroundColor.withValues(alpha: 0.7),
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
                     Text(
-                      "Generando plan con IA...",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      l10n.generatingAiPlan,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -311,11 +321,11 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
   }
 
   Widget _buildObjectiveButton(
-    String value,
-    String label,
-    String assetPath,
-    ThemeData theme,
-  ) {
+      String value,
+      String label,
+      String assetPath,
+      ThemeData theme,
+      ) {
     final isSelected = _selectedObjective == value;
     final isDarkMode = theme.brightness == Brightness.dark;
 

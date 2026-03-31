@@ -1,13 +1,12 @@
 {
   "@@locale": "es",
-
-  "headerWelcome": "--- PANTALLA BIENVENIDA ---",
+  "headerWelcome": "--- PANTALLA DE BIENVENIDA ---",
   "welcomeTitle": "Bienvenido a BetterMe",
-  "swipeToStart": "Desliza hacia arriba para comenzar",
+  "swipeToStart": "Desliza hacia arriba para empezar",
   "changeLanguage": "Cambiar idioma",
 
   "headerProfile": "--- GESTIÓN DE PERFIL ---",
-  "createProfileTitle": "Agrega tus datos",
+  "createProfileTitle": "Añade tus datos",
   "editProfileTitle": "Editar perfil",
   "fullName": "Nombre completo",
   "sex": "Sexo",
@@ -18,26 +17,30 @@
   "updateButton": "Actualizar",
   "profileCreatedSuccess": "¡Perfil creado con éxito!",
   "profileUpdatedSuccess": "¡Perfil actualizado con éxito!",
-  "requiredField": "Campo requerido",
+  "requiredField": "Campo obligatorio",
   "selectDateWarning": "Por favor, selecciona tu fecha de nacimiento",
-  "male": "Masculino",
-  "female": "Femenino",
+  "male": "Hombre",
+  "female": "Mujer",
 
   "headerSelection": "--- SELECCIÓN DE PERFIL ---",
   "chooseProfileTitle": "Elige tu perfil",
   "createProfileButton": "Crear perfil",
-  "noProfilesMessage": "No hay perfiles aún. ¡Crea el primero!",
-  "profileSelected": "Seleccionaste a {profileName}",
+  "noProfilesMessage": "Aún no hay perfiles. ¡Crea el primero!",
+  "profileSelected": "Has seleccionado a {profileName}",
   "@profileSelected": {
     "placeholders": {
-      "profileName": { "type": "String" }
+      "profileName": {
+        "type": "String"
+      }
     }
   },
   "deleteProfileTitle": "Eliminar perfil",
-  "deleteProfileContent": "¿Estás seguro de que deseas eliminar a {profileName}?",
+  "deleteProfileContent": "¿Estás seguro de que quieres eliminar a {profileName}?",
   "@deleteProfileContent": {
     "placeholders": {
-      "profileName": { "type": "String" }
+      "profileName": {
+        "type": "String"
+      }
     }
   },
   "cancel": "Cancelar",
@@ -45,33 +48,39 @@
   "profileDeleted": "Perfil eliminado",
   "undo": "Deshacer",
 
-  "headerDashboard": "--- PANEL DE CONTROL ---",
-  "dashboardTitle": "Resumen",
+  "headerDashboard": "--- DASHBOARD ---",
+  "dashboardTitle": "Panel de Control",
   "welcomeUser": "¡Hola, {name}!",
   "@welcomeUser": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "ageLabel": "Edad: {years} años",
   "@ageLabel": {
     "placeholders": {
-      "years": { "type": "int" }
+      "years": {
+        "type": "int"
+      }
     }
   },
   "bmiLabel": "IMC: {value}",
   "@bmiLabel": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "myDiets": "Dietas",
-  "myWorkouts": "Entrenamientos",
+  "myWorkouts": "Rutinas",
   "editProfile": "Editar perfil",
 
   "headerDiets": "--- MÓDULO DE DIETAS ---",
   "dietsTitle": "Dietas",
-  "noDietsMessage": "Aún no tienes dietas. ¡Crea la primera!",
+  "noDietsMessage": "Aún no hay dietas. ¡Crea la primera!",
   "createDiet": "Crear Dieta",
   "featureInProgress": "Formulario de creación en progreso...",
   "createDietTitle": "Crear nueva dieta",
@@ -86,9 +95,9 @@
   "dietAllergiesHint": "Ej: Cacahuetes, lactosa...",
   "dietAdditionalDataHint": "Ej: No me gusta el brócoli",
 
-  "headerTrainings": "--- MÓDULO DE ENTRENAMIENTOS ---",
+  "headerTrainings": "--- MÓDULO DE ENTRENAMIENTO ---",
   "trainingsTitle": "Entrenamientos",
-  "noTrainingsMessage": "Aún no tienes rutinas. ¡Crea la primera!",
+  "noTrainingsMessage": "Aún no hay rutinas. ¡Crea la primera!",
   "createTraining": "Crear Rutina",
   "createTrainingTitle": "Crear nueva rutina",
   "trainingName": "Nombre de la rutina",
@@ -99,30 +108,36 @@
   "maxDaysLabel": "Días por semana: {days}",
   "@maxDaysLabel": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "maxTimeLabel": "Tiempo por sesión: {minutes} min",
   "@maxTimeLabel": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "trainingCreatedSuccess": "¡Rutina creada con éxito!",
-
   "generatingDiet": "Generando tu plan personalizado...",
-  "errorGeneratingDiet": "No se pudo generar la dieta. Por favor, inténtalo de nuevo.",
+  "errorGeneratingDiet": "Error al generar la dieta. Inténtalo de nuevo.",
   "retry": "Reintentar",
   "noDietData": "No hay datos de dieta disponibles.",
   "dayNumber": "Día {number}",
   "@dayNumber": {
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "kcal": "kcal",
+
   "generatingTraining": "Diseñando tu rutina ideal...",
-  "errorGeneratingTraining": "No se pudo generar la rutina. Por favor, inténtalo de nuevo.",
+  "errorGeneratingTraining": "Error al generar la rutina. Inténtalo de nuevo.",
   "sets": "Series",
   "reps": "Reps",
   "rest": "Descanso",
@@ -133,14 +148,14 @@
   "todayTitle": "Hoy",
   "changeActivePlan": "Cambiar plan activo",
   "chooseCurrentFocus": "Elige tu enfoque actual",
-  "setupPlanDescription": "Selecciona qué dieta y entrenamiento quieres seguir día a día.",
+  "setupPlanDescription": "Selecciona qué dieta y rutina de entrenamiento quieres seguir día a día.",
   "activeDiet": "Dieta Activa",
   "selectDietHint": "Selecciona una dieta",
   "activeTraining": "Entrenamiento Activo",
-  "selectTrainingHint": "Selecciona un entrenamiento",
+  "selectTrainingHint": "Selecciona una rutina",
   "saveAndStart": "Guardar y Empezar",
   "yourMeals": "Tus Comidas",
-  "noDietDataForToday": "No hay datos de dieta para hoy.",
+  "noDietDataForToday": "Sin datos de dieta para hoy.",
   "yourTraining": "Tu Entrenamiento",
   "restDayOrNoData": "Día de descanso o sin datos.",
   "scheduledExercises": "{count} ejercicios programados",
@@ -158,5 +173,23 @@
   "thursday": "Jueves",
   "friday": "Viernes",
   "saturday": "Sábado",
-  "sunday": "Domingo"
+  "sunday": "Domingo",
+
+  "generatingAiPlan": "Generando plan con IA...",
+  "daysPerWeek": "{count, plural, =1 {1 día/semana} other {{count} días/semana}}",
+  "@daysPerWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingAiPlan": "Cocinando tu plan con IA...",
+  "logWeightTitle": "Registrar peso actual",
+  "invalidWeight": "Por favor, introduce un peso válido",
+  "weightHistory": "Historial de peso",
+  "nightMode": "Modo Noche",
+  "switchProfile": "Cambiar Perfil",
+  "profileTitle": "Perfil",
+  "save": "Guardar"
 }

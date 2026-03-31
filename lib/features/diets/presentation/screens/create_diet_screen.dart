@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/diets/data/diet_repository.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
+import 'package:better_me/features/diets/domain/models/ai_diet_plan.dart'; // New DTO import
 import 'package:better_me/features/diets/domain/utils/diet_prompt_builder.dart';
 import 'package:better_me/core/network/gemini_service.dart';
 
@@ -43,7 +45,7 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
     super.dispose();
   }
 
-  /// Handles form validation and AI communication to persist the generated diet.
+  /// Handles form validation, AI communication, and JSON verification before persistence.
   Future<void> _saveDiet() async {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
@@ -77,6 +79,10 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
           .replaceAll('```', '')
           .trim();
 
+      // JSON Validation: Ensure the response matches our AiDietPlan structure
+      final Map<String, dynamic> jsonMap = jsonDecode(cleanJsonString);
+      AiDietPlan.fromJson(jsonMap);
+
       final finalDiet = Diet(
         idProfile: preliminaryDiet.idProfile,
         name: preliminaryDiet.name,
@@ -98,9 +104,13 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
+      debugPrint('Error generating diet: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorGeneratingDiet), backgroundColor: Colors.redAccent),
+          SnackBar(
+              content: Text(l10n.errorGeneratingDiet),
+              backgroundColor: Colors.redAccent
+          ),
         );
       }
     } finally {
@@ -129,7 +139,6 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Diet Name Field
                   TextFormField(
                     controller: _nameController,
                     enabled: !_isGenerating,
@@ -141,15 +150,11 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
                     validator: (value) => value == null || value.trim().isEmpty ? l10n.requiredField : null,
                   ),
                   const SizedBox(height: 32),
-
-                  // Objective Selection Label
                   Text(
                     l10n.dietObjective,
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.hintColor),
                   ),
                   const SizedBox(height: 16),
-
-                  // Objective Selection Row
                   Row(
                     children: [
                       Expanded(child: _buildObjectiveButton('weightLoss', l10n.weightLoss, Icons.trending_down, theme)),
@@ -160,8 +165,6 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
                     ],
                   ),
                   const SizedBox(height: 32),
-
-                  // Allergies Field
                   TextFormField(
                     controller: _allergiesController,
                     enabled: !_isGenerating,
@@ -173,8 +176,6 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Additional Data Field
                   TextFormField(
                     controller: _additionalDataController,
                     enabled: !_isGenerating,
@@ -188,8 +189,6 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-
-                  // Submit Button
                   ElevatedButton(
                     onPressed: _isGenerating ? null : _saveDiet,
                     style: ElevatedButton.styleFrom(
@@ -208,8 +207,6 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
               ),
             ),
           ),
-
-          // Generation Overlay
           if (_isGenerating)
             Container(
               color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
@@ -220,7 +217,7 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
                     const CircularProgressIndicator(color: Colors.orangeAccent),
                     const SizedBox(height: 20),
                     Text(
-                      "Cocinando tu plan con IA...", // Localize this later if needed
+                      l10n.cookingAiPlan,
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -236,12 +233,9 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
     );
   }
 
-  /// Builds a themed objective selection button.
   Widget _buildObjectiveButton(String value, String label, IconData icon, ThemeData theme) {
     final isSelected = _selectedObjective == value;
-
-    // Modern Night Mode colors
-    final activeColor = Colors.orangeAccent;
+    const activeColor = Colors.orangeAccent;
     final inactiveBorder = theme.dividerColor.withValues(alpha: 0.1);
 
     return InkWell(
