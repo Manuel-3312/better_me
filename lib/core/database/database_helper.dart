@@ -1,48 +1,36 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-/// A Singleton class that manages the SQLite database connection and initialization.
-/// This ensures only one database connection is open at a time across the entire app.
 class DatabaseHelper {
-  // Singleton instance
   static final DatabaseHelper instance = DatabaseHelper._init();
-
-  // Private database instance
   static Database? _database;
 
-  // Private constructor
   DatabaseHelper._init();
 
-  /// Getter for the database. If it doesn't exist, it initializes it.
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('betterme.db');
+    _database = await _initDB('betterme_v3.db'); // Nueva versión para forzar recreación
     return _database!;
   }
 
-  /// Initializes the database at the device's standard directory.
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
     return await openDatabase(
       path,
-      version: 1, // Database version
-      onCreate: _createDB, // Called if the database file doesn't exist
-      onConfigure: _onConfigure, // Called before onCreate to set properties
+      version: 1,
+      onCreate: _createDB,
+      onConfigure: _onConfigure,
     );
   }
 
-  /// Configures database settings before creation.
-  /// Here we enable Foreign Keys, which are disabled by default in SQLite.
   Future _onConfigure(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
   }
 
-  /// Executes the SQL scripts to create all tables and relationships.
   Future _createDB(Database db, int version) async {
-    // 1. PROFILE TABLE
-    // UPGRADED: Added active plan tracking fields with foreign keys.
+    // 1. PERFIL
     await db.execute('''
       CREATE TABLE profile (
         id_profile INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,13 +40,11 @@ class DatabaseHelper {
         height REAL NOT NULL,
         birth_date TEXT NOT NULL,
         active_diet_id INTEGER,
-        active_training_id INTEGER,
-        FOREIGN KEY (active_diet_id) REFERENCES diet (id_diet) ON DELETE SET NULL,
-        FOREIGN KEY (active_training_id) REFERENCES training (id_training) ON DELETE SET NULL
+        active_training_id INTEGER
       )
     ''');
 
-    // 2. WEEK_DAY TABLE
+    // 2. DÍAS MAESTROS
     await db.execute('''
       CREATE TABLE week_day (
         name TEXT PRIMARY KEY,
@@ -66,47 +52,20 @@ class DatabaseHelper {
       )
     ''');
 
-    // 3. DIET TABLE
-    // Contains a Foreign Key referencing the profile table.
-    // ADDED: 'generated_content' to persistently store the AI-generated JSON response.
+    // 3. CACHÉ DE WGER (local_exercises)
     await db.execute('''
-      CREATE TABLE diet (
-        id_diet INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_profile INTEGER NOT NULL,
+      CREATE TABLE local_exercises (
+        id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
-        objective TEXT NOT NULL,
-        allergies TEXT,
-        additional_data TEXT,
-        generated_content TEXT, 
-        FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
+        description TEXT NOT NULL,
+        category_id INTEGER NOT NULL,
+        category_name TEXT NOT NULL,
+        main_muscle_id INTEGER,
+        exercise_image_url TEXT
       )
     ''');
 
-    // 4. MEAL TABLE
-    await db.execute('''
-      CREATE TABLE meal (
-        id_meal INTEGER PRIMARY KEY AUTOINCREMENT,
-        type TEXT NOT NULL,
-        description TEXT NOT NULL
-      )
-    ''');
-
-    // 5. DIET_MEAL_DAY (Many-to-Many intermediary table)
-    await db.execute('''
-      CREATE TABLE diet_meal_day (
-        id_diet INTEGER NOT NULL,
-        id_meal INTEGER NOT NULL,
-        day_name TEXT NOT NULL,
-        PRIMARY KEY (id_diet, id_meal, day_name),
-        FOREIGN KEY (id_diet) REFERENCES diet (id_diet) ON DELETE CASCADE,
-        FOREIGN KEY (id_meal) REFERENCES meal (id_meal) ON DELETE CASCADE,
-        FOREIGN KEY (day_name) REFERENCES week_day (name) ON DELETE CASCADE
-      )
-    ''');
-
-    // 6. TRAINING TABLE
-    // Contains a Foreign Key referencing the profile table.
-    // ADDED: 'generated_content' to persistently store the AI-generated JSON response.
+    // 4. ENTRENAMIENTO (Cabecera)
     await db.execute('''
       CREATE TABLE training (
         id_training INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -120,31 +79,46 @@ class DatabaseHelper {
       )
     ''');
 
-    // 7. EXERCISE TABLE
+    // 5. DÍAS DE ENTRENAMIENTO (La tabla que te faltaba)
     await db.execute('''
-      CREATE TABLE exercise (
-        id_exercise INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        duration TEXT NOT NULL,
-        sets INTEGER NOT NULL,
-        reps TEXT NOT NULL,
-        rest TEXT NOT NULL
+      CREATE TABLE training_day (
+        id_training_day INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_training INTEGER NOT NULL,
+        day_number INTEGER NOT NULL,
+        focus TEXT,
+        FOREIGN KEY (id_training) REFERENCES training (id_training) ON DELETE CASCADE
       )
     ''');
 
-    // 8. TRAINING_EXERCISE_DAY (Many-to-Many intermediary table)
+    // 6. EJERCICIOS ESPECÍFICOS DE LA SESIÓN
     await db.execute('''
-      CREATE TABLE training_exercise_day (
-        id_training INTEGER NOT NULL,
-        id_exercise INTEGER NOT NULL,
-        day_name TEXT NOT NULL,
-        PRIMARY KEY (id_training, id_exercise, day_name),
-        FOREIGN KEY (id_training) REFERENCES training (id_training) ON DELETE CASCADE,
-        FOREIGN KEY (id_exercise) REFERENCES exercise (id_exercise) ON DELETE CASCADE,
-        FOREIGN KEY (day_name) REFERENCES week_day (name) ON DELETE CASCADE
+      CREATE TABLE exercise (
+        id_exercise INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_training_day INTEGER NOT NULL,
+        exercise_id INTEGER NOT NULL, 
+        sets INTEGER NOT NULL,
+        reps TEXT NOT NULL,
+        rest_seconds INTEGER NOT NULL,
+        tips TEXT,
+        FOREIGN KEY (id_training_day) REFERENCES training_day (id_training_day) ON DELETE CASCADE,
+        FOREIGN KEY (exercise_id) REFERENCES local_exercises (id) ON DELETE CASCADE
       )
     ''');
-    // 9. WEIGHT_HISTORY TABLE
+
+    // 7. DIETAS, PESO, ETC.
+    await db.execute('''
+      CREATE TABLE diet (
+        id_diet INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_profile INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        objective TEXT NOT NULL,
+        allergies TEXT,
+        additional_data TEXT,
+        generated_content TEXT,
+        FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
+      )
+    ''');
+
     await db.execute('''
       CREATE TABLE weight_history (
         id_weight INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -155,12 +129,9 @@ class DatabaseHelper {
       )
     ''');
 
-    // Seed the database with default days of the week upon creation
     await _insertDefaultDays(db);
   }
 
-  /// Inserts the default 7 days of the week into the week_day table.
-  /// This is required to satisfy the N:M relationships constraints.
   Future _insertDefaultDays(Database db) async {
     final days = [
       {'name': 'Monday', 'is_weekend': 'N'},

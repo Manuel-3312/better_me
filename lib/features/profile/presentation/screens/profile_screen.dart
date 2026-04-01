@@ -8,11 +8,6 @@ import 'package:better_me/features/profile/presentation/screens/create_profile_s
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/widgets/weight_entry_dialog.dart';
 
-// NUEVOS IMPORTS
-import 'package:better_me/features/profile/data/weight_repository.dart';
-import 'package:better_me/features/profile/domain/models/weight_entry.dart';
-import 'package:better_me/features/profile/presentation/widgets/weight_chart_widget.dart';
-
 class ProfileScreen extends StatefulWidget {
   final Profile profile;
 
@@ -26,54 +21,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late Profile _currentProfile;
   final ProfileRepository _repository = ProfileRepository();
 
-  // Repositorio y lista para la gráfica
-  final WeightRepository _weightRepo = WeightRepository();
-  List<WeightEntry> _weightHistory = [];
-
   @override
   void initState() {
     super.initState();
     _currentProfile = widget.profile;
-    _loadWeightHistory(); // Carga inicial
   }
 
-  /// Carga el historial de peso desde la base de datos
-  Future<void> _loadWeightHistory() async {
-    if (_currentProfile.idProfile == null) return;
-    final history = await _weightRepo.getWeightHistory(
-      _currentProfile.idProfile!,
-    );
-    if (mounted) {
-      setState(() {
-        // Invertimos la lista para que la gráfica vaya de pasado a presente (izquierda a derecha)
-        _weightHistory = history.reversed.toList();
-      });
-    }
-  }
-
-  /// Fetches the latest profile data and refreshes the chart.
   Future<void> _refreshProfileData() async {
     if (_currentProfile.idProfile == null) return;
 
-    final updated = await _repository.getProfileById(
-      _currentProfile.idProfile!,
-    );
+    final updated = await _repository.getProfileById(_currentProfile.idProfile!);
     if (updated != null && mounted) {
       setState(() {
         _currentProfile = updated;
       });
-      _loadWeightHistory(); // También refrescamos la gráfica
     }
   }
 
-  /// Opens the weight logging dialog and refreshes data if a new entry was saved.
   Future<void> _openWeightDialog() async {
-    if (_currentProfile.idProfile == null) return;
-
     final bool? wasUpdated = await showDialog<bool>(
       context: context,
-      builder: (context) =>
-          WeightEntryDialog(idProfile: _currentProfile.idProfile!),
+      builder: (context) => WeightEntryDialog(idProfile: _currentProfile.idProfile!),
     );
 
     if (wasUpdated == true) {
@@ -88,10 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.profileTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(l10n.profileTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -101,14 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             _buildProfileCard(context, l10n, theme),
-
             const SizedBox(height: 24),
-
-            // INSERTAMOS LA GRÁFICA AQUÍ
-            WeightChartWidget(data: _weightHistory),
-
-            const SizedBox(height: 24),
-
             _buildActionList(context, l10n, theme),
           ],
         ),
@@ -116,13 +74,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileCard(
-    BuildContext context,
-    AppLocalizations l10n,
-    ThemeData theme,
-  ) {
-    final double bmi =
-        _currentProfile.weight / pow(_currentProfile.height / 100, 2);
+  Widget _buildProfileCard(BuildContext context, AppLocalizations l10n, ThemeData theme) {
+    final double bmi = _currentProfile.weight / pow(_currentProfile.height / 100, 2);
     final String bmiString = bmi.toStringAsFixed(1);
     final int age = DateTime.now().year - _currentProfile.birthDate.year;
 
@@ -151,14 +104,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 radius: 35,
                 backgroundColor: Colors.white24,
                 child: Text(
-                  _currentProfile.name.isNotEmpty
-                      ? _currentProfile.name[0].toUpperCase()
-                      : '?',
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  _currentProfile.name[0].toUpperCase(),
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
               const SizedBox(width: 20),
@@ -168,11 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Text(
                       _currentProfile.name,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     Text(
                       _currentProfile.sex == 'M' ? l10n.male : l10n.female,
@@ -182,18 +125,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(
-                  Icons.edit_note,
-                  color: Colors.white,
-                  size: 28,
-                ),
+                icon: const Icon(Icons.edit_note, color: Colors.white, size: 28),
                 tooltip: l10n.editProfile,
                 onPressed: () async {
                   final bool? wasUpdated = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          CreateProfileScreen(profile: _currentProfile),
+                      builder: (context) => CreateProfileScreen(profile: _currentProfile),
                     ),
                   );
                   if (wasUpdated == true) _refreshProfileData();
@@ -207,6 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Usando parámetros posicionales correctamente según tu generación
               _buildMetricColumn(l10n.ageLabel(age), Icons.cake),
               GestureDetector(
                 onTap: _openWeightDialog,
@@ -225,11 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const CircleAvatar(
                         radius: 8,
                         backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.add,
-                          size: 12,
-                          color: Colors.blueAccent,
-                        ),
+                        child: Icon(Icons.add, size: 12, color: Colors.blueAccent),
                       ),
                     ],
                   ),
@@ -253,20 +188,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ],
     );
   }
 
-  Widget _buildActionList(
-    BuildContext context,
-    AppLocalizations l10n,
-    ThemeData theme,
-  ) {
+  Widget _buildActionList(BuildContext context, AppLocalizations l10n, ThemeData theme) {
     return Column(
       children: [
         _buildActionTile(
@@ -275,9 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: Colors.blueAccent,
           onTap: () => Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const ChooseProfileScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const ChooseProfileScreen()),
           ),
         ),
         const SizedBox(height: 12),
@@ -286,12 +212,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: l10n.nightMode,
           color: Colors.deepPurpleAccent,
           trailing: Switch(
-            value: theme.brightness == Brightness.dark,
+            value: Theme.of(context).brightness == Brightness.dark,
             onChanged: (value) {
-              BetterMeApp.setTheme(
-                context,
-                value ? ThemeMode.dark : ThemeMode.light,
-              );
+              BetterMeApp.setTheme(context, value ? ThemeMode.dark : ThemeMode.light);
             },
           ),
         ),
@@ -310,19 +233,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTap: onTap,
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
         child: Icon(icon, color: color),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: trailing ?? const Icon(Icons.chevron_right, size: 20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
-        ),
+        side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.05)),
       ),
       tileColor: Theme.of(context).cardColor,
     );

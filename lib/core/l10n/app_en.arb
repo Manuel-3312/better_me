@@ -193,5 +193,7 @@
   "logWeightTitle": "Log current weight",
   "invalidWeight": "Please enter a valid weight",
   "weightHistory": "Weight history",
-  "save": "Save"
+  "save": "Save",
+  "years": "Years"
+
 }

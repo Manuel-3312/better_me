@@ -11,9 +11,9 @@ class AiTrainingPlan {
   factory AiTrainingPlan.fromJson(Map<String, dynamic> json) {
     return AiTrainingPlan(
       days:
-          (json['days'] as List<dynamic>?)
-              ?.map((e) => TrainingDay.fromJson(e as Map<String, dynamic>))
-              .toList() ??
+      (json['days'] as List<dynamic>?)
+          ?.map((e) => TrainingDay.fromJson(e as Map<String, dynamic>))
+          .toList() ??
           const [],
     );
   }
@@ -47,9 +47,9 @@ class TrainingDay {
       day: json['day'] as int? ?? 0,
       focus: json['focus'] as String? ?? 'General Routine',
       exercises:
-          (json['exercises'] as List<dynamic>?)
-              ?.map((e) => TrainingExercise.fromJson(e as Map<String, dynamic>))
-              .toList() ??
+      (json['exercises'] as List<dynamic>?)
+          ?.map((e) => TrainingExercise.fromJson(e as Map<String, dynamic>))
+          .toList() ??
           const [],
     );
   }
@@ -66,8 +66,8 @@ class TrainingDay {
 
 /// Represents an individual exercise with specific performance metrics.
 class TrainingExercise {
-  /// The name of the exercise (e.g., "Barbell Bench Press").
-  final String name;
+  /// The unique identifier mapping to the local exercise database.
+  final int exerciseId;
 
   /// The total number of sets to be performed.
   final int sets;
@@ -80,36 +80,36 @@ class TrainingExercise {
   final int restSeconds;
 
   /// Specific instructions, form cues, or tips for executing the exercise.
-  final String description;
+  final String tips;
 
   const TrainingExercise({
-    required this.name,
+    required this.exerciseId,
     required this.sets,
     required this.reps,
     required this.restSeconds,
-    required this.description,
+    required this.tips,
   });
 
   /// Factory constructor to securely parse an individual exercise from JSON.
   /// Includes robust type-checking and default fallbacks for AI hallucinations.
   factory TrainingExercise.fromJson(Map<String, dynamic> json) {
     return TrainingExercise(
-      name: json['name'] as String? ?? 'Unknown Exercise',
+      exerciseId: json['exercise_id'] as int? ?? 0,
       sets: json['sets'] as int? ?? 1,
       reps: json['reps']?.toString() ?? '1',
       restSeconds: json['rest_seconds'] as int? ?? 60,
-      description: json['description'] as String? ?? '',
+      tips: json['tips'] as String? ?? '',
     );
   }
 
   /// Converts the [TrainingExercise] instance back into a JSON-compatible map.
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'exercise_id': exerciseId,
       'sets': sets,
       'reps': reps,
       'rest_seconds': restSeconds,
-      'description': description,
+      'tips': tips,
     };
   }
 }

@@ -93,8 +93,9 @@ class _WeightEntryDialogState extends State<WeightEntryDialog> {
                 : Colors.grey.withValues(alpha: 0.05),
           ),
           validator: (value) {
-            if (value == null || value.trim().isEmpty)
+            if (value == null || value.trim().isEmpty) {
               return l10n.requiredField;
+            }
             // Support both formats to avoid "silent" parse errors
             final n = double.tryParse(value.replaceFirst(',', '.'));
             if (n == null || n <= 0 || n > 600) return l10n.invalidWeight;

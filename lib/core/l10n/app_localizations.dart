@@ -775,6 +775,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Guardar'**
   String get save;
+
+  /// No description provided for @years.
+  ///
+  /// In es, this message translates to:
+  /// **'Years'**
+  String get years;
 }
 
 class _AppLocalizationsDelegate

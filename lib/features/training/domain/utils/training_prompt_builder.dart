@@ -1,10 +1,10 @@
 import '../../../profile/domain/models/profile.dart';
 import '../models/training.dart';
+import '../models/wger_exercise.dart';
 
 /// Utility class responsible for generating highly structured prompts for the AI
-/// to create fitness routines. Includes localization constraints.
+/// to create fitness routines using Retrieval-Augmented Generation (RAG).
 class TrainingPromptBuilder {
-  /// Private constructor to prevent instantiation.
   const TrainingPromptBuilder._();
 
   /// Calculates the exact age in years based on the provided [birthDate].
@@ -18,14 +18,19 @@ class TrainingPromptBuilder {
     return age;
   }
 
-  /// Generates the system prompt by merging user biometrics and training preferences.
-  /// Enforces a strict JSON output format and restricts the response [language].
+  /// Generates the system prompt by merging user biometrics, training preferences,
+  /// and the local database of available exercises.
   static String buildTrainingPrompt(
-    Profile profile,
-    Training training,
-    String language,
-  ) {
+      Profile profile,
+      Training training,
+      String language,
+      List<WgerExercise> availableExercises,
+      ) {
     final age = _calculateAge(profile.birthDate);
+
+    final String exerciseContext = availableExercises
+        .map((e) => 'ID: ${e.id} | Name: ${e.name} | Category: ${e.categoryName}')
+        .join('\n');
 
     return '''
 Act as an elite personal trainer.
@@ -37,9 +42,14 @@ Create a personalized ${training.maxDays}-day workout routine for a client with 
 - Main Objective: ${training.objective}
 - Max Session Time: ${training.maxTime.toInt()} minutes per day.
 
+AVAILABLE EXERCISES DATABASE:
+You MUST select exercises EXCLUSIVELY from the following list. Do not invent any exercises.
+$exerciseContext
+
 Strict Constraints:
 1. You MUST respond ONLY with a valid JSON object. Do NOT include markdown blocks.
-2. The entire content inside the JSON (exercise names, focus, descriptions) MUST be written entirely in $language.
+2. The entire content inside the JSON (focus, tips) MUST be written entirely in $language.
+3. Use the exact "id" from the AVAILABLE EXERCISES DATABASE for the "exercise_id" field.
 
 The JSON structure must strictly follow this exact schema:
 {
@@ -49,11 +59,11 @@ The JSON structure must strictly follow this exact schema:
       "focus": "Upper Body Strength",
       "exercises": [
         {
-          "name": "Barbell Bench Press",
+          "exercise_id": 60,
           "sets": 4,
           "reps": "8-10",
           "rest_seconds": 90,
-          "description": "Keep your core tight and lower the bar slowly to your chest."
+          "tips": "Keep your core tight and lower the bar slowly to your chest."
         }
       ]
     }

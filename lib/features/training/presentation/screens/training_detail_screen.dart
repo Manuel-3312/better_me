@@ -7,9 +7,11 @@ import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
 import 'package:better_me/features/training/domain/models/ai_training_plan.dart';
+import 'package:better_me/features/training/domain/models/wger_exercise.dart';
+import 'package:better_me/features/training/data/exercise_local_database.dart';
 
 /// Screen responsible for displaying an already generated training plan.
-/// Features a night-mode optimized UI with deep gradients and high-precision colors.
+/// It syncs AI-generated IDs with local exercise data for rich visual feedback.
 class TrainingDetailScreen extends StatefulWidget {
   final Training training;
   final Profile profile;
@@ -25,18 +27,26 @@ class TrainingDetailScreen extends StatefulWidget {
 }
 
 class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
+  final ExerciseLocalDatabase _localDb = ExerciseLocalDatabase();
   AiTrainingPlan? _trainingPlan;
+  Map<int, WgerExercise> _exerciseLookup = {};
+  bool _isLoading = true;
   bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedTraining();
+    _initializeData();
   }
 
-  /// Parses the AI-generated JSON content from the local database using the DTO.
-  void _loadSavedTraining() {
+  /// Loads both the saved AI JSON and the local exercise library for ID matching.
+  Future<void> _initializeData() async {
     try {
+      // 1. Load local exercise library into a map for O(1) lookup
+      final allExercises = await _localDb.getAllExercises();
+      _exerciseLookup = {for (var e in allExercises) e.id: e};
+
+      // 2. Parse the saved AI plan
       final jsonString = widget.training.generatedContent;
       if (jsonString == null || jsonString.isEmpty) {
         throw Exception('No generated content found.');
@@ -45,10 +55,14 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
 
       setState(() {
         _trainingPlan = AiTrainingPlan.fromJson(jsonMap);
+        _isLoading = false;
       });
     } catch (e) {
-      debugPrint('--- ERROR PARSING SAVED TRAINING --- $e');
-      setState(() => _hasError = true);
+      debugPrint('--- ERROR INITIALIZING TRAINING DATA --- $e');
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
     }
   }
 
@@ -84,7 +98,9 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
-      body: _buildBody(context, theme),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildBody(context, theme),
     );
   }
 
@@ -114,7 +130,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
         children: [
           _buildDashboardSummary(context, theme, l10n),
 
-          // Adaptive TabBar
           Container(
             color: theme.scaffoldBackgroundColor,
             child: TabBar(
@@ -206,7 +221,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
     );
   }
 
-  /// Builds the view for a single day.
   Widget _buildDayView(TrainingDay day, BuildContext context, ThemeData theme) {
     final l10n = AppLocalizations.of(context)!;
     final isDarkMode = theme.brightness == Brightness.dark;
@@ -214,7 +228,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        // Optimized Day Banner
         Container(
           padding: const EdgeInsets.all(20),
           margin: const EdgeInsets.only(bottom: 20),
@@ -236,13 +249,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
             border: isDarkMode
                 ? Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3))
                 : null,
-            boxShadow: [
-              BoxShadow(
-                color: isDarkMode ? Colors.black26 : theme.colorScheme.primary.withValues(alpha: 0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ],
           ),
           child: Row(
             children: [
@@ -286,6 +292,10 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
   }
 
   Widget _buildExerciseAccordion(TrainingExercise exercise, AppLocalizations l10n, ThemeData theme) {
+    // SYNC: Lookup the actual data using the ID from Gemini
+    final wgerData = _exerciseLookup[exercise.exerciseId];
+    final exerciseName = wgerData?.name ?? 'Unknown Exercise';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
@@ -298,7 +308,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
         shape: const Border(),
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         title: Text(
-          exercise.name,
+          exerciseName,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         subtitle: Padding(
@@ -319,6 +329,20 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Execution Images and Muscle IDs
+                if (wgerData != null) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      if (wgerData.mainMuscleId != null)
+                        _buildAssetPlaceholder(wgerData.mainMuscleId!, 'Anatomy', theme),
+                      if (wgerData.exerciseImageUrl != null)
+                        _buildNetworkImage(wgerData.exerciseImageUrl!, 'Execution'),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
                 Row(
                   children: [
                     Icon(Icons.timer_outlined, size: 16, color: theme.colorScheme.primary),
@@ -334,19 +358,85 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
+
+                // AI Tips
                 Text(
-                  exercise.description,
+                  exercise.tips,
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.5,
                     color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
                   ),
                 ),
+
+                if (wgerData != null && wgerData.description.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Text(
+                    wgerData.description.replaceAll(RegExp(r'<[^>]*>'), ''),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: theme.hintColor,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAssetPlaceholder(int muscleId, String label, ThemeData theme) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Container(
+          height: 90,
+          width: 90,
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+          ),
+          child: Center(
+            child: Text(
+              'Muscle ID:\n$muscleId',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNetworkImage(String url, String label) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Container(
+          height: 90,
+          width: 90,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              url,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const Icon(Icons.broken_image, color: Colors.grey),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
