@@ -192,5 +192,7 @@
   "switchProfile": "Cambiar Perfil",
   "profileTitle": "Perfil",
   "save": "Guardar",
-  "years": "Years"
+  "years": "Years",
+  "restDayTitle": "Día de Descanso",
+  "restDayMessage": "Tus músculos crecen mientras descansas. Disfruta de tu tiempo de recuperación y recarga energías para el próximo entrenamiento."
 }

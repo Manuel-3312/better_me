@@ -5,6 +5,7 @@ class WgerExercise {
   final int categoryId;
   final String categoryName;
   final int? mainMuscleId;
+  final List<int> secondaryMuscleIds;
   final String? exerciseImageUrl;
 
   const WgerExercise({
@@ -14,6 +15,7 @@ class WgerExercise {
     required this.categoryId,
     required this.categoryName,
     this.mainMuscleId,
+    this.secondaryMuscleIds = const [],
     this.exerciseImageUrl,
   });
 
@@ -65,11 +67,26 @@ class WgerExercise {
 
     int? parsedMuscleId;
     if (json['muscles'] != null && (json['muscles'] as List).isNotEmpty) {
-      final firstMuscle = (json['muscles'] as List).first as Map<String, dynamic>;
-      parsedMuscleId = firstMuscle['id'] as int?;
+      final firstMuscle = (json['muscles'] as List).first;
+      if (firstMuscle is Map<String, dynamic>) {
+        parsedMuscleId = firstMuscle['id'] as int?;
+      } else if (firstMuscle is int) {
+        parsedMuscleId = firstMuscle;
+      }
     }
 
     parsedMuscleId ??= _getFallbackMuscleId(parsedCategoryId);
+
+    List<int> parsedSecondaryMuscles = [];
+    if (json['muscles_secondary'] != null && (json['muscles_secondary'] as List).isNotEmpty) {
+      for (var item in (json['muscles_secondary'] as List)) {
+        if (item is Map && item['id'] != null) {
+          parsedSecondaryMuscles.add(item['id'] as int);
+        } else if (item is int) {
+          parsedSecondaryMuscles.add(item);
+        }
+      }
+    }
 
     String? parsedExerciseUrl;
     if (json['images'] != null && (json['images'] as List).isNotEmpty) {
@@ -87,6 +104,7 @@ class WgerExercise {
       categoryId: parsedCategoryId,
       categoryName: parsedCategoryName,
       mainMuscleId: parsedMuscleId,
+      secondaryMuscleIds: parsedSecondaryMuscles,
       exerciseImageUrl: parsedExerciseUrl,
     );
   }
@@ -99,11 +117,22 @@ class WgerExercise {
       'category_id': categoryId,
       'category_name': categoryName,
       'main_muscle_id': mainMuscleId,
+      'secondary_muscle_ids': secondaryMuscleIds.join(','),
       'exercise_image_url': exerciseImageUrl,
     };
   }
 
   factory WgerExercise.fromMap(Map<String, dynamic> map) {
+    List<int> parsedSecondary = [];
+    if (map['secondary_muscle_ids'] != null && map['secondary_muscle_ids'].toString().isNotEmpty) {
+      parsedSecondary = map['secondary_muscle_ids']
+          .toString()
+          .split(',')
+          .map((e) => int.tryParse(e.trim()) ?? 0)
+          .where((e) => e != 0)
+          .toList();
+    }
+
     return WgerExercise(
       id: map['id'] as int,
       name: map['name'] as String,
@@ -111,6 +140,7 @@ class WgerExercise {
       categoryId: map['category_id'] as int,
       categoryName: map['category_name'] as String,
       mainMuscleId: map['main_muscle_id'] as int?,
+      secondaryMuscleIds: parsedSecondary,
       exerciseImageUrl: map['exercise_image_url'] as String?,
     );
   }

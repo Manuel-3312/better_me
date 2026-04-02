@@ -781,6 +781,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Years'**
   String get years;
+
+  /// No description provided for @restDayTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Día de Descanso'**
+  String get restDayTitle;
+
+  /// No description provided for @restDayMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus músculos crecen mientras descansas. Disfruta de tu tiempo de recuperación y recarga energías para el próximo entrenamiento.'**
+  String get restDayMessage;
 }
 
 class _AppLocalizationsDelegate

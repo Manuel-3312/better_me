@@ -37,6 +37,7 @@ flutter:
   generate: true
   assets:
     - assets/icons/
+    - assets/images/muscles/
     - .env
 flutter_launcher_icons:
   android: "launcher_icon"

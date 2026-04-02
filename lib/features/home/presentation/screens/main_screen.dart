@@ -14,8 +14,14 @@ import 'package:better_me/features/diets/presentation/screens/diets_screen.dart'
 import 'package:better_me/features/training/presentation/screens/trainings_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/profile_screen.dart';
 
+/// Primary navigation hub for the application.
+///
+/// Orchestrates bottom navigation and handles the concurrent pre-fetching
+/// of application data to ensure a seamless offline-first experience across tabs.
 class MainScreen extends StatefulWidget {
+  /// The active user profile utilized across all navigation tabs.
   final Profile profile;
+
   const MainScreen({super.key, required this.profile});
 
   @override
@@ -39,6 +45,10 @@ class _MainScreenState extends State<MainScreen> {
     _loadAllApplicationData();
   }
 
+  /// Concurrently retrieves necessary local database records.
+  ///
+  /// Fetches diet plans, training plans, and the comprehensive exercise
+  /// lookup dictionary to provide immediate data availability for child screens.
   Future<void> _loadAllApplicationData() async {
     if (!mounted) return;
     setState(() => _isLoadingData = true);
@@ -57,7 +67,7 @@ class _MainScreenState extends State<MainScreen> {
         _exerciseLookup = {for (var e in exercises) e.id: e};
       }
     } catch (e) {
-      debugPrint('Error loading data: $e');
+      debugPrint('Data synchronization error: $e');
     } finally {
       if (mounted) setState(() => _isLoadingData = false);
     }
@@ -66,7 +76,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     final List<Widget> screens = [
       TodayScreen(
@@ -91,10 +100,22 @@ class _MainScreenState extends State<MainScreen> {
         },
         type: BottomNavigationBarType.fixed,
         items: [
-          BottomNavigationBarItem(icon: const Icon(Icons.today), label: l10n.todayTitle),
-          BottomNavigationBarItem(icon: const Icon(Icons.restaurant_menu), label: l10n.myDiets),
-          BottomNavigationBarItem(icon: const Icon(Icons.fitness_center), label: l10n.myWorkouts),
-          BottomNavigationBarItem(icon: const Icon(Icons.person), label: 'Perfil'),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.today),
+            label: l10n.todayTitle,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.restaurant_menu),
+            label: l10n.myDiets,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.fitness_center),
+            label: l10n.myWorkouts,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person),
+            label: l10n.profileTitle,
+          ),
         ],
       ),
     );

@@ -30,4 +30,16 @@ class DietRepository {
       diet.toMap(),
     );
   }
+
+  /// Deletes a diet record from the local SQLite database by its ID.
+  /// Returns the number of rows affected.
+  Future<int> deleteDiet(int idDiet) async {
+    final db = await DatabaseHelper.instance.database;
+
+    return await db.delete(
+      'diet',
+      where: 'id_diet = ?',
+      whereArgs: [idDiet],
+    );
+  }
 }

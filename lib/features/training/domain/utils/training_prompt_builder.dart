@@ -1,6 +1,8 @@
+import 'dart:convert';
 import '../../../profile/domain/models/profile.dart';
 import '../models/training.dart';
 import '../models/wger_exercise.dart';
+import '../models/favorite_exercise.dart';
 
 /// Utility class responsible for generating highly structured prompts for the AI
 /// to create fitness routines using Retrieval-Augmented Generation (RAG).
@@ -19,18 +21,34 @@ class TrainingPromptBuilder {
   }
 
   /// Generates the system prompt by merging user biometrics, training preferences,
-  /// and the local database of available exercises.
+  /// the local database of available exercises, and user's favorite exercises.
   static String buildTrainingPrompt(
-      Profile profile,
-      Training training,
-      String language,
-      List<WgerExercise> availableExercises,
-      ) {
+    Profile profile,
+    Training training,
+    String language,
+    List<WgerExercise> availableExercises, {
+    List<FavoriteExercise> favoriteExercises = const [],
+  }) {
     final age = _calculateAge(profile.birthDate);
 
     final String exerciseContext = availableExercises
-        .map((e) => 'ID: ${e.id} | Name: ${e.name} | Category: ${e.categoryName}')
+        .map(
+          (e) => 'ID: ${e.id} | Name: ${e.name} | Category: ${e.categoryName}',
+        )
         .join('\n');
+
+    String favoritesContext = '';
+    if (favoriteExercises.isNotEmpty) {
+      final exercisesJson = jsonEncode(
+        favoriteExercises.map((f) => f.exercise.toJson()).toList(),
+      );
+      favoritesContext =
+          '''
+The user has a personal library of favorite exercises. You MUST try to prioritize and include these EXACT exercises with their preferred sets/reps if they target the muscle groups planned for the day.
+Available Favorite Exercises:
+$exercisesJson
+''';
+    }
 
     return '''
 Act as an elite personal trainer.
@@ -50,6 +68,7 @@ Strict Constraints:
 1. You MUST respond ONLY with a valid JSON object. Do NOT include markdown blocks.
 2. The entire content inside the JSON (focus, tips) MUST be written entirely in $language.
 3. Use the exact "id" from the AVAILABLE EXERCISES DATABASE for the "exercise_id" field.
+$favoritesContext
 
 The JSON structure must strictly follow this exact schema:
 {

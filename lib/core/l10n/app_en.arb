@@ -194,6 +194,7 @@
   "invalidWeight": "Please enter a valid weight",
   "weightHistory": "Weight history",
   "save": "Save",
-  "years": "Years"
-
+  "years": "Years",
+  "restDayTitle": "Rest Day",
+  "restDayMessage": "Your muscles grow while you rest. Enjoy your recovery time and recharge your energy for the next workout."
 }

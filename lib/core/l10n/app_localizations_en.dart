@@ -379,4 +379,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get years => 'Years';
+
+  @override
+  String get restDayTitle => 'Rest Day';
+
+  @override
+  String get restDayMessage =>
+      'Your muscles grow while you rest. Enjoy your recovery time and recharge your energy for the next workout.';
 }

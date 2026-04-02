@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
-// Absolute imports
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
 import 'package:better_me/features/diets/domain/models/ai_diet_plan.dart';
+import 'package:better_me/features/diets/presentation/widgets/diet_meal_tile.dart';
 
 /// Screen responsible for displaying an already generated diet plan.
-/// Refactored to use the AiDietPlan DTO and modern theme support.
+/// Refactored to use the AiDietPlan DTO, modern theme support, and the reusable DietMealTile.
 class DietDetailScreen extends StatefulWidget {
   final Diet diet;
   final Profile profile;
@@ -42,7 +42,6 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     super.dispose();
   }
 
-  /// Parses the AI-generated JSON content using the secure AiDietPlan model.
   void _loadSavedDiet() {
     try {
       final jsonString = widget.diet.generatedContent;
@@ -100,7 +99,11 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.redAccent,
+              ),
               const SizedBox(height: 16),
               Text(
                 l10n.errorGeneratingDiet,
@@ -136,7 +139,11 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     );
   }
 
-  Widget _buildDashboardSummary(BuildContext context, ThemeData theme, AppLocalizations l10n) {
+  Widget _buildDashboardSummary(
+      BuildContext context,
+      ThemeData theme,
+      AppLocalizations l10n,
+      ) {
     final hasAllergies = widget.diet.allergies?.isNotEmpty ?? false;
 
     return Container(
@@ -150,7 +157,11 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
               color: Colors.orangeAccent.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(_getObjectiveIcon(), size: 32, color: Colors.orangeAccent),
+            child: Icon(
+              _getObjectiveIcon(),
+              size: 32,
+              color: Colors.orangeAccent,
+            ),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -172,14 +183,16 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                     _buildQuickStat(
                       theme,
                       Icons.calendar_month,
-                      l10n.daysPerWeek(_dietPlan?.days.length ?? 0).replaceFirst('/', ' '),
+                      l10n
+                          .daysPerWeek(_dietPlan?.days.length ?? 0)
+                          .replaceFirst('/', ' '),
                     ),
                     if (hasAllergies) ...[
                       const SizedBox(width: 16),
                       _buildQuickStat(
                         theme,
                         Icons.warning_amber_rounded,
-                        l10n.dietAllergies, // Usamos clave de traducción
+                        l10n.dietAllergies,
                         color: Colors.redAccent,
                       ),
                     ],
@@ -193,15 +206,27 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     );
   }
 
-  Widget _buildQuickStat(ThemeData theme, IconData icon, String text, {Color? color}) {
-    final displayColor = color ?? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ?? Colors.grey;
+  Widget _buildQuickStat(
+      ThemeData theme,
+      IconData icon,
+      String text, {
+        Color? color,
+      }) {
+    final displayColor =
+        color ??
+            theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ??
+            Colors.grey;
     return Row(
       children: [
         Icon(icon, size: 16, color: displayColor),
         const SizedBox(width: 4),
         Text(
           text,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: displayColor),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: displayColor,
+          ),
         ),
       ],
     );
@@ -238,18 +263,28 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                   Expanded(
                     child: Text(
                       _getWeekdayName(day.day, l10n),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${day.totalCalories} ${l10n.kcal}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -263,7 +298,11 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                   height: 48,
                   color: theme.dividerColor.withValues(alpha: 0.1),
                 ),
-                itemBuilder: (context, index) => _buildMealItem(day.meals[index], l10n, theme),
+                itemBuilder: (context, index) => DietMealTile(
+                  meal: day.meals[index],
+                  idProfile: widget.profile.idProfile,
+                  dietObjective: widget.diet.objective,
+                ),
               ),
             ),
           ],
@@ -272,64 +311,10 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     );
   }
 
-  Widget _buildMealItem(DietMeal meal, AppLocalizations l10n, ThemeData theme) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 4,
-          height: 45,
-          decoration: BoxDecoration(
-            color: Colors.orangeAccent.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    meal.type.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: theme.hintColor,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  Text(
-                    '${meal.calories} ${l10n.kcal}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orangeAccent),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                meal.name,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                meal.description,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.5,
-                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildPageIndicator(ThemeData theme) {
-    if (_dietPlan == null || _dietPlan!.days.isEmpty) return const SizedBox.shrink();
+    if (_dietPlan == null || _dietPlan!.days.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
@@ -340,7 +325,9 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
           height: 6.0,
           width: _currentPage == index ? 24.0 : 6.0,
           decoration: BoxDecoration(
-            color: _currentPage == index ? Colors.orangeAccent : theme.dividerColor.withValues(alpha: 0.2),
+            color: _currentPage == index
+                ? Colors.orangeAccent
+                : theme.dividerColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(3.0),
           ),
         ),
@@ -351,14 +338,22 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
   String _getWeekdayName(int dayNumber, AppLocalizations l10n) {
     final int normalizedDay = ((dayNumber - 1) % 7) + 1;
     switch (normalizedDay) {
-      case 1: return l10n.monday;
-      case 2: return l10n.tuesday;
-      case 3: return l10n.wednesday;
-      case 4: return l10n.thursday;
-      case 5: return l10n.friday;
-      case 6: return l10n.saturday;
-      case 7: return l10n.sunday;
-      default: return '';
+      case 1:
+        return l10n.monday;
+      case 2:
+        return l10n.tuesday;
+      case 3:
+        return l10n.wednesday;
+      case 4:
+        return l10n.thursday;
+      case 5:
+        return l10n.friday;
+      case 6:
+        return l10n.saturday;
+      case 7:
+        return l10n.sunday;
+      default:
+        return '';
     }
   }
 }
