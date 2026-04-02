@@ -49,5 +49,9 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSPhotoLibraryUsageDescription</key>
+        <string>We need access to your photo library to save your progress pictures.</string>
+        <key>NSCameraUsageDescription</key>
+        <string>We need access to your camera to take progress pictures.</string>
 	</dict>
 </plist>

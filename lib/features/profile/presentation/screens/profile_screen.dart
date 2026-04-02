@@ -7,6 +7,7 @@ import 'package:better_me/features/profile/data/profile_repository.dart';
 import 'package:better_me/features/profile/presentation/screens/create_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/widgets/weight_entry_dialog.dart';
+import 'package:better_me/features/progress/presentation/screens/progress_timeline_screen.dart';
 
 /// Screen responsible for displaying and managing the user's profile.
 class ProfileScreen extends StatefulWidget {
@@ -74,6 +75,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             _buildProfileCard(context, l10n, theme),
             const SizedBox(height: 24),
+            _buildProgressBanner(context, theme),
+            const SizedBox(height: 24),
             _buildActionList(context, l10n, theme),
           ],
         ),
@@ -82,10 +85,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileCard(
-    BuildContext context,
-    AppLocalizations l10n,
-    ThemeData theme,
-  ) {
+      BuildContext context,
+      AppLocalizations l10n,
+      ThemeData theme,
+      ) {
     final isDarkMode = theme.brightness == Brightness.dark;
     final Color activeColor = isDarkMode
         ? theme.colorScheme.primary
@@ -102,11 +105,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         gradient: LinearGradient(
           colors: isDarkMode
               ? [
-                  theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.8,
-                  ),
-                  theme.colorScheme.surface.withValues(alpha: 0.9),
-                ]
+            theme.colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.8,
+            ),
+            theme.colorScheme.surface.withValues(alpha: 0.9),
+          ]
               : [activeColor, activeColor.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -252,12 +255,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildMetricColumn(
-    String label,
-    IconData icon,
-    bool isDarkMode,
-    Color activeColor,
-    ThemeData theme,
-  ) {
+      String label,
+      IconData icon,
+      bool isDarkMode,
+      Color activeColor,
+      ThemeData theme,
+      ) {
     return Column(
       children: [
         Icon(icon, color: isDarkMode ? activeColor : Colors.white70, size: 28),
@@ -273,11 +276,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildProgressBanner(BuildContext context, ThemeData theme) {
+    final isDarkMode = theme.brightness == Brightness.dark;
+    const MaterialColor bannerColor = Colors.teal;
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProgressTimelineScreen(profile: _currentProfile),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDarkMode
+              ? bannerColor.withValues(alpha: 0.15)
+              : bannerColor.shade50,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: bannerColor.withValues(alpha: isDarkMode ? 0.3 : 0.2),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: bannerColor.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.auto_graph_rounded,
+                color: isDarkMode ? bannerColor.shade200 : bannerColor.shade700,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Progress Timeline',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Track your body transformation',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.hintColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: theme.hintColor),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionList(
-    BuildContext context,
-    AppLocalizations l10n,
-    ThemeData theme,
-  ) {
+      BuildContext context,
+      AppLocalizations l10n,
+      ThemeData theme,
+      ) {
     final isDarkMode = theme.brightness == Brightness.dark;
     final Color activeColor = isDarkMode
         ? theme.colorScheme.primary

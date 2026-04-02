@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+/// Singleton helper class for managing the local SQLite database.
+/// Handles initialization, configuration, creation, and upgrading of tables.
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -9,7 +11,7 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('betterme_v3.db'); // Nueva versión para forzar recreación
+    _database = await _initDB('betterme_v3.db');
     return _database!;
   }
 
@@ -19,8 +21,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
     );
   }
@@ -29,8 +32,22 @@ class DatabaseHelper {
     await db.execute('PRAGMA foreign_keys = ON');
   }
 
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE progress_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          id_profile INTEGER NOT NULL,
+          entry_date TEXT NOT NULL,
+          weight REAL NOT NULL,
+          photo_paths TEXT NOT NULL,
+          FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
+        )
+      ''');
+    }
+  }
+
   Future _createDB(Database db, int version) async {
-    // 1. PERFIL
     await db.execute('''
       CREATE TABLE profile (
         id_profile INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,7 +61,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // 2. DÍAS MAESTROS
     await db.execute('''
       CREATE TABLE week_day (
         name TEXT PRIMARY KEY,
@@ -52,7 +68,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // 3. CACHÉ DE WGER (local_exercises)
     await db.execute('''
       CREATE TABLE local_exercises (
         id INTEGER PRIMARY KEY,
@@ -65,7 +80,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // 4. ENTRENAMIENTO (Cabecera)
     await db.execute('''
       CREATE TABLE training (
         id_training INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,7 +93,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // 5. DÍAS DE ENTRENAMIENTO (La tabla que te faltaba)
     await db.execute('''
       CREATE TABLE training_day (
         id_training_day INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,7 +103,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // 6. EJERCICIOS ESPECÍFICOS DE LA SESIÓN
     await db.execute('''
       CREATE TABLE exercise (
         id_exercise INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,7 +117,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // 7. DIETAS, PESO, ETC.
     await db.execute('''
       CREATE TABLE diet (
         id_diet INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,6 +136,17 @@ class DatabaseHelper {
         id_profile INTEGER NOT NULL,
         weight REAL NOT NULL,
         date TEXT NOT NULL,
+        FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE progress_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_profile INTEGER NOT NULL,
+        entry_date TEXT NOT NULL,
+        weight REAL NOT NULL,
+        photo_paths TEXT NOT NULL,
         FOREIGN KEY (id_profile) REFERENCES profile (id_profile) ON DELETE CASCADE
       )
     ''');
