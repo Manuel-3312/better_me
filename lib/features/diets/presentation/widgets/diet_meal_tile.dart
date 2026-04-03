@@ -5,7 +5,6 @@ import 'package:better_me/features/diets/domain/models/favorite_meal.dart';
 import 'package:better_me/features/diets/data/favorite_meals_repository.dart';
 
 /// Reusable widget displaying a single diet meal with expandable details.
-/// Manages its own favorite state by interacting with the local repository.
 class DietMealTile extends StatefulWidget {
   final DietMeal meal;
   final int? idProfile;
@@ -160,13 +159,13 @@ class _DietMealTileState extends State<DietMealTile> {
                       _buildActionButton(
                         context,
                         icon: Icons.restaurant,
-                        label: "Recipe",
+                        label: l10n.recipe,
                         onPressed: () => _showRecipeDialog(context),
                       ),
                       _buildActionButton(
                         context,
                         icon: Icons.pie_chart,
-                        label: "Macros",
+                        label: l10n.macros,
                         onPressed: () => _showMacrosDialog(context),
                       ),
                     ],
@@ -200,6 +199,7 @@ class _DietMealTileState extends State<DietMealTile> {
   }
 
   void _showRecipeDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -211,13 +211,13 @@ class _DietMealTileState extends State<DietMealTile> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _DialogSectionTitle(title: "Ingredients"),
+                _DialogSectionTitle(title: l10n.ingredients),
                 ...widget.meal.ingredients.map((ing) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text("• $ing", style: const TextStyle(fontSize: 14)),
                 )),
                 const SizedBox(height: 20),
-                const _DialogSectionTitle(title: "Preparation"),
+                _DialogSectionTitle(title: l10n.instructions),
                 ...widget.meal.preparationSteps.asMap().entries.map((entry) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Text("${entry.key + 1}. ${entry.value}",
@@ -228,30 +228,31 @@ class _DietMealTileState extends State<DietMealTile> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.close))
         ],
       ),
     );
   }
 
   void _showMacrosDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Macronutrients", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.macros, style: const TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildMacroRow("Proteins", "${widget.meal.macros.protein}g", Colors.redAccent),
-            _buildMacroRow("Carbohydrates", "${widget.meal.macros.carbs}g", Colors.blueAccent),
-            _buildMacroRow("Fats", "${widget.meal.macros.fats}g", Colors.orangeAccent),
+            _buildMacroRow(l10n.protein, "${widget.meal.macros.protein}g", Colors.redAccent),
+            _buildMacroRow(l10n.carbs, "${widget.meal.macros.carbs}g", Colors.blueAccent),
+            _buildMacroRow(l10n.fats, "${widget.meal.macros.fats}g", Colors.orangeAccent),
             const Divider(height: 30),
-            Text("Total: ${widget.meal.calories} kcal", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text("${l10n.total}: ${widget.meal.calories} ${l10n.kcal}", style: const TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.close))
         ],
       ),
     );

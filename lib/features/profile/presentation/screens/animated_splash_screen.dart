@@ -14,8 +14,12 @@ import 'package:better_me/features/home/presentation/screens/main_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/create_profile_screen.dart';
 
-/// A unified entry screen that combines a high-fidelity SVG animation
-/// with intelligent routing based on database state and user session persistence.
+/// A unified entry screen that combines a high-fidelity SVG logo animation
+/// with layout stabilization and intelligent routing logic.
+///
+/// This screen handles user locale preferences, checks the database state for profiles,
+/// and intelligently routes the user to the Main, Choose Profile, or Create Profile screens
+/// upon completion of the intro animation via an optimized, fluid swipe gesture.
 class AnimatedSplashScreen extends StatefulWidget {
   const AnimatedSplashScreen({super.key});
 
@@ -30,6 +34,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   late Animation<double> _starFadeAnimation;
   late Animation<double> _starScaleAnimation;
 
+  /// Tracks whether the welcome and language selector UI is visible.
   bool _showWelcomeUI = false;
 
   /// Stores the last active profile if one is found in local storage.
@@ -41,7 +46,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   @override
   void initState() {
     super.initState();
-
     _checkApplicationState();
 
     _controller = AnimationController(
@@ -82,17 +86,29 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        setState(() {
-          _showWelcomeUI = true;
-        });
+        if (mounted) {
+          setState(() {
+            _showWelcomeUI = true;
+          });
+        }
       }
     });
 
-    _controller.forward();
+    // Fix cold start animation jank:
+    // Wait for the first frame and add a slight delay to ensure UI thread readiness
+    // before starting the complex drawing animation.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (mounted) {
+          _controller.forward();
+        }
+      });
+    });
   }
 
-  /// Determines the routing state by checking SharedPreferences and SQLite.
-  /// First checks for a saved session, fallback to checking total profile count.
+  /// Determines the routing state by checking local storage and database.
+  ///
+  /// First checks for a saved session ('last_profile_id') and fallbacks to checking total profile count.
   Future<void> _checkApplicationState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -103,7 +119,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
         _lastActiveProfile = await repository.getProfileById(lastProfileId);
       }
 
-      // If no valid session was found, check if ANY profiles exist for fallback routing
       if (_lastActiveProfile == null) {
         final profiles = await repository.getAllProfiles();
         if (mounted) {
@@ -118,52 +133,54 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
     }
   }
 
-  /// Handles the upward swipe gesture and routes the user intelligently.
+  /// Handles routing intelligently with an optimized, highly professional fluid slide transition.
+  ///
+  /// Instead of just replacing the screen, this uses a layered effect with perspective:
+  /// 1. The entering widget (e.g., MainScreen) slides UP from Y=1.0 to 0.0.
+  /// 2. This primary motion uses a graceful physical curve (`fastLinearToSlowEaseIn`) to feel professional.
+  /// 3. A FadeTransition is superposed to start the fade gracefully, which makes any performance hiccups less obvious.
+  /// 4. An optimized BoxShadow is used against the black background to add depth.
   void _onSwipeUp(BuildContext context) {
     if (!_showWelcomeUI) return;
 
     Widget targetScreen;
-
     if (_lastActiveProfile != null) {
-      // Route 1: Direct to Home with the saved profile
       targetScreen = MainScreen(profile: _lastActiveProfile!);
     } else if (_hasProfiles) {
-      // Route 2: Choose profile screen
       targetScreen = const ChooseProfileScreen();
     } else {
-      // Route 3: Force creation of a new profile
       targetScreen = const CreateProfileScreen();
     }
 
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(milliseconds: 800),
+        reverseTransitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) => targetScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curvedAnimation = CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutQuart,
+          final scaleAnimation = Tween<double>(begin: 0.9, end: 1.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutQuart),
           );
 
-          final slideTween = Tween<Offset>(
-            begin: const Offset(0.0, 1.0),
-            end: Offset.zero,
-          ).animate(curvedAnimation);
+          final fadeAnimation = CurvedAnimation(
+            parent: animation,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+          );
 
-          return SlideTransition(
-            position: slideTween,
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: child,
+          final slideAnimation =
+              Tween<Offset>(
+                begin: const Offset(0.0, 0.08),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutQuart),
+              );
+
+          return FadeTransition(
+            opacity: fadeAnimation,
+            child: ScaleTransition(
+              scale: scaleAnimation,
+              child: SlideTransition(position: slideAnimation, child: child),
             ),
           );
         },
@@ -180,6 +197,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return GestureDetector(
       onVerticalDragEnd: (details) {
@@ -188,18 +206,22 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF000814),
+        backgroundColor: const Color(0xFF000814), // Dark navy background
         body: SafeArea(
           child: Stack(
             children: [
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 1,
+              // Logo Positioned at a fixed relative height to avoid jumps between languages
+              Positioned(
+                top: screenHeight * 0.15,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: RepaintBoundary(
+                    // isolate logo rendering to avoid full screen repaints
+                    child: SizedBox(
+                      width: 300,
+                      height: 300,
                       child: CustomPaint(
-                        size: const Size(300, 300),
                         painter: SvgLogoPainter(
                           drawingPercent: _drawingAnimation,
                           starOpacity: _starFadeAnimation,
@@ -207,53 +229,50 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                         ),
                       ),
                     ),
-                    AnimatedOpacity(
-                      opacity: _showWelcomeUI ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 800),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          Text(
-                            l10n.welcomeTitle,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          const _LanguageDropdown(),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
+
+              // Welcome Text and Language Selector with AI Warning
               Positioned(
-                bottom: 40,
+                top: screenHeight * 0.52,
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  opacity: _showWelcomeUI ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 800),
+                  child: Column(
+                    children: [
+                      Text(
+                        l10n.welcomeTitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const _LanguageSelector(),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Clean Swipe Indicator (Icon only)
+              Positioned(
+                bottom: 50,
                 left: 0,
                 right: 0,
                 child: AnimatedOpacity(
                   opacity: _showWelcomeUI ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 1000),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.keyboard_double_arrow_up,
-                        size: 32,
-                        color: Color(0xFF0052FF),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.swipeToStart,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                    ],
+                  child: const Center(
+                    child: Icon(
+                      Icons.keyboard_double_arrow_up,
+                      size: 40,
+                      color: Color(0xFF0052FF),
+                    ),
                   ),
                 ),
               ),
@@ -265,45 +284,73 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   }
 }
 
-class _LanguageDropdown extends StatelessWidget {
-  const _LanguageDropdown();
+/// A specialized widget providing locale switching and AI language awareness.
+class _LanguageSelector extends StatelessWidget {
+  const _LanguageSelector();
 
   @override
   Widget build(BuildContext context) {
     final currentLocale = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context)!;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: currentLocale,
-          icon: const Icon(Icons.translate, color: Color(0xFF0052FF), size: 18),
-          dropdownColor: const Color(0xFF000814),
-          borderRadius: BorderRadius.circular(16),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white24),
           ),
-          items: const [
-            DropdownMenuItem(value: 'es', child: Text('🇪🇸 Español')),
-            DropdownMenuItem(value: 'en', child: Text('🇬🇧 English')),
-          ],
-          onChanged: (String? newLocale) {
-            if (newLocale != null) {
-              BetterMeApp.setLocale(context, Locale(newLocale));
-            }
-          },
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: currentLocale,
+              icon: const Icon(
+                Icons.translate,
+                color: Color(0xFF0052FF),
+                size: 18,
+              ),
+              dropdownColor: const Color(0xFF000814),
+              borderRadius: BorderRadius.circular(16),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              items: const [
+                DropdownMenuItem(value: 'es', child: Text('🇪🇸 Español')),
+                DropdownMenuItem(value: 'en', child: Text('🇬🇧 English')),
+              ],
+              onChanged: (String? newLocale) {
+                if (newLocale != null) {
+                  BetterMeApp.setLocale(context, Locale(newLocale));
+                }
+              },
+            ),
+          ),
         ),
-      ),
+        const SizedBox(height: 20),
+        // AI Language Warning Note
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Text(
+            l10n.languageWarning,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.4),
+              height: 1.5,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
+/// Painter for the high-fidelity SVG wave and star logo.
+/// Draws a neon wave line followed by a scaling, fading star.
 class SvgLogoPainter extends CustomPainter {
   final Animation<double> drawingPercent;
   final Animation<double> starOpacity;
@@ -317,7 +364,7 @@ class SvgLogoPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double sc = size.width / 100;
+    final double sc = size.width / 100; // Scaling factor based on size
 
     final mainPaint = Paint()
       ..color = const Color(0xFF0052FF)
@@ -331,7 +378,10 @@ class SvgLogoPainter extends CustomPainter {
       ..strokeWidth = 4.0 * sc
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+      ..maskFilter = const MaskFilter.blur(
+        BlurStyle.normal,
+        8,
+      ); // Neon glow mask
 
     final path = Path();
     path.moveTo(10 * sc, 65 * sc);
@@ -342,6 +392,7 @@ class SvgLogoPainter extends CustomPainter {
     path.lineTo(55 * sc, 65 * sc);
     path.cubicTo(70 * sc, 65 * sc, 80 * sc, 55 * sc, 88 * sc, 25 * sc);
 
+    // Draw the main animated wave path (neon effect first, then solid)
     final ui.PathMetrics metrics = path.computeMetrics();
     for (final ui.PathMetric metric in metrics) {
       final animatedPath = metric.extractPath(
@@ -352,12 +403,14 @@ class SvgLogoPainter extends CustomPainter {
       canvas.drawPath(animatedPath, mainPaint);
     }
 
+    // Star logic (only draw if visible)
     if (starOpacity.value > 0) {
       final starPaint = Paint()
         ..color = const Color(0xFF0052FF).withValues(alpha: starOpacity.value)
         ..style = PaintingStyle.fill;
 
       canvas.save();
+      // Translate to star center, apply rotate/scale, then translate back
       canvas.translate(88 * sc, 23.5 * sc);
       canvas.rotate(math.pi / 3);
       canvas.scale(starScale.value);

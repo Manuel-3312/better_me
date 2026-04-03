@@ -1,16 +1,23 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/core/utils/dialog_helper.dart';
+import 'package:better_me/core/utils/snackbar_helper.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
+import 'package:better_me/features/training/data/training_repository.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
-import 'package:better_me/features/training/presentation/controllers/trainings_controller.dart';
-import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart';
+import 'package:better_me/features/training/domain/models/ai_training_plan.dart';
+import 'package:better_me/features/training/domain/utils/training_prompt_builder.dart';
+import 'package:better_me/core/network/gemini_service.dart';
+import 'package:better_me/features/training/data/exercise_local_database.dart';
 import 'create_training_screen.dart';
 import './training_detail_screen.dart';
+import 'package:better_me/features/training/data/favorite_exercises_repository.dart';
+import 'package:better_me/features/training/domain/models/favorite_exercise.dart';
 import 'favorite_exercises_screen.dart';
 
-/// Primary interface for displaying and managing the user's training plans.
+/// Screen responsible for displaying and managing the user's training plans.
 class TrainingsScreen extends StatefulWidget {
   final Profile profile;
 
@@ -21,53 +28,135 @@ class TrainingsScreen extends StatefulWidget {
 }
 
 class _TrainingsScreenState extends State<TrainingsScreen> {
-  late final TrainingsController _controller;
+  final TrainingRepository _repository = TrainingRepository();
+  final ExerciseLocalDatabase _localDb = ExerciseLocalDatabase();
+  late final GeminiService _geminiService;
+
+  List<Training> _trainings = [];
+  bool _isLoadingTrainings = true;
+  String? _error;
+
+  Training? _pendingTraining;
 
   @override
   void initState() {
     super.initState();
-    _controller = TrainingsController();
-    if (widget.profile.idProfile != null) {
-      _controller.loadTrainings(widget.profile.idProfile!);
+    _geminiService = GeminiService();
+    _loadTrainings();
+  }
+
+  Future<void> _loadTrainings() async {
+    if (widget.profile.idProfile == null) return;
+
+    setState(() {
+      _isLoadingTrainings = true;
+      _error = null;
+    });
+
+    try {
+      final trainings = await _repository.getTrainingsByProfile(
+        widget.profile.idProfile!,
+      );
+      if (mounted) {
+        setState(() {
+          _trainings = trainings;
+          _isLoadingTrainings = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoadingTrainings = false;
+        });
+      }
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  Future<void> _generateTrainingInBackground(
+    Training preliminaryTraining,
+  ) async {
+    setState(() => _pendingTraining = preliminaryTraining);
 
-  Future<void> _handleTrainingCreation(Training preliminaryTraining) async {
+    // Capture state and localization before async gaps
+    final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
     final languageInstruction = locale == 'es' ? 'Spanish' : 'English';
 
-    await _controller.generateTrainingInBackground(
-      preliminaryTraining: preliminaryTraining,
-      profile: widget.profile,
-      languageInstruction: languageInstruction,
-      onSuccess: () {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.trainingCreatedSuccess),
-              backgroundColor: Colors.green.shade700,
-            ),
-          );
-        }
-      },
-      onError: () {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.errorGeneratingTraining),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        }
-      },
-    );
+    try {
+      final availableExercises = await _localDb.getAllExercises();
+      if (availableExercises.isEmpty) {
+        throw Exception('Exercise database is empty.');
+      }
+
+      final favRepo = FavoriteExercisesRepository();
+      final includeFavs = await favRepo.getIncludeFavoritesPreference();
+
+      List<FavoriteExercise> targetFavorites = [];
+      if (includeFavs) {
+        targetFavorites = await favRepo.getFavorites(
+          preliminaryTraining.idProfile,
+          objective: preliminaryTraining.objective,
+        );
+      }
+
+      final prompt = TrainingPromptBuilder.buildTrainingPrompt(
+        widget.profile,
+        preliminaryTraining,
+        languageInstruction,
+        availableExercises,
+        favoriteExercises: targetFavorites,
+      );
+
+      final responseText = await _geminiService.generateContent(prompt);
+      if (responseText == null || responseText.isEmpty) {
+        throw Exception('Empty AI response');
+      }
+
+      final cleanJsonString = responseText
+          .replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim();
+
+      final Map<String, dynamic> jsonMap = jsonDecode(cleanJsonString);
+      final aiPlan = AiTrainingPlan.fromJson(jsonMap);
+
+      final finalTraining = Training(
+        idProfile: preliminaryTraining.idProfile,
+        name: preliminaryTraining.name,
+        objective: preliminaryTraining.objective,
+        maxDays: preliminaryTraining.maxDays,
+        maxTime: preliminaryTraining.maxTime,
+        generatedContent: cleanJsonString,
+      );
+
+      await _repository.saveFullAiTrainingPlan(finalTraining, aiPlan);
+
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.trainingCreatedSuccess),
+            backgroundColor: Colors.green.shade700,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error generating training: $e');
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.errorGeneratingTraining),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _pendingTraining = null);
+        _loadTrainings();
+      }
+    }
   }
 
   Future<void> _confirmAndDeleteTraining(Training training, int index) async {
@@ -75,35 +164,40 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
 
     final bool confirm = await DialogHelper.showDeleteConfirmation(
       context: context,
-      title: 'Delete Training',
-      content: 'Are you sure you want to delete this training plan?',
+      title: l10n.deleteTrainingTitle,
+      content: l10n.deleteTrainingContent,
       cancelText: l10n.cancel,
       deleteText: l10n.delete,
     );
 
     if (!confirm || !mounted) return;
 
-    _controller.removeTrainingLocally(index);
+    setState(() {
+      _trainings.removeAt(index);
+    });
 
-    final snackBarController = ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${training.name} deleted'),
-        action: SnackBarAction(
-          label: l10n.undo.toUpperCase(),
-          textColor: Colors.blueAccent,
-          onPressed: () {},
-        ),
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-      ),
+    final snackBarController = SnackbarHelper.showUndoSnackbar(
+      context: context,
+      message: l10n.trainingDeleted(training.name),
+      undoLabel: l10n.undo,
     );
 
     final reason = await snackBarController.closed;
 
     if (reason == SnackBarClosedReason.action) {
-      _controller.restoreTrainingLocally(index, training);
-    } else if (training.idTraining != null) {
-      await _controller.deleteTrainingPermanently(training.idTraining!);
+      if (mounted) {
+        setState(() {
+          _trainings.insert(index, training);
+        });
+      }
+    } else {
+      if (training.idTraining != null) {
+        try {
+          await _repository.deleteTraining(training.idTraining!);
+        } catch (e) {
+          debugPrint('Error deleting training from database: $e');
+        }
+      }
     }
   }
 
@@ -247,73 +341,6 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     return card;
   }
 
-  Widget _buildBodyContent(
-    ThemeData theme,
-    AppLocalizations l10n,
-    Color trainingColor,
-  ) {
-    if (_controller.isLoading && _controller.pendingTraining == null) {
-      return Center(child: CircularProgressIndicator(color: trainingColor));
-    }
-
-    if (_controller.error != null) {
-      return Center(child: Text('Error: ${_controller.error}'));
-    }
-
-    if (_controller.trainings.isEmpty && _controller.pendingTraining == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.fitness_center,
-              size: 80,
-              color: theme.hintColor.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.noTrainingsMessage,
-              style: TextStyle(fontSize: 16, color: theme.hintColor),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final int itemCount =
-        _controller.trainings.length +
-        (_controller.pendingTraining != null ? 1 : 0);
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 100),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        if (_controller.pendingTraining != null && index == 0) {
-          return _buildTrainingCard(
-            _controller.pendingTraining!,
-            -1,
-            theme,
-            l10n,
-            trainingColor,
-            isPending: true,
-          );
-        }
-
-        final targetIndex = _controller.pendingTraining != null
-            ? index - 1
-            : index;
-        return _buildTrainingCard(
-          _controller.trainings[targetIndex],
-          targetIndex,
-          theme,
-          l10n,
-          trainingColor,
-          isPending: false,
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -350,54 +377,147 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
           ),
         ],
       ),
-      body: ListenableBuilder(
-        listenable: _controller,
-        builder: (context, child) {
-          return _buildBodyContent(theme, l10n, trainingColor);
-        },
-      ),
-      floatingActionButton: ListenableBuilder(
-        listenable: _controller,
-        builder: (context, child) {
-          final isPending = _controller.pendingTraining != null;
-
-          return PrimaryGradientButton(
-            primaryColor: trainingColor,
-            isDisabled: isPending,
-            onTap: () async {
-              final Training? preliminaryTraining = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      CreateTrainingScreen(profile: widget.profile),
-                ),
-              );
-
-              if (preliminaryTraining != null) {
-                _handleTrainingCreation(preliminaryTraining);
-              }
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.add,
-                  color: isDarkMode ? trainingColor : Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.createTraining,
-                  style: TextStyle(
-                    color: isDarkMode ? trainingColor : Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+      body: _buildBodyContent(theme, l10n, trainingColor),
+      floatingActionButton: Opacity(
+        opacity: _pendingTraining != null ? 0.5 : 1.0,
+        child: AbsorbPointer(
+          absorbing: _pendingTraining != null,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDarkMode
+                    ? [
+                        theme.colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.8,
+                        ),
+                        theme.colorScheme.surface.withValues(alpha: 0.9),
+                      ]
+                    : [trainingColor, trainingColor.withValues(alpha: 0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: isDarkMode
+                  ? Border.all(color: trainingColor.withValues(alpha: 0.3))
+                  : null,
+              boxShadow: [
+                BoxShadow(
+                  color: trainingColor.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-          );
-        },
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () async {
+                  final Training? preliminaryTraining = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          CreateTrainingScreen(profile: widget.profile),
+                    ),
+                  );
+
+                  if (preliminaryTraining != null) {
+                    _generateTrainingInBackground(preliminaryTraining);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.add,
+                        color: isDarkMode ? trainingColor : Colors.white,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.createTraining,
+                        style: TextStyle(
+                          color: isDarkMode ? trainingColor : Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildBodyContent(
+    ThemeData theme,
+    AppLocalizations l10n,
+    Color trainingColor,
+  ) {
+    if (_isLoadingTrainings && _pendingTraining == null) {
+      return Center(child: CircularProgressIndicator(color: trainingColor));
+    }
+
+    if (_error != null) {
+      return Center(child: Text('Error: $_error'));
+    }
+
+    if (_trainings.isEmpty && _pendingTraining == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.fitness_center,
+              size: 80,
+              color: theme.hintColor.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.noTrainingsMessage,
+              style: TextStyle(fontSize: 16, color: theme.hintColor),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final int itemCount =
+        _trainings.length + (_pendingTraining != null ? 1 : 0);
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 100),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        if (_pendingTraining != null && index == 0) {
+          return _buildTrainingCard(
+            _pendingTraining!,
+            -1,
+            theme,
+            l10n,
+            trainingColor,
+            isPending: true,
+          );
+        }
+
+        final targetIndex = _pendingTraining != null ? index - 1 : index;
+        return _buildTrainingCard(
+          _trainings[targetIndex],
+          targetIndex,
+          theme,
+          l10n,
+          trainingColor,
+          isPending: false,
+        );
+      },
     );
   }
 }

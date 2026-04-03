@@ -43,8 +43,8 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
 
     final bool confirm = await DialogHelper.showDeleteConfirmation(
       context: context,
-      title: l10n.deleteProfileTitle,
-      content: 'Are you sure you want to delete this progress log?',
+      title: l10n.deleteEntryTitle,
+      content: l10n.deleteEntryContent,
       cancelText: l10n.cancel,
       deleteText: l10n.delete,
     );
@@ -56,7 +56,7 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
     final dateFormat = DateFormat('MMM dd');
     final snackBarController = SnackbarHelper.showUndoSnackbar(
       context: context,
-      message: 'Entry from ${dateFormat.format(entry.date)} deleted',
+      message: l10n.entryDeleted(dateFormat.format(entry.date)),
       undoLabel: l10n.undo,
     );
 
@@ -81,14 +81,15 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final primaryColor = Colors.teal;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Progress Timeline',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.progressTimelineTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: theme.scaffoldBackgroundColor,
@@ -101,40 +102,40 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
             children: [
               _controller.isLoading
                   ? Center(
-                      child: CircularProgressIndicator(color: primaryColor),
-                    )
+                child: CircularProgressIndicator(color: primaryColor),
+              )
                   : _controller.entries.isEmpty
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.timeline,
-                            size: 80,
-                            color: theme.hintColor.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No progress logged yet.',
-                            style: TextStyle(color: theme.hintColor),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(top: 24, bottom: 110),
-                      itemCount: _controller.entries.length,
-                      itemBuilder: (context, index) {
-                        final entry = _controller.entries[index];
-                        return _buildTimelineItem(
-                          entry,
-                          index,
-                          theme,
-                          primaryColor,
-                        );
-                      },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.timeline,
+                      size: 80,
+                      color: theme.hintColor.withValues(alpha: 0.3),
                     ),
-              _buildAddProgressButton(context, theme, primaryColor),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.noProgressLogged,
+                      style: TextStyle(color: theme.hintColor),
+                    ),
+                  ],
+                ),
+              )
+                  : ListView.builder(
+                padding: const EdgeInsets.only(top: 24, bottom: 110),
+                itemCount: _controller.entries.length,
+                itemBuilder: (context, index) {
+                  final entry = _controller.entries[index];
+                  return _buildTimelineItem(
+                    entry,
+                    index,
+                    theme,
+                    primaryColor,
+                  );
+                },
+              ),
+              _buildAddProgressButton(context, theme, primaryColor, l10n),
             ],
           );
         },
@@ -143,10 +144,11 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
   }
 
   Widget _buildAddProgressButton(
-    BuildContext context,
-    ThemeData theme,
-    Color primaryColor,
-  ) {
+      BuildContext context,
+      ThemeData theme,
+      Color primaryColor,
+      AppLocalizations l10n,
+      ) {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     return Positioned(
@@ -174,7 +176,7 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
               Icon(Icons.add, color: isDarkMode ? primaryColor : Colors.white),
               const SizedBox(width: 8),
               Text(
-                'Log Progress',
+                l10n.logProgress,
                 style: TextStyle(
                   color: isDarkMode ? primaryColor : Colors.white,
                   fontWeight: FontWeight.bold,
@@ -189,11 +191,11 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
   }
 
   Widget _buildTimelineItem(
-    ProgressEntry entry,
-    int index,
-    ThemeData theme,
-    Color primaryColor,
-  ) {
+      ProgressEntry entry,
+      int index,
+      ThemeData theme,
+      Color primaryColor,
+      ) {
     final isLast = index == _controller.entries.length - 1;
     final dateFormat = DateFormat('MMM dd, yyyy');
 

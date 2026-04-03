@@ -16,11 +16,13 @@ class FavoriteExercisesScreen extends StatefulWidget {
   const FavoriteExercisesScreen({super.key, required this.profile});
 
   @override
-  State<FavoriteExercisesScreen> createState() => _FavoriteExercisesScreenState();
+  State<FavoriteExercisesScreen> createState() =>
+      _FavoriteExercisesScreenState();
 }
 
 class _FavoriteExercisesScreenState extends State<FavoriteExercisesScreen> {
-  final FavoriteExercisesRepository _favoritesRepo = FavoriteExercisesRepository();
+  final FavoriteExercisesRepository _favoritesRepo =
+      FavoriteExercisesRepository();
   final ExerciseLocalDatabase _localDb = ExerciseLocalDatabase();
 
   Map<String, List<FavoriteExercise>> _groupedFavorites = {};
@@ -66,17 +68,23 @@ class _FavoriteExercisesScreenState extends State<FavoriteExercisesScreen> {
 
   String _getLocalizedObjective(String objective, AppLocalizations l10n) {
     switch (objective) {
-      case 'strength': return l10n.strength;
-      case 'endurance': return l10n.endurance;
-      default: return l10n.hypertrophy;
+      case 'strength':
+        return l10n.strength;
+      case 'endurance':
+        return l10n.endurance;
+      default:
+        return l10n.hypertrophy;
     }
   }
 
   String _getObjectiveSvg(String objective) {
     switch (objective) {
-      case 'strength': return 'assets/icons/strength.svg';
-      case 'endurance': return 'assets/icons/endurance.svg';
-      default: return 'assets/icons/hypertrophy.svg';
+      case 'strength':
+        return 'assets/icons/strength.svg';
+      case 'endurance':
+        return 'assets/icons/endurance.svg';
+      default:
+        return 'assets/icons/hypertrophy.svg';
     }
   }
 
@@ -84,81 +92,115 @@ class _FavoriteExercisesScreenState extends State<FavoriteExercisesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final Color trainingColor = isDarkMode ? theme.colorScheme.primary : Colors.blueAccent;
+    final Color trainingColor = isDarkMode
+        ? theme.colorScheme.primary
+        : Colors.blueAccent;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Favorite Exercises', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.favoriteExercisesTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: trainingColor))
           : Column(
-        children: [
-          SwitchListTile(
-            title: const Text('Include in future AI Plans', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: const Text('AI will try to prioritize these exercises for the target muscle.'),
-            value: _useFavorites,
-            activeThumbColor: trainingColor,
-            onChanged: _togglePreference,
-          ),
-          Divider(color: theme.dividerColor.withValues(alpha: 0.1)),
-          Expanded(
-            child: _groupedFavorites.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.fitness_center, size: 80, color: theme.hintColor.withValues(alpha: 0.3)),
-                  const SizedBox(height: 16),
-                  Text('No favorite exercises yet.', style: TextStyle(color: theme.hintColor)),
-                ],
-              ),
-            )
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _groupedFavorites.keys.length,
-              itemBuilder: (context, index) {
-                final objective = _groupedFavorites.keys.elementAt(index);
-                final exercises = _groupedFavorites[objective]!;
+              children: [
+                SwitchListTile(
+                  title: Text(
+                    l10n.includeInAiPlans,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(l10n.aiPrioritizeDesc),
+                  value: _useFavorites,
+                  activeThumbColor: trainingColor,
+                  onChanged: _togglePreference,
+                ),
+                Divider(color: theme.dividerColor.withValues(alpha: 0.1)),
+                Expanded(
+                  child: _groupedFavorites.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.fitness_center,
+                                size: 80,
+                                color: theme.hintColor.withValues(alpha: 0.3),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.noFavoritesMessage,
+                                style: TextStyle(color: theme.hintColor),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _groupedFavorites.keys.length,
+                          itemBuilder: (context, index) {
+                            final objective = _groupedFavorites.keys.elementAt(
+                              index,
+                            );
+                            final exercises = _groupedFavorites[objective]!;
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildObjectiveHeader(objective, l10n, trainingColor),
-                    ...exercises.map((fav) {
-                      final wgerData = _exerciseLookup[fav.exercise.exerciseId];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: Card(
-                          elevation: 0,
-                          color: theme.cardColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1), width: 1),
-                          ),
-                          child: TrainingExerciseTile(
-                            exercise: fav.exercise,
-                            wgerData: wgerData,
-                            idProfile: widget.profile.idProfile,
-                            trainingObjective: fav.trainingObjective,
-                          ),
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildObjectiveHeader(
+                                  objective,
+                                  l10n,
+                                  trainingColor,
+                                ),
+                                ...exercises.map((fav) {
+                                  final wgerData =
+                                      _exerciseLookup[fav.exercise.exerciseId];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 12.0,
+                                    ),
+                                    child: Card(
+                                      elevation: 0,
+                                      color: theme.cardColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        side: BorderSide(
+                                          color: theme.dividerColor.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: TrainingExerciseTile(
+                                        exercise: fav.exercise,
+                                        wgerData: wgerData,
+                                        idProfile: widget.profile.idProfile,
+                                        trainingObjective:
+                                            fav.trainingObjective,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                const SizedBox(height: 16),
+                              ],
+                            );
+                          },
                         ),
-                      );
-                    }),
-                    const SizedBox(height: 16),
-                  ],
-                );
-              },
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildObjectiveHeader(String objective, AppLocalizations l10n, Color color) {
+  Widget _buildObjectiveHeader(
+    String objective,
+    AppLocalizations l10n,
+    Color color,
+  ) {
     final localized = _getLocalizedObjective(objective, l10n);
     final svgPath = _getObjectiveSvg(objective);
 
@@ -166,7 +208,12 @@ class _FavoriteExercisesScreenState extends State<FavoriteExercisesScreen> {
       padding: const EdgeInsets.only(bottom: 16.0, top: 8.0, left: 4.0),
       child: Row(
         children: [
-          SvgPicture.asset(svgPath, width: 22, height: 22, colorFilter: ColorFilter.mode(color, BlendMode.srcIn)),
+          SvgPicture.asset(
+            svgPath,
+            width: 22,
+            height: 22,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          ),
           const SizedBox(width: 8),
           Text(
             localized.toUpperCase(),

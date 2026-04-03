@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/progress/presentation/controllers/add_progress_controller.dart';
-
-// Importamos el componente reutilizable
 import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart';
 
 /// Screen responsible for capturing new progress data including weight and photos.
@@ -48,6 +47,8 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
   }
 
   Future<void> _saveProgress() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!_formKey.currentState!.validate() ||
         widget.profile.idProfile == null) {
       return;
@@ -64,8 +65,8 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save progress'),
+        SnackBar(
+          content: Text(l10n.saveProgressError),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -74,24 +75,22 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final primaryColor = theme.colorScheme.primary;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Log Progress',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.logProgress,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: ListenableBuilder(
         listenable: _controller,
         builder: (context, child) {
-          // Eliminamos el `if (_controller.isSaving)` que bloqueaba la pantalla entera.
-          // Ahora el PrimaryGradientButton se encargará de mostrar el indicador de carga.
-
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Form(
@@ -104,7 +103,7 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
                     borderRadius: BorderRadius.circular(12),
                     child: InputDecorator(
                       decoration: InputDecoration(
-                        labelText: 'Date',
+                        labelText: l10n.dateLabel,
                         prefixIcon: Icon(
                           Icons.calendar_today,
                           color: primaryColor,
@@ -128,7 +127,7 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
                       decimal: true,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Weight (kg)',
+                      labelText: l10n.weightKgLabel,
                       prefixIcon: Icon(Icons.scale, color: primaryColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -136,10 +135,10 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Required field';
+                        return l10n.requiredField;
                       }
                       if (double.tryParse(value) == null) {
-                        return 'Enter a valid number';
+                        return l10n.invalidNumber;
                       }
                       return null;
                     },
@@ -148,9 +147,9 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Progress Photos',
-                        style: TextStyle(
+                      Text(
+                        l10n.progressPhotos,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -158,7 +157,7 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
                       TextButton.icon(
                         onPressed: _controller.pickImages,
                         icon: const Icon(Icons.add_a_photo),
-                        label: const Text('Add'),
+                        label: Text(l10n.addButton),
                         style: TextButton.styleFrom(
                           foregroundColor: primaryColor,
                         ),
@@ -226,21 +225,19 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          'No photos added',
+                          l10n.noPhotosAdded,
                           style: TextStyle(color: theme.hintColor),
                         ),
                       ),
                     ),
                   const SizedBox(height: 48),
 
-                  // AQUÍ INTEGRAMOS EL COMPONENTE REUTILIZABLE
                   PrimaryGradientButton(
                     primaryColor: primaryColor,
                     isLoading: _controller.isSaving,
-                    // Pasamos el estado de carga
                     onTap: _saveProgress,
                     child: Text(
-                      'Save Progress',
+                      l10n.saveProgress,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

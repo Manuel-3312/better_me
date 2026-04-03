@@ -2,9 +2,7 @@
   "@@locale": "es",
   "headerWelcome": "--- PANTALLA DE BIENVENIDA ---",
   "welcomeTitle": "Bienvenido a BetterMe",
-  "swipeToStart": "Desliza hacia arriba para empezar",
   "changeLanguage": "Cambiar idioma",
-
   "headerProfile": "--- GESTIÓN DE PERFIL ---",
   "createProfileTitle": "Añade tus datos",
   "editProfileTitle": "Editar perfil",
@@ -21,7 +19,6 @@
   "selectDateWarning": "Por favor, selecciona tu fecha de nacimiento",
   "male": "Hombre",
   "female": "Mujer",
-
   "headerSelection": "--- SELECCIÓN DE PERFIL ---",
   "chooseProfileTitle": "Elige tu perfil",
   "createProfileButton": "Crear perfil",
@@ -47,7 +44,6 @@
   "delete": "Eliminar",
   "profileDeleted": "Perfil eliminado",
   "undo": "Deshacer",
-
   "headerDashboard": "--- DASHBOARD ---",
   "dashboardTitle": "Panel de Control",
   "welcomeUser": "¡Hola, {name}!",
@@ -77,7 +73,6 @@
   "myDiets": "Dietas",
   "myWorkouts": "Rutinas",
   "editProfile": "Editar perfil",
-
   "headerDiets": "--- MÓDULO DE DIETAS ---",
   "dietsTitle": "Dietas",
   "noDietsMessage": "Aún no hay dietas. ¡Crea la primera!",
@@ -94,7 +89,6 @@
   "dietCreatedSuccess": "¡Dieta creada con éxito!",
   "dietAllergiesHint": "Ej: Cacahuetes, lactosa...",
   "dietAdditionalDataHint": "Ej: No me gusta el brócoli",
-
   "headerTrainings": "--- MÓDULO DE ENTRENAMIENTO ---",
   "trainingsTitle": "Entrenamientos",
   "noTrainingsMessage": "Aún no hay rutinas. ¡Crea la primera!",
@@ -135,7 +129,6 @@
     }
   },
   "kcal": "kcal",
-
   "generatingTraining": "Diseñando tu rutina ideal...",
   "errorGeneratingTraining": "Error al generar la rutina. Inténtalo de nuevo.",
   "sets": "Series",
@@ -143,7 +136,6 @@
   "rest": "Descanso",
   "seconds": "s",
   "noTrainingData": "No hay datos de entrenamiento disponibles.",
-
   "setupPlanTitle": "Configurar Plan",
   "todayTitle": "Hoy",
   "changeActivePlan": "Cambiar plan activo",
@@ -166,7 +158,6 @@
       }
     }
   },
-
   "monday": "Lunes",
   "tuesday": "Martes",
   "wednesday": "Miércoles",
@@ -174,7 +165,6 @@
   "friday": "Viernes",
   "saturday": "Sábado",
   "sunday": "Domingo",
-
   "generatingAiPlan": "Generando plan con IA...",
   "daysPerWeek": "{count, plural, =1 {1 día/semana} other {{count} días/semana}}",
   "@daysPerWeek": {
@@ -194,5 +184,78 @@
   "save": "Guardar",
   "years": "Years",
   "restDayTitle": "Día de Descanso",
-  "restDayMessage": "Tus músculos crecen mientras descansas. Disfruta de tu tiempo de recuperación y recarga energías para el próximo entrenamiento."
+  "restDayMessage": "Tus músculos crecen mientras descansas. Disfruta de tu tiempo de recuperación y recarga energías para el próximo entrenamiento.",
+  "deleteTrainingTitle": "Eliminar Entrenamiento",
+  "deleteTrainingContent": "¿Estás seguro de que quieres eliminar este plan de entrenamiento?",
+  "deleteDietTitle": "Eliminar Dieta",
+  "deleteDietContent": "¿Estás seguro de que quieres eliminar esta dieta?",
+  "deleteEntryTitle": "Eliminar Entrada",
+  "deleteEntryContent": "¿Estás seguro de que quieres eliminar este registro de progreso?",
+  "entryDeleted": "Entrada del {date} eliminada",
+  "@entryDeleted": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dietDeleted": "{name} eliminada",
+  "@dietDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trainingDeleted": "{name} eliminado",
+  "@trainingDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noProgressLogged": "Aún no hay progreso registrado.",
+  "logProgress": "Registrar Progreso",
+  "progressTimelineTitle": "Progreso",
+  "minutes": "min",
+  "dateLabel": "Fecha",
+  "weightKgLabel": "Peso (kg)",
+  "invalidNumber": "Ingrese un número válido",
+  "progressPhotos": "Fotos de progreso",
+  "addButton": "Añadir",
+  "noPhotosAdded": "No hay fotos añadidas",
+  "saveProgress": "Guardar progreso",
+  "saveProgressError": "Error al guardar el progreso",
+  "trackTransformation": "Sigue tu transformación corporal",
+  "weightDisplay": "{weight} kg",
+  "@weightDisplay": {
+    "placeholders": {
+      "weight": {
+        "type": "double",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "protein": "Proteínas",
+  "carbs": "Carbohidratos",
+  "fats": "Grasas",
+  "recipe": "Receta",
+  "ingredients": "Ingredientes",
+  "instructions": "Instrucciones",
+  "macros": "Macros",
+  "close": "Cerrar",
+  "total": "Total",
+  "settings": "Ajustes",
+
+  "favoriteExercisesTitle": "Ejercicios Favoritos",
+  "includeInAiPlans": "Incluir en planes de IA futuros",
+  "aiPrioritizeDesc": "La IA intentará priorizar estos ejercicios para el músculo objetivo.",
+  "noFavoritesMessage": "No hay ejercicios favoritos aún.",
+
+  "cookbookTitle": "Libro de Cocina",
+  "includeInAiDiets": "Incluir en futuros planes de IA",
+  "aiPrioritizeMealsDesc": "La IA intentará priorizar estas comidas si coinciden con tus macros.",
+  "cookbookEmpty": "Tu libro de cocina está vacío.",
+  "languageWarning": "Nota: El idioma seleccionado será el que utilice la IA para generar tus planes de dieta y entrenamiento personalizados."
 }

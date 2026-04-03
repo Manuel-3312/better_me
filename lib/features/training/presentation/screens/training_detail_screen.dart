@@ -187,7 +187,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
       widget.training.objective,
       l10n,
     );
-
     return Container(
       color: theme.scaffoldBackgroundColor,
       padding: const EdgeInsets.all(20.0),
@@ -232,7 +231,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                     _buildQuickStat(
                       theme,
                       Icons.timer,
-                      '${widget.training.maxTime.toInt()} min',
+                      '${widget.training.maxTime.toInt()} ${l10n.minutes}',
                     ),
                   ],
                 ),

@@ -75,8 +75,8 @@ class _DietsScreenState extends State<DietsScreen> {
 
     final bool confirm = await DialogHelper.showDeleteConfirmation(
       context: context,
-      title: 'Delete Diet',
-      content: 'Are you sure you want to delete this diet?',
+      title: l10n.deleteDietTitle,
+      content: l10n.deleteDietContent,
       cancelText: l10n.cancel,
       deleteText: l10n.delete,
     );
@@ -87,10 +87,9 @@ class _DietsScreenState extends State<DietsScreen> {
 
     final snackBarController = SnackbarHelper.showUndoSnackbar(
       context: context,
-      message: '${diet.name} deleted',
+      message: l10n.dietDeleted(diet.name),
       undoLabel: l10n.undo,
     );
-
     final reason = await snackBarController.closed;
 
     if (reason == SnackBarClosedReason.action) {

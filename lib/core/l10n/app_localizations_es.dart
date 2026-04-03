@@ -15,9 +15,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get welcomeTitle => 'Bienvenido a BetterMe';
 
   @override
-  String get swipeToStart => 'Desliza hacia arriba para empezar';
-
-  @override
   String get changeLanguage => 'Cambiar idioma';
 
   @override
@@ -386,4 +383,148 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get restDayMessage =>
       'Tus músculos crecen mientras descansas. Disfruta de tu tiempo de recuperación y recarga energías para el próximo entrenamiento.';
+
+  @override
+  String get deleteTrainingTitle => 'Eliminar Entrenamiento';
+
+  @override
+  String get deleteTrainingContent =>
+      '¿Estás seguro de que quieres eliminar este plan de entrenamiento?';
+
+  @override
+  String get deleteDietTitle => 'Eliminar Dieta';
+
+  @override
+  String get deleteDietContent =>
+      '¿Estás seguro de que quieres eliminar esta dieta?';
+
+  @override
+  String get deleteEntryTitle => 'Eliminar Entrada';
+
+  @override
+  String get deleteEntryContent =>
+      '¿Estás seguro de que quieres eliminar este registro de progreso?';
+
+  @override
+  String entryDeleted(String date) {
+    return 'Entrada del $date eliminada';
+  }
+
+  @override
+  String dietDeleted(String name) {
+    return '$name eliminada';
+  }
+
+  @override
+  String trainingDeleted(String name) {
+    return '$name eliminado';
+  }
+
+  @override
+  String get noProgressLogged => 'Aún no hay progreso registrado.';
+
+  @override
+  String get logProgress => 'Registrar Progreso';
+
+  @override
+  String get progressTimelineTitle => 'Progreso';
+
+  @override
+  String get minutes => 'min';
+
+  @override
+  String get dateLabel => 'Fecha';
+
+  @override
+  String get weightKgLabel => 'Peso (kg)';
+
+  @override
+  String get invalidNumber => 'Ingrese un número válido';
+
+  @override
+  String get progressPhotos => 'Fotos de progreso';
+
+  @override
+  String get addButton => 'Añadir';
+
+  @override
+  String get noPhotosAdded => 'No hay fotos añadidas';
+
+  @override
+  String get saveProgress => 'Guardar progreso';
+
+  @override
+  String get saveProgressError => 'Error al guardar el progreso';
+
+  @override
+  String get trackTransformation => 'Sigue tu transformación corporal';
+
+  @override
+  String weightDisplay(double weight) {
+    final intl.NumberFormat weightNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String weightString = weightNumberFormat.format(weight);
+
+    return '$weightString kg';
+  }
+
+  @override
+  String get protein => 'Proteínas';
+
+  @override
+  String get carbs => 'Carbohidratos';
+
+  @override
+  String get fats => 'Grasas';
+
+  @override
+  String get recipe => 'Receta';
+
+  @override
+  String get ingredients => 'Ingredientes';
+
+  @override
+  String get instructions => 'Instrucciones';
+
+  @override
+  String get macros => 'Macros';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get settings => 'Ajustes';
+
+  @override
+  String get favoriteExercisesTitle => 'Ejercicios Favoritos';
+
+  @override
+  String get includeInAiPlans => 'Incluir en planes de IA futuros';
+
+  @override
+  String get aiPrioritizeDesc =>
+      'La IA intentará priorizar estos ejercicios para el músculo objetivo.';
+
+  @override
+  String get noFavoritesMessage => 'No hay ejercicios favoritos aún.';
+
+  @override
+  String get cookbookTitle => 'Libro de Cocina';
+
+  @override
+  String get includeInAiDiets => 'Incluir en futuros planes de IA';
+
+  @override
+  String get aiPrioritizeMealsDesc =>
+      'La IA intentará priorizar estas comidas si coinciden con tus macros.';
+
+  @override
+  String get cookbookEmpty => 'Tu libro de cocina está vacío.';
+
+  @override
+  String get languageWarning =>
+      'Nota: El idioma seleccionado será el que utilice la IA para generar tus planes de dieta y entrenamiento personalizados.';
 }

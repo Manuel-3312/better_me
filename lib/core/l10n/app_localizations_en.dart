@@ -15,9 +15,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeTitle => 'Welcome to BetterMe';
 
   @override
-  String get swipeToStart => 'Swipe up to start';
-
-  @override
   String get changeLanguage => 'Change language';
 
   @override
@@ -386,4 +383,147 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get restDayMessage =>
       'Your muscles grow while you rest. Enjoy your recovery time and recharge your energy for the next workout.';
+
+  @override
+  String get deleteTrainingTitle => 'Delete Training';
+
+  @override
+  String get deleteTrainingContent =>
+      'Are you sure you want to delete this training plan?';
+
+  @override
+  String get deleteDietTitle => 'Delete Diet';
+
+  @override
+  String get deleteDietContent => 'Are you sure you want to delete this diet?';
+
+  @override
+  String get deleteEntryTitle => 'Delete Entry';
+
+  @override
+  String get deleteEntryContent =>
+      'Are you sure you want to delete this progress log?';
+
+  @override
+  String entryDeleted(String date) {
+    return 'Entry from $date deleted';
+  }
+
+  @override
+  String dietDeleted(String name) {
+    return '$name deleted';
+  }
+
+  @override
+  String trainingDeleted(String name) {
+    return '$name deleted';
+  }
+
+  @override
+  String get noProgressLogged => 'No progress logged yet.';
+
+  @override
+  String get logProgress => 'Log Progress';
+
+  @override
+  String get progressTimelineTitle => 'Progress Timeline';
+
+  @override
+  String get minutes => 'min';
+
+  @override
+  String get dateLabel => 'Date';
+
+  @override
+  String get weightKgLabel => 'Weight (kg)';
+
+  @override
+  String get invalidNumber => 'Enter a valid number';
+
+  @override
+  String get progressPhotos => 'Progress Photos';
+
+  @override
+  String get addButton => 'Add';
+
+  @override
+  String get noPhotosAdded => 'No photos added';
+
+  @override
+  String get saveProgress => 'Save Progress';
+
+  @override
+  String get saveProgressError => 'Failed to save progress';
+
+  @override
+  String get trackTransformation => 'Track your body transformation';
+
+  @override
+  String weightDisplay(double weight) {
+    final intl.NumberFormat weightNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String weightString = weightNumberFormat.format(weight);
+
+    return '$weightString kg';
+  }
+
+  @override
+  String get protein => 'Protein';
+
+  @override
+  String get carbs => 'Carbs';
+
+  @override
+  String get fats => 'Fats';
+
+  @override
+  String get recipe => 'Recipe';
+
+  @override
+  String get ingredients => 'Ingredients';
+
+  @override
+  String get instructions => 'Instructions';
+
+  @override
+  String get macros => 'Macros';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get favoriteExercisesTitle => 'Favorite Exercises';
+
+  @override
+  String get includeInAiPlans => 'Include in future AI Plans';
+
+  @override
+  String get aiPrioritizeDesc =>
+      'AI will try to prioritize these exercises for the target muscle.';
+
+  @override
+  String get noFavoritesMessage => 'No favorite exercises yet.';
+
+  @override
+  String get cookbookTitle => 'Cookbook';
+
+  @override
+  String get includeInAiDiets => 'Include in future AI Diets';
+
+  @override
+  String get aiPrioritizeMealsDesc =>
+      'AI will try to prioritize these meals if they match your macros.';
+
+  @override
+  String get cookbookEmpty => 'Your cookbook is empty.';
+
+  @override
+  String get languageWarning =>
+      'Note: The selected language will be used by the AI to generate your personalized diet and training plans.';
 }

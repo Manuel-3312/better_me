@@ -1,16 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
-
 import 'package:better_me/core/utils/date_time_extensions.dart';
-
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
 import 'package:better_me/features/diets/domain/models/ai_diet_plan.dart';
 import 'package:better_me/features/diets/presentation/widgets/diet_meal_tile.dart';
 
-/// Screen responsible for displaying an already generated diet plan.
-/// Refactored to use the AiDietPlan DTO, modern theme support, and the reusable DietMealTile.
+/// A screen that displays the detailed meal plan for a generated diet.
 class DietDetailScreen extends StatefulWidget {
   final Diet diet;
   final Profile profile;
@@ -68,6 +65,20 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
         return Icons.trending_up;
       default:
         return Icons.trending_flat;
+    }
+  }
+
+  /// Maps the objective key to its localized string.
+  String _getLocalizedObjective(String objective, AppLocalizations l10n) {
+    switch (objective) {
+      case 'weightLoss':
+        return l10n.weightLoss;
+      case 'muscleGain':
+        return l10n.muscleGain;
+      case 'maintenance':
+        return l10n.maintenance;
+      default:
+        return objective;
     }
   }
 
@@ -147,6 +158,10 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
     AppLocalizations l10n,
   ) {
     final hasAllergies = widget.diet.allergies?.isNotEmpty ?? false;
+    final localizedObjective = _getLocalizedObjective(
+      widget.diet.objective,
+      l10n,
+    );
 
     return Container(
       color: theme.scaffoldBackgroundColor,
@@ -171,7 +186,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.diet.objective.toUpperCase(),
+                  localizedObjective.toUpperCase(),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -185,9 +200,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                     _buildQuickStat(
                       theme,
                       Icons.calendar_month,
-                      l10n
-                          .daysPerWeek(_dietPlan?.days.length ?? 0)
-                          .replaceFirst('/', ' '),
+                      l10n.daysPerWeek(_dietPlan?.days.length ?? 0),
                     ),
                     if (hasAllergies) ...[
                       const SizedBox(width: 16),

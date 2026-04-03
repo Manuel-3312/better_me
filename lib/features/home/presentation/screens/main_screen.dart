@@ -17,9 +17,9 @@ import 'package:better_me/features/profile/presentation/screens/profile_screen.d
 /// Primary navigation hub for the application.
 ///
 /// Orchestrates bottom navigation and handles the concurrent pre-fetching
-/// of application data to ensure a seamless offline-first experience across tabs.
+/// of application data to ensure a seamless experience. This screen implements
+/// a total deferred loading strategy to maintain visual fluidity during transitions.
 class MainScreen extends StatefulWidget {
-  /// The active user profile utilized across all navigation tabs.
   final Profile profile;
 
   const MainScreen({super.key, required this.profile});
@@ -37,12 +37,27 @@ class _MainScreenState extends State<MainScreen> {
   List<Diet> _availableDiets = [];
   List<Training> _availableTrainings = [];
   Map<int, WgerExercise> _exerciseLookup = {};
+
   bool _isLoadingData = true;
+  bool _canRenderTabs = false;
 
   @override
   void initState() {
     super.initState();
-    _loadAllApplicationData();
+
+    // Deferred rendering to ensure the entry animation from the splash screen
+    // is processed with 100% CPU priority. Tabs are only rendered once
+    // the transition is expected to be complete.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 850), () {
+        if (mounted) {
+          setState(() {
+            _canRenderTabs = true;
+          });
+          _loadAllApplicationData();
+        }
+      });
+    });
   }
 
   /// Concurrently retrieves necessary local database records.
@@ -61,21 +76,34 @@ class _MainScreenState extends State<MainScreen> {
           _localDb.getAllExercises(),
         ]);
 
-        _availableDiets = results[0] as List<Diet>;
-        _availableTrainings = results[1] as List<Training>;
-        final exercises = results[2] as List<WgerExercise>;
-        _exerciseLookup = {for (var e in exercises) e.id: e};
+        if (mounted) {
+          setState(() {
+            _availableDiets = results[0] as List<Diet>;
+            _availableTrainings = results[1] as List<Training>;
+            final exercises = results[2] as List<WgerExercise>;
+            _exerciseLookup = {for (var e in exercises) e.id: e};
+          });
+        }
       }
     } catch (e) {
       debugPrint('Data synchronization error: $e');
     } finally {
-      if (mounted) setState(() => _isLoadingData = false);
+      if (mounted) {
+        setState(() => _isLoadingData = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    // Return an empty scaffold while the transition animation is active
+    // to prevent frame drops caused by complex widget tree construction.
+    if (!_canRenderTabs) {
+      return Scaffold(backgroundColor: theme.scaffoldBackgroundColor);
+    }
 
     final List<Widget> screens = [
       TodayScreen(

@@ -5,8 +5,10 @@ import 'package:better_me/features/diets/domain/models/favorite_meal.dart';
 import 'package:better_me/features/diets/data/favorite_meals_repository.dart';
 import 'package:better_me/features/diets/presentation/widgets/diet_meal_tile.dart';
 
-/// Screen displaying the user's saved favorite meals (Cookbook).
-/// Groups meals by their diet objective and provides a toggle for AI integration.
+/// Screen responsible for displaying the user's saved favorite meals.
+///
+/// Meals are grouped by their original diet objective, and the screen provides
+/// a global toggle to allow the AI to prioritize these meals in future generations.
 class CookbookScreen extends StatefulWidget {
   final Profile profile;
 
@@ -28,6 +30,7 @@ class _CookbookScreenState extends State<CookbookScreen> {
     _loadData();
   }
 
+  /// Fetches favorite meals and preferences from the repository.
   Future<void> _loadData() async {
     if (widget.profile.idProfile == null) return;
 
@@ -48,11 +51,13 @@ class _CookbookScreenState extends State<CookbookScreen> {
     }
   }
 
+  /// Updates the global AI priority preference for favorite meals.
   Future<void> _togglePreference(bool value) async {
     setState(() => _useFavorites = value);
     await _favoritesRepo.setIncludeFavoritesPreference(value);
   }
 
+  /// Helper to get the localized string for a diet objective.
   String _getLocalizedObjective(String objective, AppLocalizations l10n) {
     switch (objective) {
       case 'weightLoss':
@@ -66,6 +71,7 @@ class _CookbookScreenState extends State<CookbookScreen> {
     }
   }
 
+  /// Helper to get the icon representation for a diet objective.
   IconData _getObjectiveIcon(String objective) {
     switch (objective) {
       case 'weightLoss':
@@ -84,9 +90,9 @@ class _CookbookScreenState extends State<CookbookScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Cookbook',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.cookbookTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -97,13 +103,11 @@ class _CookbookScreenState extends State<CookbookScreen> {
           : Column(
               children: [
                 SwitchListTile(
-                  title: const Text(
-                    'Include in future AI Diets',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  title: Text(
+                    l10n.includeInAiDiets,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text(
-                    'AI will try to prioritize these meals if they match your macros.',
-                  ),
+                  subtitle: Text(l10n.aiPrioritizeMealsDesc),
                   value: _useFavorites,
                   activeThumbColor: Colors.orangeAccent,
                   onChanged: _togglePreference,
@@ -122,7 +126,7 @@ class _CookbookScreenState extends State<CookbookScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Your cookbook is empty.',
+                                l10n.cookbookEmpty,
                                 style: TextStyle(color: theme.hintColor),
                               ),
                             ],
@@ -180,6 +184,7 @@ class _CookbookScreenState extends State<CookbookScreen> {
     );
   }
 
+  /// Builds a header section for each diet objective group.
   Widget _buildObjectiveHeader(String objective, AppLocalizations l10n) {
     final localized = _getLocalizedObjective(objective, l10n);
     final icon = _getObjectiveIcon(objective);

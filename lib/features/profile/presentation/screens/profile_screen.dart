@@ -1,14 +1,14 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
-import 'package:better_me/main.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:better_me/features/profile/presentation/screens/create_profile_screen.dart';
-import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
+import 'package:better_me/features/profile/presentation/screens/settings_screen.dart';
 import 'package:better_me/features/profile/presentation/widgets/weight_entry_dialog.dart';
 import 'package:better_me/features/progress/presentation/screens/progress_timeline_screen.dart';
 
+/// Screen responsible for displaying and managing the user's profile and body metrics.
 class ProfileScreen extends StatefulWidget {
   final Profile profile;
 
@@ -34,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  /// Opens the weight entry dialog to record a new weight measurement.
   Future<void> _openWeightDialog() async {
     final bool? wasUpdated = await showDialog<bool>(
       context: context,
@@ -60,6 +61,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            ),
+          ),
+        ],
       ),
       body: ListenableBuilder(
         listenable: _controller,
@@ -71,9 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _buildProfileCard(context, l10n, theme, profile),
                 const SizedBox(height: 24),
-                _buildProgressBanner(context, theme, profile),
-                const SizedBox(height: 24),
-                _buildActionList(context, l10n, theme),
+                _buildProgressBanner(context, l10n, theme, profile),
               ],
             ),
           );
@@ -82,6 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Builds the profile card containing primary health metrics and basic user info.
   Widget _buildProfileCard(
     BuildContext context,
     AppLocalizations l10n,
@@ -214,7 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 4, top: 4),
                         child: _buildMetricColumn(
-                          '${profile.weight} kg',
+                          l10n.weightDisplay(profile.weight),
                           Icons.monitor_weight,
                           isDarkMode,
                           activeColor,
@@ -252,6 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Helper widget for displaying a specific physical metric with its icon.
   Widget _buildMetricColumn(
     String label,
     IconData icon,
@@ -274,8 +284,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Builds a clickable banner that navigates to the progress timeline.
   Widget _buildProgressBanner(
     BuildContext context,
+    AppLocalizations l10n,
     ThemeData theme,
     Profile profile,
   ) {
@@ -324,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Progress Timeline',
+                    l10n.progressTimelineTitle,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -333,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Track your body transformation',
+                    l10n.trackTransformation,
                     style: TextStyle(fontSize: 13, color: theme.hintColor),
                   ),
                 ],
@@ -343,80 +355,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildActionList(
-    BuildContext context,
-    AppLocalizations l10n,
-    ThemeData theme,
-  ) {
-    final isDarkMode = theme.brightness == Brightness.dark;
-    final Color activeColor = isDarkMode
-        ? theme.colorScheme.primary
-        : Colors.blueAccent;
-
-    return Column(
-      children: [
-        _buildActionTile(
-          context: context,
-          icon: Icons.people_outline,
-          title: l10n.switchProfile,
-          color: activeColor,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ChooseProfileScreen(),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildActionTile(
-          context: context,
-          icon: Icons.dark_mode_outlined,
-          title: l10n.nightMode,
-          color: Colors.deepPurpleAccent,
-          trailing: Switch(
-            value: isDarkMode,
-            onChanged: (value) {
-              BetterMeApp.setTheme(
-                context,
-                value ? ThemeMode.dark : ThemeMode.light,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionTile({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required Color color,
-    VoidCallback? onTap,
-    Widget? trailing,
-  }) {
-    final theme = Theme.of(context);
-
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: color),
-      ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: trailing ?? const Icon(Icons.chevron_right, size: 20),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.05)),
-      ),
-      tileColor: theme.cardColor,
     );
   }
 }

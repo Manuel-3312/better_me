@@ -2,43 +2,57 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/presentation/screens/animated_splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
 
-  final prefs = await SharedPreferences.getInstance();
-  final String? savedTheme = prefs.getString('theme_mode');
+  final results = await Future.wait([
+    dotenv.load(fileName: ".env"),
+    SharedPreferences.getInstance(),
+  ]);
 
-  ThemeMode initialTheme;
-  if (savedTheme == 'light') {
-    initialTheme = ThemeMode.light;
-  } else if (savedTheme == 'dark') {
-    initialTheme = ThemeMode.dark;
-  } else {
-    initialTheme = ThemeMode.dark;
-  }
+  final prefs = results[1] as SharedPreferences;
 
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
-  runApp(BetterMeApp(initialTheme: initialTheme));
+  final String? savedTheme = prefs.getString('theme_mode');
+  final String? savedLocale = prefs.getString('selected_locale');
+
+  runApp(BetterMeApp(
+    initialTheme: _parseTheme(savedTheme),
+    initialLocale: savedLocale ?? 'es',
+  ));
+}
+
+ThemeMode _parseTheme(String? themeStr) {
+  switch (themeStr) {
+    case 'light':
+      return ThemeMode.light;
+    case 'dark':
+      return ThemeMode.dark;
+    default:
+      return ThemeMode.dark;
+  }
 }
 
 class BetterMeApp extends StatefulWidget {
   final ThemeMode initialTheme;
+  final String initialLocale;
 
-  const BetterMeApp({super.key, required this.initialTheme});
+  const BetterMeApp({
+    super.key,
+    required this.initialTheme,
+    required this.initialLocale,
+  });
 
-  /// Provides access to the app state for theme and locale changes.
-  /// Helper method to find the state within the widget tree.
   static _BetterMeAppState of(BuildContext context) {
     final _BetterMeAppState? result =
     context.findAncestorStateOfType<_BetterMeAppState>();
@@ -46,17 +60,11 @@ class BetterMeApp extends StatefulWidget {
     throw Exception('BetterMeApp state not found in context');
   }
 
-  static void setLocale(BuildContext context, Locale newLocale) {
-    of(context).setLocale(newLocale);
-  }
+  static void setLocale(BuildContext context, Locale newLocale) =>
+      of(context).changeLocale(newLocale);
 
-  static void setTheme(BuildContext context, ThemeMode newTheme) {
-    of(context).setTheme(newTheme);
-  }
-
-  static ThemeMode getTheme(BuildContext context) {
-    return of(context)._themeMode;
-  }
+  static void setTheme(BuildContext context, ThemeMode newTheme) =>
+      of(context).changeTheme(newTheme);
 
   @override
   State<BetterMeApp> createState() => _BetterMeAppState();
@@ -64,25 +72,25 @@ class BetterMeApp extends StatefulWidget {
 
 class _BetterMeAppState extends State<BetterMeApp> {
   late ThemeMode _themeMode;
-  Locale _locale = const Locale('es');
+  late Locale _locale;
 
   @override
   void initState() {
     super.initState();
     _themeMode = widget.initialTheme;
+    _locale = Locale(widget.initialLocale);
   }
 
-  void setLocale(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
+  void changeLocale(Locale locale) async {
+    if (_locale == locale) return;
+    setState(() => _locale = locale);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_locale', locale.languageCode);
   }
 
-  void setTheme(ThemeMode themeMode) async {
-    setState(() {
-      _themeMode = themeMode;
-    });
-
+  void changeTheme(ThemeMode themeMode) async {
+    if (_themeMode == themeMode) return;
+    setState(() => _themeMode = themeMode);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('theme_mode', themeMode.name);
   }
@@ -94,31 +102,44 @@ class _BetterMeAppState extends State<BetterMeApp> {
       debugShowCheckedModeBanner: false,
       locale: _locale,
       themeMode: _themeMode,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        colorSchemeSeed: Colors.green,
-        scaffoldBackgroundColor: Colors.grey.shade50,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorSchemeSeed: Colors.green,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-      ),
+
+      theme: _AppTheme.light,
+      darkTheme: _AppTheme.dark,
+
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('es'), Locale('en')],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: const AnimatedSplashScreen(),
     );
   }
+}
+
+abstract class _AppTheme {
+  static final ThemeData light = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    colorSchemeSeed: Colors.green,
+    scaffoldBackgroundColor: Colors.grey.shade50,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+    ),
+  );
+
+  static final ThemeData dark = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorSchemeSeed: Colors.green,
+    scaffoldBackgroundColor: const Color(0xFF121212),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+    ),
+  );
 }

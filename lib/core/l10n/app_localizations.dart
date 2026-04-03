@@ -110,12 +110,6 @@ abstract class AppLocalizations {
   /// **'Bienvenido a BetterMe'**
   String get welcomeTitle;
 
-  /// No description provided for @swipeToStart.
-  ///
-  /// In es, this message translates to:
-  /// **'Desliza hacia arriba para empezar'**
-  String get swipeToStart;
-
   /// No description provided for @changeLanguage.
   ///
   /// In es, this message translates to:
@@ -793,6 +787,258 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Tus músculos crecen mientras descansas. Disfruta de tu tiempo de recuperación y recarga energías para el próximo entrenamiento.'**
   String get restDayMessage;
+
+  /// No description provided for @deleteTrainingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar Entrenamiento'**
+  String get deleteTrainingTitle;
+
+  /// No description provided for @deleteTrainingContent.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que quieres eliminar este plan de entrenamiento?'**
+  String get deleteTrainingContent;
+
+  /// No description provided for @deleteDietTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar Dieta'**
+  String get deleteDietTitle;
+
+  /// No description provided for @deleteDietContent.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que quieres eliminar esta dieta?'**
+  String get deleteDietContent;
+
+  /// No description provided for @deleteEntryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar Entrada'**
+  String get deleteEntryTitle;
+
+  /// No description provided for @deleteEntryContent.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que quieres eliminar este registro de progreso?'**
+  String get deleteEntryContent;
+
+  /// No description provided for @entryDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrada del {date} eliminada'**
+  String entryDeleted(String date);
+
+  /// No description provided for @dietDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} eliminada'**
+  String dietDeleted(String name);
+
+  /// No description provided for @trainingDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} eliminado'**
+  String trainingDeleted(String name);
+
+  /// No description provided for @noProgressLogged.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay progreso registrado.'**
+  String get noProgressLogged;
+
+  /// No description provided for @logProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar Progreso'**
+  String get logProgress;
+
+  /// No description provided for @progressTimelineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Progreso'**
+  String get progressTimelineTitle;
+
+  /// No description provided for @minutes.
+  ///
+  /// In es, this message translates to:
+  /// **'min'**
+  String get minutes;
+
+  /// No description provided for @dateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get dateLabel;
+
+  /// No description provided for @weightKgLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso (kg)'**
+  String get weightKgLabel;
+
+  /// No description provided for @invalidNumber.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingrese un número válido'**
+  String get invalidNumber;
+
+  /// No description provided for @progressPhotos.
+  ///
+  /// In es, this message translates to:
+  /// **'Fotos de progreso'**
+  String get progressPhotos;
+
+  /// No description provided for @addButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir'**
+  String get addButton;
+
+  /// No description provided for @noPhotosAdded.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay fotos añadidas'**
+  String get noPhotosAdded;
+
+  /// No description provided for @saveProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar progreso'**
+  String get saveProgress;
+
+  /// No description provided for @saveProgressError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al guardar el progreso'**
+  String get saveProgressError;
+
+  /// No description provided for @trackTransformation.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue tu transformación corporal'**
+  String get trackTransformation;
+
+  /// No description provided for @weightDisplay.
+  ///
+  /// In es, this message translates to:
+  /// **'{weight} kg'**
+  String weightDisplay(double weight);
+
+  /// No description provided for @protein.
+  ///
+  /// In es, this message translates to:
+  /// **'Proteínas'**
+  String get protein;
+
+  /// No description provided for @carbs.
+  ///
+  /// In es, this message translates to:
+  /// **'Carbohidratos'**
+  String get carbs;
+
+  /// No description provided for @fats.
+  ///
+  /// In es, this message translates to:
+  /// **'Grasas'**
+  String get fats;
+
+  /// No description provided for @recipe.
+  ///
+  /// In es, this message translates to:
+  /// **'Receta'**
+  String get recipe;
+
+  /// No description provided for @ingredients.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingredientes'**
+  String get ingredients;
+
+  /// No description provided for @instructions.
+  ///
+  /// In es, this message translates to:
+  /// **'Instrucciones'**
+  String get instructions;
+
+  /// No description provided for @macros.
+  ///
+  /// In es, this message translates to:
+  /// **'Macros'**
+  String get macros;
+
+  /// No description provided for @close.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar'**
+  String get close;
+
+  /// No description provided for @total.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// No description provided for @settings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes'**
+  String get settings;
+
+  /// No description provided for @favoriteExercisesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejercicios Favoritos'**
+  String get favoriteExercisesTitle;
+
+  /// No description provided for @includeInAiPlans.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluir en planes de IA futuros'**
+  String get includeInAiPlans;
+
+  /// No description provided for @aiPrioritizeDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'La IA intentará priorizar estos ejercicios para el músculo objetivo.'**
+  String get aiPrioritizeDesc;
+
+  /// No description provided for @noFavoritesMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay ejercicios favoritos aún.'**
+  String get noFavoritesMessage;
+
+  /// No description provided for @cookbookTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Libro de Cocina'**
+  String get cookbookTitle;
+
+  /// No description provided for @includeInAiDiets.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluir en futuros planes de IA'**
+  String get includeInAiDiets;
+
+  /// No description provided for @aiPrioritizeMealsDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'La IA intentará priorizar estas comidas si coinciden con tus macros.'**
+  String get aiPrioritizeMealsDesc;
+
+  /// No description provided for @cookbookEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu libro de cocina está vacío.'**
+  String get cookbookEmpty;
+
+  /// No description provided for @languageWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota: El idioma seleccionado será el que utilice la IA para generar tus planes de dieta y entrenamiento personalizados.'**
+  String get languageWarning;
 }
 
 class _AppLocalizationsDelegate
