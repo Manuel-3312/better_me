@@ -15,7 +15,6 @@ dependencies:
   fl_chart: ^0.70.0
   image_picker: ^1.0.7
   path_provider: ^2.1.2
-
   path: ^1.8.3
   flutter_localizations:
     sdk: flutter
@@ -25,6 +24,8 @@ dependencies:
   flutter_dotenv: ^6.0.0
   shared_preferences: ^2.2.3
   http: ^1.6.0
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
 
 dev_dependencies:
   flutter_test:

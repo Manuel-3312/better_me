@@ -18,7 +18,8 @@ import 'package:better_me/features/profile/presentation/screens/profile_screen.d
 ///
 /// Orchestrates bottom navigation and handles the concurrent pre-fetching
 /// of application data to ensure a seamless experience. This screen implements
-/// a total deferred loading strategy to maintain visual fluidity during transitions.
+/// a total deferred loading strategy and utilizes a PageView for fluid,
+/// swipeable lateral transitions between tabs.
 class MainScreen extends StatefulWidget {
   final Profile profile;
 
@@ -30,6 +31,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  late PageController _pageController;
+
   final DietRepository _dietRepo = DietRepository();
   final TrainingRepository _trainingRepo = TrainingRepository();
   final ExerciseLocalDatabase _localDb = ExerciseLocalDatabase();
@@ -44,10 +47,8 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _selectedIndex);
 
-    // Deferred rendering to ensure the entry animation from the splash screen
-    // is processed with 100% CPU priority. Tabs are only rendered once
-    // the transition is expected to be complete.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 850), () {
         if (mounted) {
@@ -58,6 +59,12 @@ class _MainScreenState extends State<MainScreen> {
         }
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   /// Concurrently retrieves necessary local database records.
@@ -94,13 +101,27 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  /// Handles navigation when a bottom navigation bar item is tapped.
+  void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.fastOutSlowIn,
+    );
+  }
+
+  /// Handles state updates when the page is changed via swipe gestures.
+  void _onPageChanged(int index) {
+    setState(() => _selectedIndex = index);
+    if (index == 0) _loadAllApplicationData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    // Return an empty scaffold while the transition animation is active
-    // to prevent frame drops caused by complex widget tree construction.
     if (!_canRenderTabs) {
       return Scaffold(backgroundColor: theme.scaffoldBackgroundColor);
     }
@@ -119,13 +140,15 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: screens),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(),
+        children: screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() => _selectedIndex = index);
-          if (index == 0) _loadAllApplicationData();
-        },
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(

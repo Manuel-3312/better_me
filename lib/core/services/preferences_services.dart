@@ -32,4 +32,16 @@ class PreferencesService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_themeKey);
   }
+
+  /// Saves a generic string value to local storage.
+  static Future<void> setString(String key, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, value);
+  }
+
+  /// Retrieves a generic string value from local storage.
+  static Future<String?> getString(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
+  }
 }
