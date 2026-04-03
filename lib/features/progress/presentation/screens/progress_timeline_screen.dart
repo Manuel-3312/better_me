@@ -1,12 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:better_me/core/l10n/app_localizations.dart';
+import 'package:better_me/core/utils/dialog_helper.dart';
+import 'package:better_me/core/utils/snackbar_helper.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
-import 'package:better_me/features/progress/data/progress_repository.dart';
 import 'package:better_me/features/progress/domain/models/progress_entry.dart';
+import 'package:better_me/features/progress/presentation/controllers/progress_timeline_controller.dart';
 import 'add_progress_screen.dart';
+import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart';
 
-/// Screen displaying the user's weight and visual progress in a chronological timeline.
+/// Screen responsible for displaying the user's weight and visual progress in a chronological timeline.
 class ProgressTimelineScreen extends StatefulWidget {
   final Profile profile;
 
@@ -17,125 +21,54 @@ class ProgressTimelineScreen extends StatefulWidget {
 }
 
 class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
-  final ProgressRepository _repository = ProgressRepository();
-  List<ProgressEntry> _entries = [];
-  bool _isLoading = true;
+  late final ProgressTimelineController _controller;
 
   @override
   void initState() {
     super.initState();
-    _loadEntries();
-  }
-
-  Future<void> _loadEntries() async {
-    if (widget.profile.idProfile == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      final entries = await _repository.getProgressEntries(
-        widget.profile.idProfile!,
-      );
-      if (mounted) {
-        setState(() {
-          _entries = entries;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading progress entries: $e');
-      if (mounted) setState(() => _isLoading = false);
+    _controller = ProgressTimelineController();
+    if (widget.profile.idProfile != null) {
+      _controller.loadEntries(widget.profile.idProfile!);
     }
   }
 
-  /// Handles the deletion of an entry with an Undo option via SnackBar.
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _deleteEntry(ProgressEntry entry, int index) async {
-    // 1. Ask for confirmation first
-    final bool? confirm = await showDialog<bool>(
+    final l10n = AppLocalizations.of(context)!;
+
+    final bool confirm = await DialogHelper.showDeleteConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Delete Entry',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: const Text(
-          'Are you sure you want to delete this progress log?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: l10n.deleteProfileTitle,
+      content: 'Are you sure you want to delete this progress log?',
+      cancelText: l10n.cancel,
+      deleteText: l10n.delete,
     );
 
-    if (confirm != true || entry.id == null) return;
+    if (!confirm || entry.id == null || !mounted) return;
 
-    // 2. Optimistic update: remove from UI immediately
-    setState(() {
-      _entries.removeAt(index);
-    });
+    _controller.removeEntryLocally(index);
 
-    if (!mounted) return;
     final dateFormat = DateFormat('MMM dd');
-
-    // 3. Show SnackBar with Undo action
-    final snackBarController = ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Entry from ${dateFormat.format(entry.date)} deleted'),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'UNDO',
-          textColor: Colors.tealAccent,
-          onPressed: () {
-            // Handled by logic below when closed with action
-          },
-        ),
-        duration: const Duration(seconds: 4),
-      ),
+    final snackBarController = SnackbarHelper.showUndoSnackbar(
+      context: context,
+      message: 'Entry from ${dateFormat.format(entry.date)} deleted',
+      undoLabel: l10n.undo,
     );
 
-    // 4. Wait for SnackBar to close to decide whether to delete permanently
     final reason = await snackBarController.closed;
 
     if (reason == SnackBarClosedReason.action) {
-      // User pressed UNDO, restore the item in UI
-      if (mounted) {
-        setState(() {
-          _entries.insert(index, entry);
-        });
-      }
+      _controller.restoreEntryLocally(index, entry);
     } else {
-      // SnackBar timed out or closed otherwise, perform permanent deletion
-      try {
-        await _repository.deleteProgressEntry(entry.id!);
-      } catch (e) {
-        debugPrint('Error deleting entry from DB: $e');
-        // If DB deletion fails, restore UI and show error
-        _loadEntries();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to delete entry from database.'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        }
-      }
+      await _controller.deleteEntryPermanently(entry.id!);
     }
   }
 
-  /// Opens the photo in a full-screen view.
   void _openFullScreenImage(String imagePath) {
     Navigator.push(
       context,
@@ -148,8 +81,7 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    final primaryColor = Colors.teal; // Matching the Profile banner color
+    final primaryColor = Colors.teal;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -162,126 +94,94 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
       ),
-      body: Stack(
-        children: [
-          _isLoading
-              ? Center(child: CircularProgressIndicator(color: primaryColor))
-              : _entries.isEmpty
-              ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.timeline,
-                  size: 80,
-                  color: theme.hintColor.withValues(alpha: 0.3),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No progress logged yet.',
-                  style: TextStyle(color: theme.hintColor),
-                ),
-              ],
-            ),
-          )
-              : ListView.builder(
-            // Top padding for the line, bottom padding for the button
-            padding: const EdgeInsets.only(top: 24, bottom: 110),
-            itemCount: _entries.length,
-            itemBuilder: (context, index) {
-              final entry = _entries[index];
-              return _buildTimelineItem(
-                entry,
-                index,
-                theme,
-                primaryColor,
-              );
-            },
-          ),
-          _buildAddProgressButton(context, theme, primaryColor, isDarkMode),
-        ],
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              _controller.isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(color: primaryColor),
+                    )
+                  : _controller.entries.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.timeline,
+                            size: 80,
+                            color: theme.hintColor.withValues(alpha: 0.3),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No progress logged yet.',
+                            style: TextStyle(color: theme.hintColor),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(top: 24, bottom: 110),
+                      itemCount: _controller.entries.length,
+                      itemBuilder: (context, index) {
+                        final entry = _controller.entries[index];
+                        return _buildTimelineItem(
+                          entry,
+                          index,
+                          theme,
+                          primaryColor,
+                        );
+                      },
+                    ),
+              _buildAddProgressButton(context, theme, primaryColor),
+            ],
+          );
+        },
       ),
     );
   }
 
-  /// Replicates the modern gradient button design from Diets/Training screens.
   Widget _buildAddProgressButton(
-      BuildContext context,
-      ThemeData theme,
-      Color primaryColor,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    ThemeData theme,
+    Color primaryColor,
+  ) {
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Positioned(
       bottom: 24,
       left: 0,
       right: 0,
       child: Center(
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDarkMode
-                  ? [
-                theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.8,
+        child: PrimaryGradientButton(
+          primaryColor: primaryColor,
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    AddProgressScreen(profile: widget.profile),
+              ),
+            );
+            if (result == true && widget.profile.idProfile != null) {
+              _controller.loadEntries(widget.profile.idProfile!);
+            }
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, color: isDarkMode ? primaryColor : Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                'Log Progress',
+                style: TextStyle(
+                  color: isDarkMode ? primaryColor : Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
-                theme.colorScheme.surface.withValues(alpha: 0.9),
-              ]
-                  : [primaryColor, primaryColor.withValues(alpha: 0.8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: isDarkMode
-                ? Border.all(color: primaryColor.withValues(alpha: 0.3))
-                : null,
-            boxShadow: [
-              BoxShadow(
-                color: primaryColor.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
               ),
             ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddProgressScreen(
-                      profile: widget.profile,
-                    ),
-                  ),
-                );
-                if (result == true) _loadEntries();
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add,
-                      color: isDarkMode ? primaryColor : Colors.white,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Log Progress',
-                      style: TextStyle(
-                        color: isDarkMode ? primaryColor : Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ),
       ),
@@ -289,19 +189,18 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
   }
 
   Widget _buildTimelineItem(
-      ProgressEntry entry,
-      int index,
-      ThemeData theme,
-      Color primaryColor,
-      ) {
-    final isLast = index == _entries.length - 1;
+    ProgressEntry entry,
+    int index,
+    ThemeData theme,
+    Color primaryColor,
+  ) {
+    final isLast = index == _controller.entries.length - 1;
     final dateFormat = DateFormat('MMM dd, yyyy');
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Timeline indicator column
           SizedBox(
             width: 60,
             child: Column(
@@ -328,7 +227,6 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
               ],
             ),
           ),
-          // Content card column
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 32.0, right: 16.0),
@@ -372,7 +270,9 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
                                 child: Icon(
                                   Icons.delete_outline,
                                   size: 20,
-                                  color: Colors.redAccent.withValues(alpha: 0.8),
+                                  color: Colors.redAccent.withValues(
+                                    alpha: 0.8,
+                                  ),
                                 ),
                               ),
                             ],
@@ -419,7 +319,7 @@ class _ProgressTimelineScreenState extends State<ProgressTimelineScreen> {
   }
 }
 
-/// Simple stateless widget to display an image in full screen.
+/// A stateless widget responsible for displaying an image in full screen.
 class FullScreenImageViewer extends StatelessWidget {
   final String imagePath;
 

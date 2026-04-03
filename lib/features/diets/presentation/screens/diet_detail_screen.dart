@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
+import 'package:better_me/core/utils/date_time_extensions.dart';
+
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
 import 'package:better_me/features/diets/domain/models/ai_diet_plan.dart';
@@ -140,10 +142,10 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
   }
 
   Widget _buildDashboardSummary(
-      BuildContext context,
-      ThemeData theme,
-      AppLocalizations l10n,
-      ) {
+    BuildContext context,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
     final hasAllergies = widget.diet.allergies?.isNotEmpty ?? false;
 
     return Container(
@@ -207,15 +209,15 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
   }
 
   Widget _buildQuickStat(
-      ThemeData theme,
-      IconData icon,
-      String text, {
-        Color? color,
-      }) {
+    ThemeData theme,
+    IconData icon,
+    String text, {
+    Color? color,
+  }) {
     final displayColor =
         color ??
-            theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ??
-            Colors.grey;
+        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ??
+        Colors.grey;
     return Row(
       children: [
         Icon(icon, size: 16, color: displayColor),
@@ -262,7 +264,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      _getWeekdayName(day.day, l10n),
+                      day.day.toLocalizedWeekdayName(l10n),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -319,7 +321,7 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         _dietPlan!.days.length,
-            (index) => AnimatedContainer(
+        (index) => AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 4.0),
           height: 6.0,
@@ -333,27 +335,5 @@ class _DietDetailScreenState extends State<DietDetailScreen> {
         ),
       ),
     );
-  }
-
-  String _getWeekdayName(int dayNumber, AppLocalizations l10n) {
-    final int normalizedDay = ((dayNumber - 1) % 7) + 1;
-    switch (normalizedDay) {
-      case 1:
-        return l10n.monday;
-      case 2:
-        return l10n.tuesday;
-      case 3:
-        return l10n.wednesday;
-      case 4:
-        return l10n.thursday;
-      case 5:
-        return l10n.friday;
-      case 6:
-        return l10n.saturday;
-      case 7:
-        return l10n.sunday;
-      default:
-        return '';
-    }
   }
 }

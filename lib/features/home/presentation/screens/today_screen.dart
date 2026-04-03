@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
-import 'package:better_me/features/profile/data/profile_repository.dart';
+import 'package:better_me/core/utils/date_time_extensions.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
 import 'package:better_me/features/diets/domain/models/ai_diet_plan.dart';
@@ -11,12 +11,9 @@ import 'package:better_me/features/training/domain/models/training.dart';
 import 'package:better_me/features/training/domain/models/ai_training_plan.dart';
 import 'package:better_me/features/training/domain/models/wger_exercise.dart';
 import 'package:better_me/features/training/presentation/widgets/training_exercise_tile.dart';
+import 'package:better_me/features/home/presentation/controllers/today_controller.dart';
 
 /// Screen responsible for displaying the user's active fitness and nutrition plans for the current day.
-///
-/// Integrates AI-generated diet and training routines with local SQLite data to provide
-/// a cohesive daily dashboard. It manages its own persistent state to prevent stale data
-/// from parent widgets from overwriting user selections.
 class TodayScreen extends StatefulWidget {
   final Profile profile;
   final List<Diet> availableDiets;
@@ -38,14 +35,7 @@ class TodayScreen extends StatefulWidget {
 }
 
 class _TodayScreenState extends State<TodayScreen> {
-  final ProfileRepository _profileRepository = ProfileRepository();
-
-  int? _savedDietId;
-  int? _savedTrainingId;
-
-  Diet? _activeDiet;
-  Training? _activeTraining;
-  bool _isConfiguring = false;
+  late final TodayController _controller;
 
   bool _isDietExpanded = false;
   bool _isTrainingExpanded = false;
@@ -53,10 +43,12 @@ class _TodayScreenState extends State<TodayScreen> {
   @override
   void initState() {
     super.initState();
-    _savedDietId = widget.profile.activeDietId;
-    _savedTrainingId = widget.profile.activeTrainingId;
-    _applySavedConfiguration();
-    _fetchLatestProfile();
+    _controller = TodayController();
+    _controller.initialize(
+      widget.profile,
+      widget.availableDiets,
+      widget.availableTrainings,
+    );
   }
 
   @override
@@ -65,95 +57,18 @@ class _TodayScreenState extends State<TodayScreen> {
     if (oldWidget.isLoading != widget.isLoading ||
         oldWidget.availableTrainings != widget.availableTrainings ||
         oldWidget.availableDiets != widget.availableDiets) {
-      _applySavedConfiguration();
-    }
-  }
-
-  /// Fetches the absolute latest profile state directly from the database to avoid
-  /// relying on potentially stale Profile objects passed down the widget tree.
-  Future<void> _fetchLatestProfile() async {
-    if (widget.profile.idProfile == null) return;
-
-    final updatedProfile = await _profileRepository.getProfileById(
-      widget.profile.idProfile!,
-    );
-    if (updatedProfile != null && mounted) {
-      setState(() {
-        _savedDietId = updatedProfile.activeDietId;
-        _savedTrainingId = updatedProfile.activeTrainingId;
-        _applySavedConfiguration();
-      });
-    }
-  }
-
-  /// Synchronizes the current UI state with the internally tracked active IDs.
-  void _applySavedConfiguration() {
-    try {
-      _activeDiet = widget.availableDiets.firstWhere(
-        (d) => d.idDiet == _savedDietId,
+      _controller.updateData(
+        widget.profile,
+        widget.availableDiets,
+        widget.availableTrainings,
       );
-    } catch (_) {
-      _activeDiet = null;
-    }
-
-    try {
-      _activeTraining = widget.availableTrainings.firstWhere(
-        (t) => t.idTraining == _savedTrainingId,
-      );
-    } catch (_) {
-      _activeTraining = null;
-    }
-
-    _isConfiguring = (_activeDiet == null || _activeTraining == null);
-  }
-
-  String _getWeekdayName(int dayNumber, AppLocalizations l10n) {
-    final int normalizedDay = ((dayNumber - 1) % 7) + 1;
-    switch (normalizedDay) {
-      case 1:
-        return l10n.monday;
-      case 2:
-        return l10n.tuesday;
-      case 3:
-        return l10n.wednesday;
-      case 4:
-        return l10n.thursday;
-      case 5:
-        return l10n.friday;
-      case 6:
-        return l10n.saturday;
-      case 7:
-        return l10n.sunday;
-      default:
-        return '';
     }
   }
 
-  /// Persists the user's active configuration to the local database and updates internal state.
-  Future<void> _saveConfiguration() async {
-    if (_activeDiet == null ||
-        _activeTraining == null ||
-        widget.profile.idProfile == null) {
-      return;
-    }
-
-    try {
-      await _profileRepository.updateActivePlans(
-        widget.profile.idProfile!,
-        _activeDiet!.idDiet,
-        _activeTraining!.idTraining,
-      );
-
-      if (mounted) {
-        setState(() {
-          _savedDietId = _activeDiet!.idDiet;
-          _savedTrainingId = _activeTraining!.idTraining;
-          _isConfiguring = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error saving configuration: $e');
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -161,28 +76,33 @@ class _TodayScreenState extends State<TodayScreen> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isConfiguring ? l10n.setupPlanTitle : l10n.todayTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-        actions: [
-          if (!_isConfiguring)
-            IconButton(
-              icon: const Icon(Icons.tune),
-              onPressed: () => setState(() => _isConfiguring = true),
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              _controller.isConfiguring ? l10n.setupPlanTitle : l10n.todayTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-        ],
-      ),
-      body: widget.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _isConfiguring
-          ? _buildConfigurationView(l10n, theme)
-          : _buildDashboardView(l10n, theme),
+            centerTitle: true,
+            backgroundColor: theme.scaffoldBackgroundColor,
+            surfaceTintColor: Colors.transparent,
+            actions: [
+              if (!_controller.isConfiguring)
+                IconButton(
+                  icon: const Icon(Icons.tune),
+                  onPressed: () => _controller.setConfiguring(true),
+                ),
+            ],
+          ),
+          body: (widget.isLoading || _controller.isLoading)
+              ? const Center(child: CircularProgressIndicator())
+              : _controller.isConfiguring
+              ? _buildConfigurationView(l10n, theme)
+              : _buildDashboardView(l10n, theme),
+        );
+      },
     );
   }
 
@@ -198,7 +118,7 @@ class _TodayScreenState extends State<TodayScreen> {
           ),
           const SizedBox(height: 32),
           DropdownButtonFormField<Diet>(
-            initialValue: _activeDiet,
+            initialValue: _controller.activeDiet,
             decoration: InputDecoration(
               labelText: l10n.activeDiet,
               border: OutlineInputBorder(
@@ -208,11 +128,11 @@ class _TodayScreenState extends State<TodayScreen> {
             items: widget.availableDiets
                 .map((d) => DropdownMenuItem(value: d, child: Text(d.name)))
                 .toList(),
-            onChanged: (v) => setState(() => _activeDiet = v),
+            onChanged: (v) => _controller.setActiveDiet(v),
           ),
           const SizedBox(height: 24),
           DropdownButtonFormField<Training>(
-            initialValue: _activeTraining,
+            initialValue: _controller.activeTraining,
             decoration: InputDecoration(
               labelText: l10n.activeTraining,
               border: OutlineInputBorder(
@@ -222,12 +142,14 @@ class _TodayScreenState extends State<TodayScreen> {
             items: widget.availableTrainings
                 .map((t) => DropdownMenuItem(value: t, child: Text(t.name)))
                 .toList(),
-            onChanged: (v) => setState(() => _activeTraining = v),
+            onChanged: (v) => _controller.setActiveTraining(v),
           ),
           const Spacer(),
           ElevatedButton(
-            onPressed: (_activeDiet != null && _activeTraining != null)
-                ? _saveConfiguration
+            onPressed:
+                (_controller.activeDiet != null &&
+                    _controller.activeTraining != null)
+                ? _controller.saveConfiguration
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.colorScheme.onSurface,
@@ -249,16 +171,16 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Widget _buildDashboardView(AppLocalizations l10n, ThemeData theme) {
     AiDietPlan? dietPlan;
-    if (_activeDiet?.generatedContent != null) {
+    if (_controller.activeDiet?.generatedContent != null) {
       dietPlan = AiDietPlan.fromJson(
-        jsonDecode(_activeDiet!.generatedContent!),
+        jsonDecode(_controller.activeDiet!.generatedContent!),
       );
     }
 
     AiTrainingPlan? trainingPlan;
-    if (_activeTraining?.generatedContent != null) {
+    if (_controller.activeTraining?.generatedContent != null) {
       trainingPlan = AiTrainingPlan.fromJson(
-        jsonDecode(_activeTraining!.generatedContent!),
+        jsonDecode(_controller.activeTraining!.generatedContent!),
       );
     }
 
@@ -397,7 +319,7 @@ class _TodayScreenState extends State<TodayScreen> {
         children: [
           ListTile(
             title: Text(
-              _getWeekdayName(day.day, l10n),
+              day.day.toLocalizedWeekdayName(l10n),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.orangeAccent,
@@ -424,7 +346,7 @@ class _TodayScreenState extends State<TodayScreen> {
                     DietMealTile(
                       meal: meal,
                       idProfile: widget.profile.idProfile,
-                      dietObjective: _activeDiet?.objective,
+                      dietObjective: _controller.activeDiet?.objective,
                     ),
                     if (index < day.meals.length - 1)
                       Divider(
@@ -470,7 +392,7 @@ class _TodayScreenState extends State<TodayScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _getWeekdayName(day.day, l10n),
+                  day.day.toLocalizedWeekdayName(l10n),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -498,7 +420,7 @@ class _TodayScreenState extends State<TodayScreen> {
               exercise: ex,
               wgerData: wgerData,
               idProfile: widget.profile.idProfile,
-              trainingObjective: _activeTraining?.objective,
+              trainingObjective: _controller.activeTraining?.objective,
             );
           }),
         ],

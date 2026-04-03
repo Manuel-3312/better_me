@@ -100,7 +100,7 @@ class _FavoriteExercisesScreenState extends State<FavoriteExercisesScreen> {
             title: const Text('Include in future AI Plans', style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: const Text('AI will try to prioritize these exercises for the target muscle.'),
             value: _useFavorites,
-            activeColor: trainingColor,
+            activeThumbColor: trainingColor,
             onChanged: _togglePreference,
           ),
           Divider(color: theme.dividerColor.withValues(alpha: 0.1)),

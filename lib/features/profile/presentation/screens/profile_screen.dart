@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/main.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
-import 'package:better_me/features/profile/data/profile_repository.dart';
+import 'package:better_me/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:better_me/features/profile/presentation/screens/create_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/widgets/weight_entry_dialog.dart';
 import 'package:better_me/features/progress/presentation/screens/progress_timeline_screen.dart';
 
-/// Screen responsible for displaying and managing the user's profile.
 class ProfileScreen extends StatefulWidget {
   final Profile profile;
 
@@ -20,37 +19,30 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late Profile _currentProfile;
-  final ProfileRepository _repository = ProfileRepository();
+  late final ProfileController _controller;
 
   @override
   void initState() {
     super.initState();
-    _currentProfile = widget.profile;
+    _controller = ProfileController();
+    _controller.initialize(widget.profile);
   }
 
-  Future<void> _refreshProfileData() async {
-    if (_currentProfile.idProfile == null) return;
-
-    final updated = await _repository.getProfileById(
-      _currentProfile.idProfile!,
-    );
-    if (updated != null && mounted) {
-      setState(() {
-        _currentProfile = updated;
-      });
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _openWeightDialog() async {
     final bool? wasUpdated = await showDialog<bool>(
       context: context,
       builder: (context) =>
-          WeightEntryDialog(idProfile: _currentProfile.idProfile!),
+          WeightEntryDialog(idProfile: _controller.currentProfile.idProfile!),
     );
 
     if (wasUpdated == true) {
-      _refreshProfileData();
+      _controller.refreshProfileData();
     }
   }
 
@@ -69,35 +61,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            _buildProfileCard(context, l10n, theme),
-            const SizedBox(height: 24),
-            _buildProgressBanner(context, theme),
-            const SizedBox(height: 24),
-            _buildActionList(context, l10n, theme),
-          ],
-        ),
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, child) {
+          final profile = _controller.currentProfile;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                _buildProfileCard(context, l10n, theme, profile),
+                const SizedBox(height: 24),
+                _buildProgressBanner(context, theme, profile),
+                const SizedBox(height: 24),
+                _buildActionList(context, l10n, theme),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildProfileCard(
-      BuildContext context,
-      AppLocalizations l10n,
-      ThemeData theme,
-      ) {
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeData theme,
+    Profile profile,
+  ) {
     final isDarkMode = theme.brightness == Brightness.dark;
     final Color activeColor = isDarkMode
         ? theme.colorScheme.primary
         : Colors.blueAccent;
 
-    final double bmi =
-        _currentProfile.weight / pow(_currentProfile.height / 100, 2);
+    final double bmi = profile.weight / pow(profile.height / 100, 2);
     final String bmiString = bmi.toStringAsFixed(1);
-    final int age = DateTime.now().year - _currentProfile.birthDate.year;
+    final int age = DateTime.now().year - profile.birthDate.year;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -105,11 +103,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         gradient: LinearGradient(
           colors: isDarkMode
               ? [
-            theme.colorScheme.surfaceContainerHighest.withValues(
-              alpha: 0.8,
-            ),
-            theme.colorScheme.surface.withValues(alpha: 0.9),
-          ]
+                  theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.8,
+                  ),
+                  theme.colorScheme.surface.withValues(alpha: 0.9),
+                ]
               : [activeColor, activeColor.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -136,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ? activeColor.withValues(alpha: 0.15)
                     : Colors.white24,
                 child: Text(
-                  _currentProfile.name[0].toUpperCase(),
+                  profile.name[0].toUpperCase(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -150,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _currentProfile.name,
+                      profile.name,
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -160,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      _currentProfile.sex == 'M' ? l10n.male : l10n.female,
+                      profile.sex == 'M' ? l10n.male : l10n.female,
                       style: TextStyle(
                         color: isDarkMode ? theme.hintColor : Colors.white70,
                       ),
@@ -180,10 +178,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          CreateProfileScreen(profile: _currentProfile),
+                          CreateProfileScreen(profile: profile),
                     ),
                   );
-                  if (wasUpdated == true) _refreshProfileData();
+                  if (wasUpdated == true) _controller.refreshProfileData();
                 },
               ),
             ],
@@ -216,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 4, top: 4),
                         child: _buildMetricColumn(
-                          '${_currentProfile.weight} kg',
+                          '${profile.weight} kg',
                           Icons.monitor_weight,
                           isDarkMode,
                           activeColor,
@@ -255,12 +253,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildMetricColumn(
-      String label,
-      IconData icon,
-      bool isDarkMode,
-      Color activeColor,
-      ThemeData theme,
-      ) {
+    String label,
+    IconData icon,
+    bool isDarkMode,
+    Color activeColor,
+    ThemeData theme,
+  ) {
     return Column(
       children: [
         Icon(icon, color: isDarkMode ? activeColor : Colors.white70, size: 28),
@@ -276,7 +274,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProgressBanner(BuildContext context, ThemeData theme) {
+  Widget _buildProgressBanner(
+    BuildContext context,
+    ThemeData theme,
+    Profile profile,
+  ) {
     final isDarkMode = theme.brightness == Brightness.dark;
     const MaterialColor bannerColor = Colors.teal;
 
@@ -285,7 +287,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProgressTimelineScreen(profile: _currentProfile),
+            builder: (context) => ProgressTimelineScreen(profile: profile),
           ),
         );
       },
@@ -332,10 +334,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Track your body transformation',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: theme.hintColor,
-                    ),
+                    style: TextStyle(fontSize: 13, color: theme.hintColor),
                   ),
                 ],
               ),
@@ -348,10 +347,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildActionList(
-      BuildContext context,
-      AppLocalizations l10n,
-      ThemeData theme,
-      ) {
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeData theme,
+  ) {
     final isDarkMode = theme.brightness == Brightness.dark;
     final Color activeColor = isDarkMode
         ? theme.colorScheme.primary
@@ -360,10 +359,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       children: [
         _buildActionTile(
+          context: context,
           icon: Icons.people_outline,
           title: l10n.switchProfile,
           color: activeColor,
-          onTap: () => Navigator.pushReplacement(
+          onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const ChooseProfileScreen(),
@@ -372,6 +372,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 12),
         _buildActionTile(
+          context: context,
           icon: Icons.dark_mode_outlined,
           title: l10n.nightMode,
           color: Colors.deepPurpleAccent,
@@ -390,12 +391,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildActionTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required Color color,
     VoidCallback? onTap,
     Widget? trailing,
   }) {
+    final theme = Theme.of(context);
+
     return ListTile(
       onTap: onTap,
       leading: Container(
@@ -410,11 +414,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       trailing: trailing ?? const Icon(Icons.chevron_right, size: 20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
-        ),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.05)),
       ),
-      tileColor: Theme.of(context).cardColor,
+      tileColor: theme.cardColor,
     );
   }
 }

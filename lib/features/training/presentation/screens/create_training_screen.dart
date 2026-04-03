@@ -7,6 +7,9 @@ import 'package:better_me/features/training/data/exercise_local_database.dart';
 import 'package:better_me/features/training/domain/models/test_wger_screen.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
 
+// Importamos el nuevo componente genérico
+import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart';
+
 class CreateTrainingScreen extends StatefulWidget {
   final Profile profile;
 
@@ -44,18 +47,18 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
   }
 
   Color _getIntensityColor(
-      double value,
-      double min,
-      double max,
-      bool isDarkMode,
-      Color baseColor,
-      ) {
+    double value,
+    double min,
+    double max,
+    bool isDarkMode,
+    Color baseColor,
+  ) {
     final double percentage = (value - min) / (max - min);
     return Color.lerp(
-      baseColor,
-      isDarkMode ? Colors.orangeAccent : Colors.red.shade700,
-      percentage,
-    ) ??
+          baseColor,
+          isDarkMode ? Colors.orangeAccent : Colors.red.shade700,
+          percentage,
+        ) ??
         baseColor;
   }
 
@@ -182,10 +185,7 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: l10n.trainingName,
-                  prefixIcon: Icon(
-                    Icons.fitness_center,
-                    color: trainingColor,
-                  ),
+                  prefixIcon: Icon(Icons.fitness_center, color: trainingColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -242,10 +242,7 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
                 ],
               ),
               const SizedBox(height: 40),
-              _buildSliderLabel(
-                l10n.maxDaysLabel(_maxDays.toInt()),
-                daysColor,
-              ),
+              _buildSliderLabel(l10n.maxDaysLabel(_maxDays.toInt()), daysColor),
               Slider(
                 value: _maxDays,
                 min: 1,
@@ -256,10 +253,7 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
                 onChanged: (v) => setState(() => _maxDays = v),
               ),
               const SizedBox(height: 32),
-              _buildSliderLabel(
-                l10n.maxTimeLabel(_maxTime.toInt()),
-                timeColor,
-              ),
+              _buildSliderLabel(l10n.maxTimeLabel(_maxTime.toInt()), timeColor),
               Slider(
                 value: _maxTime,
                 min: 15,
@@ -270,54 +264,18 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
                 onChanged: (v) => setState(() => _maxTime = v),
               ),
               const SizedBox(height: 48),
-              Opacity(
-                opacity: isDisabled ? 0.5 : 1.0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isDarkMode
-                          ? [
-                        theme.colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.8),
-                        theme.colorScheme.surface.withValues(
-                          alpha: 0.9,
-                        ),
-                      ]
-                          : [
-                        trainingColor,
-                        trainingColor.withValues(alpha: 0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: isDarkMode
-                        ? Border.all(
-                      color: trainingColor.withValues(alpha: 0.3),
-                    )
-                        : null,
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: isDisabled ? null : _submitTrainingConfiguration,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        child: Center(
-                          child: Text(
-                            l10n.createButton,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode
-                                  ? trainingColor
-                                  : Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+
+              // AQUÍ INTEGRAMOS EL NUEVO COMPONENTE
+              PrimaryGradientButton(
+                onTap: _submitTrainingConfiguration,
+                primaryColor: trainingColor,
+                isDisabled: isDisabled,
+                child: Text(
+                  l10n.createButton,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? trainingColor : Colors.white,
                   ),
                 ),
               ),
@@ -343,12 +301,12 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
   }
 
   Widget _buildObjectiveButton(
-      String value,
-      String label,
-      String assetPath,
-      ThemeData theme,
-      Color trainingColor,
-      ) {
+    String value,
+    String label,
+    String assetPath,
+    ThemeData theme,
+    Color trainingColor,
+  ) {
     final isSelected = _selectedObjective == value;
 
     return InkWell(

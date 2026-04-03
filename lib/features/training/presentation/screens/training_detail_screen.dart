@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
+import 'package:better_me/core/utils/date_time_extensions.dart';
+
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
 import 'package:better_me/features/training/domain/models/ai_training_plan.dart';
@@ -153,7 +155,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
               unselectedLabelColor: theme.hintColor,
               dividerColor: theme.dividerColor.withValues(alpha: 0.1),
               tabs: _trainingPlan!.days.map((day) {
-                return Tab(text: _getWeekdayName(day.day, l10n));
+                return Tab(text: day.day.toLocalizedWeekdayName(l10n));
               }).toList(),
             ),
           ),
@@ -305,7 +307,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _getWeekdayName(day.day, l10n).toUpperCase(),
+                      day.day.toLocalizedWeekdayName(l10n).toUpperCase(),
                       style: TextStyle(
                         color: isDarkMode
                             ? theme.hintColor
@@ -343,27 +345,5 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
         }),
       ],
     );
-  }
-
-  String _getWeekdayName(int dayNumber, AppLocalizations l10n) {
-    final int normalizedDay = ((dayNumber - 1) % 7) + 1;
-    switch (normalizedDay) {
-      case 1:
-        return l10n.monday;
-      case 2:
-        return l10n.tuesday;
-      case 3:
-        return l10n.wednesday;
-      case 4:
-        return l10n.thursday;
-      case 5:
-        return l10n.friday;
-      case 6:
-        return l10n.saturday;
-      case 7:
-        return l10n.sunday;
-      default:
-        return '';
-    }
   }
 }
