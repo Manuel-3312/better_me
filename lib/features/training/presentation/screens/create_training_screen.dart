@@ -6,8 +6,6 @@ import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/training/data/exercise_local_database.dart';
 import 'package:better_me/features/training/domain/models/test_wger_screen.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
-
-// Importamos el nuevo componente genérico
 import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart';
 
 class CreateTrainingScreen extends StatefulWidget {
@@ -264,8 +262,6 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
                 onChanged: (v) => setState(() => _maxTime = v),
               ),
               const SizedBox(height: 48),
-
-              // AQUÍ INTEGRAMOS EL NUEVO COMPONENTE
               PrimaryGradientButton(
                 onTap: _submitTrainingConfiguration,
                 primaryColor: trainingColor,

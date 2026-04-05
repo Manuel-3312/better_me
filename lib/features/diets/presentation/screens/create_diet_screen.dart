@@ -165,7 +165,6 @@ class _CreateDietScreenState extends State<CreateDietScreen> {
               ),
               const SizedBox(height: 40),
 
-              // AQUÍ INTEGRAMOS EL NUEVO COMPONENTE
               PrimaryGradientButton(
                 onTap: _submitDietConfiguration,
                 primaryColor: dietColor,

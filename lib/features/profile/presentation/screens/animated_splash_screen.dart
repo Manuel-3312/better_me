@@ -4,12 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/main.dart';
-
-// Repositories and Models
 import 'package:better_me/features/profile/data/profile_repository.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
-
-// Screens
 import 'package:better_me/features/home/presentation/screens/main_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/create_profile_screen.dart';
@@ -206,18 +202,16 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF000814), // Dark navy background
+        backgroundColor: const Color(0xFF000814),
         body: SafeArea(
           child: Stack(
             children: [
-              // Logo Positioned at a fixed relative height to avoid jumps between languages
               Positioned(
                 top: screenHeight * 0.15,
                 left: 0,
                 right: 0,
                 child: Center(
                   child: RepaintBoundary(
-                    // isolate logo rendering to avoid full screen repaints
                     child: SizedBox(
                       width: 300,
                       height: 300,
@@ -233,7 +227,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                 ),
               ),
 
-              // Welcome Text and Language Selector with AI Warning
               Positioned(
                 top: screenHeight * 0.52,
                 left: 0,
@@ -259,7 +252,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
                 ),
               ),
 
-              // Clean Swipe Indicator (Icon only)
               Positioned(
                 bottom: 50,
                 left: 0,

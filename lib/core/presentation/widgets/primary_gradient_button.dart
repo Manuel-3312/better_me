@@ -67,7 +67,6 @@ class PrimaryGradientButton extends StatelessWidget {
                   horizontal: 20,
                   vertical: 16,
                 ),
-                // LA SOLUCIÓN ESTÁ AQUÍ: Añadir heightFactor o usar mainAxisSize.min
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
