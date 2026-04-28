@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
+import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/reminders/domain/models/reminder.dart';
 import 'package:better_me/core/services/notification_service.dart';
 import 'package:better_me/core/services/preferences_services.dart';
@@ -101,6 +102,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   Future<void> _deleteReminder(int index) async {
     final reminder = _reminders[index];
     final notificationId = reminder.id.hashCode;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _reminders.removeAt(index);
@@ -112,8 +114,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
     if (mounted) {
       SnackbarHelper.showUndoSnackbar(
         context: context,
-        message: 'Reminder deleted',
-        undoLabel: 'Undo',
+        message: l10n.reminderDeleted,
+        undoLabel: l10n.undo,
         onUndo: () async {
           setState(() {
             _reminders.insert(index, reminder);
@@ -138,6 +140,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     TimeOfDay selectedTime = TimeOfDay.now();
     final titleController = TextEditingController();
     final descController = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
 
     final bool? result = await showDialog<bool>(
       context: context,
@@ -146,32 +149,32 @@ class _RemindersScreenState extends State<RemindersScreen> {
           builder: (context, setDialogState) {
             final theme = Theme.of(context);
             return AlertDialog(
-              title: const Text('New Reminder'),
+              title: Text(l10n.newReminder),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Title',
-                        hintText: 'e.g., Creatine',
+                      decoration: InputDecoration(
+                        labelText: l10n.title,
+                        hintText: l10n.titleHint,
                       ),
                       textCapitalization: TextCapitalization.sentences,
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: descController,
-                      decoration: const InputDecoration(
-                        labelText: 'Description (Optional)',
-                        hintText: 'e.g., 5g with water',
+                      decoration: InputDecoration(
+                        labelText: l10n.descriptionOptional,
+                        hintText: l10n.descriptionHint,
                       ),
                       textCapitalization: TextCapitalization.sentences,
                     ),
                     const SizedBox(height: 24),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Time'),
+                      title: Text(l10n.time),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -208,14 +211,14 @@ class _RemindersScreenState extends State<RemindersScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.cancel),
                 ),
                 PrimaryGradientButton(
                   primaryColor: theme.colorScheme.primary,
                   onTap: () => Navigator.pop(context, true),
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.save,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -259,13 +262,14 @@ class _RemindersScreenState extends State<RemindersScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Daily Reminders',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.dailyReminders,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -273,8 +277,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _reminders.isEmpty
-          ? _buildEmptyState(theme)
-          : _buildRemindersList(theme),
+          ? _buildEmptyState(theme, l10n)
+          : _buildRemindersList(theme, l10n),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddReminderDialog,
         child: const Icon(Icons.add),
@@ -283,7 +287,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   /// Builds the placeholder state when no reminders exist.
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState(ThemeData theme, AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -295,7 +299,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No reminders set',
+            l10n.noRemindersSet,
             style: TextStyle(fontSize: 16, color: theme.hintColor),
           ),
         ],
@@ -304,7 +308,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   /// Builds the scrollable list of active and inactive reminders.
-  Widget _buildRemindersList(ThemeData theme) {
+  Widget _buildRemindersList(ThemeData theme, AppLocalizations l10n) {
     return ListView.builder(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 100),
       itemCount: _reminders.length,

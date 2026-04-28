@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/core/utils/dialog_helper.dart';
 import 'package:better_me/core/utils/snackbar_helper.dart';
+import 'package:better_me/core/utils/search_helper.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
 import 'package:better_me/features/diets/presentation/controllers/diets_controller.dart';
@@ -23,6 +24,10 @@ class DietsScreen extends StatefulWidget {
 class _DietsScreenState extends State<DietsScreen> {
   late final DietsController _controller;
 
+  String _searchQuery = '';
+  String _sortOption = 'Más recientes';
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -34,8 +39,20 @@ class _DietsScreenState extends State<DietsScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  List<Diet> _getFilteredAndSortedDiets(AppLocalizations l10n) {
+    return SearchHelper.filterAndSort<Diet>(
+      items: _controller.diets,
+      searchQuery: _searchQuery,
+      sortOption: _sortOption,
+      getName: (diet) => diet.name,
+      getObjective: (diet) => _getLocalizedObjective(diet.objective, l10n),
+      getId: (diet) => diet.idDiet ?? 0,
+    );
   }
 
   Future<void> _handleDietCreation(Diet preliminaryDiet) async {
@@ -70,7 +87,7 @@ class _DietsScreenState extends State<DietsScreen> {
     );
   }
 
-  Future<void> _confirmAndDeleteDiet(Diet diet, int index) async {
+  Future<void> _confirmAndDeleteDiet(Diet diet) async {
     final l10n = AppLocalizations.of(context)!;
 
     final bool confirm = await DialogHelper.showDeleteConfirmation(
@@ -83,7 +100,10 @@ class _DietsScreenState extends State<DietsScreen> {
 
     if (!confirm || !mounted) return;
 
-    _controller.removeDietLocally(index);
+    final originalIndex = _controller.diets.indexOf(diet);
+    if (originalIndex == -1) return;
+
+    _controller.removeDietLocally(originalIndex);
 
     final snackBarController = SnackbarHelper.showUndoSnackbar(
       context: context,
@@ -93,7 +113,7 @@ class _DietsScreenState extends State<DietsScreen> {
     final reason = await snackBarController.closed;
 
     if (reason == SnackBarClosedReason.action) {
-      _controller.restoreDietLocally(index, diet);
+      _controller.restoreDietLocally(originalIndex, diet);
     } else if (diet.idDiet != null) {
       await _controller.deleteDietPermanently(diet.idDiet!);
     }
@@ -124,18 +144,76 @@ class _DietsScreenState extends State<DietsScreen> {
     }
   }
 
-  Widget _buildDietCard(
-    Diet diet,
-    int index,
-    ThemeData theme,
-    AppLocalizations l10n, {
-    bool isPending = false,
-  }) {
-    final Color dietColor = Colors.orangeAccent;
-    final String localizedObjective = _getLocalizedObjective(
-      diet.objective,
-      l10n,
+  Widget _buildSearchBar(ThemeData theme,AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() => _searchQuery = value);
+              },
+              decoration: InputDecoration(
+                hintText: l10n.searchDiet,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                )
+                    : null,
+                filled: true,
+                fillColor: theme.cardColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Ordenar',
+            initialValue: _sortOption,
+            onSelected: (String newValue) {
+              setState(() => _sortOption = newValue);
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'Más recientes',
+                child: Text('Más recientes'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'A-Z',
+                child: Text('Nombre (A-Z)'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'Z-A',
+                child: Text('Nombre (Z-A)'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildDietCard(
+      Diet diet,
+      ThemeData theme,
+      AppLocalizations l10n, {
+        bool isPending = false,
+      }) {
+    final Color dietColor = Colors.orangeAccent;
+    final String localizedObjective = _getLocalizedObjective(diet.objective, l10n);
     final IconData objectiveIcon = _getObjectiveIcon(diet.objective);
 
     final card = Card(
@@ -150,12 +228,7 @@ class _DietsScreenState extends State<DietsScreen> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.only(
-          left: 12,
-          right: 8,
-          top: 12,
-          bottom: 12,
-        ),
+        contentPadding: const EdgeInsets.only(left: 12, right: 8, top: 12, bottom: 12),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -171,9 +244,7 @@ class _DietsScreenState extends State<DietsScreen> {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-            isPending
-                ? '$localizedObjective • ${l10n.cookingAiPlan}'
-                : localizedObjective,
+            isPending ? '$localizedObjective • ${l10n.cookingAiPlan}' : localizedObjective,
             style: TextStyle(
               color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             ),
@@ -181,45 +252,44 @@ class _DietsScreenState extends State<DietsScreen> {
         ),
         trailing: isPending
             ? const Padding(
-                padding: EdgeInsets.only(right: 8.0),
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: Colors.orangeAccent,
-                  ),
-                ),
-              )
+          padding: EdgeInsets.only(right: 8.0),
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: Colors.orangeAccent,
+            ),
+          ),
+        )
             : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: Colors.redAccent.withValues(alpha: 0.8),
-                    ),
-                    onPressed: () => _confirmAndDeleteDiet(diet, index),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: theme.hintColor,
-                  ),
-                  const SizedBox(width: 8),
-                ],
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.delete_outline,
+                color: Colors.redAccent.withValues(alpha: 0.8),
               ),
+              onPressed: () => _confirmAndDeleteDiet(diet),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: theme.hintColor,
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
         onTap: isPending
             ? null
             : () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        DietDetailScreen(diet: diet, profile: widget.profile),
-                  ),
-                );
-              },
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DietDetailScreen(diet: diet, profile: widget.profile),
+            ),
+          );
+        },
       ),
     );
 
@@ -229,11 +299,7 @@ class _DietsScreenState extends State<DietsScreen> {
     return card;
   }
 
-  Widget _buildBodyContent(
-    ThemeData theme,
-    AppLocalizations l10n,
-    Color dietColor,
-  ) {
+  Widget _buildBodyContent(ThemeData theme, AppLocalizations l10n, Color dietColor) {
     if (_controller.isLoading && _controller.pendingDiet == null) {
       return Center(child: CircularProgressIndicator(color: dietColor));
     }
@@ -242,51 +308,41 @@ class _DietsScreenState extends State<DietsScreen> {
       return Center(child: Text('Error: ${_controller.error}'));
     }
 
-    if (_controller.diets.isEmpty && _controller.pendingDiet == null) {
+    final displayDiets = _getFilteredAndSortedDiets(l10n);
+
+    if (displayDiets.isEmpty && _controller.pendingDiet == null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.restaurant_menu,
+              _searchQuery.isEmpty ? Icons.restaurant_menu : Icons.search_off,
               size: 80,
               color: theme.hintColor.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
-              l10n.noDietsMessage,
+              _searchQuery.isEmpty ? l10n.noDietsMessage : 'No hay dietas que coincidan con la búsqueda',
               style: TextStyle(fontSize: 16, color: theme.hintColor),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
       );
     }
 
-    final int itemCount =
-        _controller.diets.length + (_controller.pendingDiet != null ? 1 : 0);
+    final int itemCount = displayDiets.length + (_controller.pendingDiet != null ? 1 : 0);
 
     return ListView.builder(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 100),
       itemCount: itemCount,
       itemBuilder: (context, index) {
         if (_controller.pendingDiet != null && index == 0) {
-          return _buildDietCard(
-            _controller.pendingDiet!,
-            -1,
-            theme,
-            l10n,
-            isPending: true,
-          );
+          return _buildDietCard(_controller.pendingDiet!, theme, l10n, isPending: true);
         }
 
         final targetIndex = _controller.pendingDiet != null ? index - 1 : index;
-        return _buildDietCard(
-          _controller.diets[targetIndex],
-          targetIndex,
-          theme,
-          l10n,
-          isPending: false,
-        );
+        return _buildDietCard(displayDiets[targetIndex], theme, l10n, isPending: false);
       },
     );
   }
@@ -327,7 +383,14 @@ class _DietsScreenState extends State<DietsScreen> {
       body: ListenableBuilder(
         listenable: _controller,
         builder: (context, child) {
-          return _buildBodyContent(theme, l10n, dietColor);
+          return Column(
+            children: [
+              _buildSearchBar(theme, l10n),
+              Expanded(
+                child: _buildBodyContent(theme, l10n, dietColor),
+              ),
+            ],
+          );
         },
       ),
       floatingActionButton: ListenableBuilder(
@@ -342,8 +405,7 @@ class _DietsScreenState extends State<DietsScreen> {
               final Diet? preliminaryDiet = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      CreateDietScreen(profile: widget.profile),
+                  builder: (context) => CreateDietScreen(profile: widget.profile),
                 ),
               );
 

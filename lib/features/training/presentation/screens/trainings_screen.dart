@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/core/utils/dialog_helper.dart';
 import 'package:better_me/core/utils/snackbar_helper.dart';
+import 'package:better_me/core/utils/search_helper.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/training/data/training_repository.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
@@ -17,7 +18,6 @@ import 'package:better_me/features/training/data/favorite_exercises_repository.d
 import 'package:better_me/features/training/domain/models/favorite_exercise.dart';
 import 'favorite_exercises_screen.dart';
 
-/// Screen responsible for displaying and managing the user's training plans.
 class TrainingsScreen extends StatefulWidget {
   final Profile profile;
 
@@ -38,11 +38,21 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
 
   Training? _pendingTraining;
 
+  String _searchQuery = '';
+  String _sortOption = 'Más recientes';
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _geminiService = GeminiService();
     _loadTrainings();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTrainings() async {
@@ -73,12 +83,20 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     }
   }
 
-  Future<void> _generateTrainingInBackground(
-    Training preliminaryTraining,
-  ) async {
+  List<Training> _getFilteredAndSortedTrainings(AppLocalizations l10n) {
+    return SearchHelper.filterAndSort<Training>(
+      items: _trainings,
+      searchQuery: _searchQuery,
+      sortOption: _sortOption,
+      getName: (training) => training.name,
+      getObjective: (training) => _getLocalizedObjective(training.objective, l10n),
+      getId: (training) => training.idTraining ?? 0,
+    );
+  }
+
+  Future<void> _generateTrainingInBackground(Training preliminaryTraining) async {
     setState(() => _pendingTraining = preliminaryTraining);
 
-    // Capture state and localization before async gaps
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
@@ -159,7 +177,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     }
   }
 
-  Future<void> _confirmAndDeleteTraining(Training training, int index) async {
+  Future<void> _confirmAndDeleteTraining(Training training) async {
     final l10n = AppLocalizations.of(context)!;
 
     final bool confirm = await DialogHelper.showDeleteConfirmation(
@@ -172,8 +190,11 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
 
     if (!confirm || !mounted) return;
 
+    final originalIndex = _trainings.indexOf(training);
+    if (originalIndex == -1) return;
+
     setState(() {
-      _trainings.removeAt(index);
+      _trainings.removeAt(originalIndex);
     });
 
     final snackBarController = SnackbarHelper.showUndoSnackbar(
@@ -187,7 +208,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     if (reason == SnackBarClosedReason.action) {
       if (mounted) {
         setState(() {
-          _trainings.insert(index, training);
+          _trainings.insert(originalIndex, training);
         });
       }
     } else {
@@ -201,11 +222,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     }
   }
 
-  Widget _buildObjectiveIcon(
-    String objective,
-    ThemeData theme,
-    Color iconColor,
-  ) {
+  Widget _buildObjectiveIcon(String objective, ThemeData theme, Color iconColor) {
     String assetPath;
     switch (objective) {
       case 'strength':
@@ -238,14 +255,75 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     }
   }
 
+  Widget _buildSearchBar(ThemeData theme, AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() => _searchQuery = value);
+              },
+              decoration: InputDecoration(
+                hintText: l10n.searchRoutine,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                )
+                    : null,
+                filled: true,
+                fillColor: theme.cardColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Ordenar',
+            initialValue: _sortOption,
+            onSelected: (String newValue) {
+              setState(() => _sortOption = newValue);
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'Más recientes',
+                child: Text('Más recientes'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'A-Z',
+                child: Text('Nombre (A-Z)'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'Z-A',
+                child: Text('Nombre (Z-A)'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTrainingCard(
-    Training training,
-    int index,
-    ThemeData theme,
-    AppLocalizations l10n,
-    Color trainingColor, {
-    bool isPending = false,
-  }) {
+      Training training,
+      ThemeData theme,
+      AppLocalizations l10n,
+      Color trainingColor, {
+        bool isPending = false,
+      }) {
     final localizedObjective = _getLocalizedObjective(training.objective, l10n);
 
     final card = Card(
@@ -260,12 +338,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.only(
-          left: 12,
-          right: 8,
-          top: 12,
-          bottom: 12,
-        ),
+        contentPadding: const EdgeInsets.only(left: 12, right: 8, top: 12, bottom: 12),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -291,47 +364,46 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
         ),
         trailing: isPending
             ? Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: trainingColor,
-                  ),
-                ),
-              )
+          padding: const EdgeInsets.only(right: 8.0),
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: trainingColor,
+            ),
+          ),
+        )
             : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: Colors.redAccent.withValues(alpha: 0.8),
-                    ),
-                    onPressed: () => _confirmAndDeleteTraining(training, index),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: theme.hintColor,
-                  ),
-                  const SizedBox(width: 8),
-                ],
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.delete_outline,
+                color: Colors.redAccent.withValues(alpha: 0.8),
               ),
+              onPressed: () => _confirmAndDeleteTraining(training),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: theme.hintColor,
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
         onTap: isPending
             ? null
             : () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TrainingDetailScreen(
-                      training: training,
-                      profile: widget.profile,
-                    ),
-                  ),
-                );
-              },
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TrainingDetailScreen(
+                training: training,
+              ),
+            ),
+          );
+        },
       ),
     );
 
@@ -341,14 +413,71 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     return card;
   }
 
+  Widget _buildBodyContent(ThemeData theme, AppLocalizations l10n, Color trainingColor) {
+    if (_isLoadingTrainings && _pendingTraining == null) {
+      return Center(child: CircularProgressIndicator(color: trainingColor));
+    }
+
+    if (_error != null) {
+      return Center(child: Text('Error: $_error'));
+    }
+
+    final displayTrainings = _getFilteredAndSortedTrainings(l10n);
+
+    if (displayTrainings.isEmpty && _pendingTraining == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _searchQuery.isEmpty ? Icons.fitness_center : Icons.search_off,
+              size: 80,
+              color: theme.hintColor.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _searchQuery.isEmpty ? l10n.noTrainingsMessage : 'No hay rutinas que coincidan',
+              style: TextStyle(fontSize: 16, color: theme.hintColor),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final int itemCount = displayTrainings.length + (_pendingTraining != null ? 1 : 0);
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 100),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        if (_pendingTraining != null && index == 0) {
+          return _buildTrainingCard(
+            _pendingTraining!,
+            theme,
+            l10n,
+            trainingColor,
+            isPending: true,
+          );
+        }
+
+        final targetIndex = _pendingTraining != null ? index - 1 : index;
+        return _buildTrainingCard(
+          displayTrainings[targetIndex],
+          theme,
+          l10n,
+          trainingColor,
+          isPending: false,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final Color trainingColor = isDarkMode
-        ? theme.colorScheme.primary
-        : Colors.blueAccent;
+    final Color trainingColor = isDarkMode ? theme.colorScheme.primary : Colors.blueAccent;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -369,15 +498,21 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      FavoriteExercisesScreen(profile: widget.profile),
+                  builder: (context) => FavoriteExercisesScreen(profile: widget.profile),
                 ),
               );
             },
           ),
         ],
       ),
-      body: _buildBodyContent(theme, l10n, trainingColor),
+      body: Column(
+        children: [
+          _buildSearchBar(theme,l10n),
+          Expanded(
+            child: _buildBodyContent(theme, l10n, trainingColor),
+          ),
+        ],
+      ),
       floatingActionButton: Opacity(
         opacity: _pendingTraining != null ? 0.5 : 1.0,
         child: AbsorbPointer(
@@ -387,19 +522,15 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
               gradient: LinearGradient(
                 colors: isDarkMode
                     ? [
-                        theme.colorScheme.surfaceContainerHighest.withValues(
-                          alpha: 0.8,
-                        ),
-                        theme.colorScheme.surface.withValues(alpha: 0.9),
-                      ]
+                  theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                  theme.colorScheme.surface.withValues(alpha: 0.9),
+                ]
                     : [trainingColor, trainingColor.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: isDarkMode
-                  ? Border.all(color: trainingColor.withValues(alpha: 0.3))
-                  : null,
+              border: isDarkMode ? Border.all(color: trainingColor.withValues(alpha: 0.3)) : null,
               boxShadow: [
                 BoxShadow(
                   color: trainingColor.withValues(alpha: 0.2),
@@ -416,8 +547,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
                   final Training? preliminaryTraining = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          CreateTrainingScreen(profile: widget.profile),
+                      builder: (context) => CreateTrainingScreen(profile: widget.profile),
                     ),
                   );
 
@@ -426,10 +556,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
                   }
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -454,70 +581,6 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildBodyContent(
-    ThemeData theme,
-    AppLocalizations l10n,
-    Color trainingColor,
-  ) {
-    if (_isLoadingTrainings && _pendingTraining == null) {
-      return Center(child: CircularProgressIndicator(color: trainingColor));
-    }
-
-    if (_error != null) {
-      return Center(child: Text('Error: $_error'));
-    }
-
-    if (_trainings.isEmpty && _pendingTraining == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.fitness_center,
-              size: 80,
-              color: theme.hintColor.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.noTrainingsMessage,
-              style: TextStyle(fontSize: 16, color: theme.hintColor),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final int itemCount =
-        _trainings.length + (_pendingTraining != null ? 1 : 0);
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 100),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        if (_pendingTraining != null && index == 0) {
-          return _buildTrainingCard(
-            _pendingTraining!,
-            -1,
-            theme,
-            l10n,
-            trainingColor,
-            isPending: true,
-          );
-        }
-
-        final targetIndex = _pendingTraining != null ? index - 1 : index;
-        return _buildTrainingCard(
-          _trainings[targetIndex],
-          targetIndex,
-          theme,
-          l10n,
-          trainingColor,
-          isPending: false,
-        );
-      },
     );
   }
 }

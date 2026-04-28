@@ -3,8 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
 import 'package:better_me/features/profile/domain/models/profile.dart';
-import 'package:better_me/features/training/data/exercise_local_database.dart';
-import 'package:better_me/features/training/domain/models/test_wger_screen.dart';
 import 'package:better_me/features/training/domain/models/training.dart';
 import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart';
 
@@ -19,24 +17,11 @@ class CreateTrainingScreen extends StatefulWidget {
 
 class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _localDb = ExerciseLocalDatabase();
   final _nameController = TextEditingController();
 
   String _selectedObjective = 'hypertrophy';
   double _maxDays = 3.0;
   double _maxTime = 60.0;
-  bool _isDbEmpty = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkDatabase();
-  }
-
-  Future<void> _checkDatabase() async {
-    final hasData = await _localDb.hasData();
-    setState(() => _isDbEmpty = !hasData);
-  }
 
   @override
   void dispose() {
@@ -45,18 +30,18 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
   }
 
   Color _getIntensityColor(
-    double value,
-    double min,
-    double max,
-    bool isDarkMode,
-    Color baseColor,
-  ) {
+      double value,
+      double min,
+      double max,
+      bool isDarkMode,
+      Color baseColor,
+      ) {
     final double percentage = (value - min) / (max - min);
     return Color.lerp(
-          baseColor,
-          isDarkMode ? Colors.orangeAccent : Colors.red.shade700,
-          percentage,
-        ) ??
+      baseColor,
+      isDarkMode ? Colors.orangeAccent : Colors.red.shade700,
+      percentage,
+    ) ??
         baseColor;
   }
 
@@ -99,8 +84,6 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
       trainingColor,
     );
 
-    final bool isDisabled = _isDbEmpty;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -108,19 +91,6 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sync),
-            tooltip: 'Sync Database',
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TestWgerScreen()),
-              );
-              _checkDatabase();
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -129,56 +99,6 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (_isDbEmpty)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 24),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orangeAccent),
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.warning_amber_rounded,
-                        color: Colors.orangeAccent,
-                        size: 32,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Database is empty!',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const Text(
-                        'You need to sync exercises before creating a plan.',
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TestWgerScreen(),
-                            ),
-                          );
-                          _checkDatabase();
-                        },
-                        icon: const Icon(Icons.cloud_download),
-                        label: const Text('Sync Now'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orangeAccent,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -265,7 +185,7 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
               PrimaryGradientButton(
                 onTap: _submitTrainingConfiguration,
                 primaryColor: trainingColor,
-                isDisabled: isDisabled,
+                isDisabled: false,
                 child: Text(
                   l10n.createButton,
                   style: TextStyle(
@@ -297,12 +217,12 @@ class _CreateTrainingScreenState extends State<CreateTrainingScreen> {
   }
 
   Widget _buildObjectiveButton(
-    String value,
-    String label,
-    String assetPath,
-    ThemeData theme,
-    Color trainingColor,
-  ) {
+      String value,
+      String label,
+      String assetPath,
+      ThemeData theme,
+      Color trainingColor,
+      ) {
     final isSelected = _selectedObjective == value;
 
     return InkWell(

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
@@ -13,13 +14,8 @@ import 'package:better_me/features/home/presentation/screens/today_screen.dart';
 import 'package:better_me/features/diets/presentation/screens/diets_screen.dart';
 import 'package:better_me/features/training/presentation/screens/trainings_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/profile_screen.dart';
+import 'package:better_me/features/training/data/exercise_sync_service.dart';
 
-/// Primary navigation hub for the application.
-///
-/// Orchestrates bottom navigation and handles the concurrent pre-fetching
-/// of application data to ensure a seamless experience. This screen implements
-/// a total deferred loading strategy and utilizes a PageView for fluid,
-/// swipeable lateral transitions between tabs.
 class MainScreen extends StatefulWidget {
   final Profile profile;
 
@@ -49,6 +45,8 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _pageController = PageController(initialPage: _selectedIndex);
 
+    _runSilentSync();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 850), () {
         if (mounted) {
@@ -61,16 +59,17 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _runSilentSync() {
+    final String deviceLanguage = Platform.localeName.split('_')[0];
+    ExerciseSyncService().syncIfNeeded(deviceLanguage);
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
   }
 
-  /// Concurrently retrieves necessary local database records.
-  ///
-  /// Fetches diet plans, training plans, and the comprehensive exercise
-  /// lookup dictionary to provide immediate data availability for child screens.
   Future<void> _loadAllApplicationData() async {
     if (!mounted) return;
     setState(() => _isLoadingData = true);
@@ -101,7 +100,6 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// Handles navigation when a bottom navigation bar item is tapped.
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
     _pageController.animateToPage(
@@ -111,7 +109,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  /// Handles state updates when the page is changed via swipe gestures.
   void _onPageChanged(int index) {
     setState(() => _selectedIndex = index);
     if (index == 0) _loadAllApplicationData();

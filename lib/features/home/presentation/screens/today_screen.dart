@@ -12,6 +12,7 @@ import 'package:better_me/features/training/domain/models/ai_training_plan.dart'
 import 'package:better_me/features/training/domain/models/wger_exercise.dart';
 import 'package:better_me/features/training/presentation/widgets/training_exercise_tile.dart';
 import 'package:better_me/features/home/presentation/controllers/today_controller.dart';
+import 'package:better_me/features/training/presentation/screens/active_workout_screen.dart'; // IMPORT NUEVO
 
 /// Screen responsible for displaying the user's active fitness and nutrition plans for the current day.
 class TodayScreen extends StatefulWidget {
@@ -147,8 +148,8 @@ class _TodayScreenState extends State<TodayScreen> {
           const Spacer(),
           ElevatedButton(
             onPressed:
-                (_controller.activeDiet != null &&
-                    _controller.activeTraining != null)
+            (_controller.activeDiet != null &&
+                _controller.activeTraining != null)
                 ? _controller.saveConfiguration
                 : null,
             style: ElevatedButton.styleFrom(
@@ -216,9 +217,9 @@ class _TodayScreenState extends State<TodayScreen> {
           child: dDay != null
               ? _buildTodayDietCard(dDay, l10n, theme)
               : Padding(
-                  padding: const EdgeInsets.only(top: 16.0, left: 8.0),
-                  child: Text(l10n.noDietDataForToday),
-                ),
+            padding: const EdgeInsets.only(top: 16.0, left: 8.0),
+            child: Text(l10n.noDietDataForToday),
+          ),
         ),
         const SizedBox(height: 24),
         _buildExpandableSection(
@@ -231,9 +232,9 @@ class _TodayScreenState extends State<TodayScreen> {
           child: tDay != null
               ? _buildTodayTrainingCard(tDay, l10n, theme)
               : Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: _buildRestDayCard(l10n, theme),
-                ),
+            padding: const EdgeInsets.only(top: 8.0),
+            child: _buildRestDayCard(l10n, theme),
+          ),
         ),
       ],
     );
@@ -297,10 +298,10 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 
   Widget _buildTodayDietCard(
-    DietDay day,
-    AppLocalizations l10n,
-    ThemeData theme,
-  ) {
+      DietDay day,
+      AppLocalizations l10n,
+      ThemeData theme,
+      ) {
     final isDarkMode = theme.brightness == Brightness.dark;
     return Card(
       elevation: 0,
@@ -364,10 +365,10 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 
   Widget _buildTodayTrainingCard(
-    TrainingDay day,
-    AppLocalizations l10n,
-    ThemeData theme,
-  ) {
+      TrainingDay day,
+      AppLocalizations l10n,
+      ThemeData theme,
+      ) {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     return Card(
@@ -384,7 +385,7 @@ class _TodayScreenState extends State<TodayScreen> {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.all(20.0),
@@ -423,6 +424,40 @@ class _TodayScreenState extends State<TodayScreen> {
               trainingObjective: _controller.activeTraining?.objective,
             );
           }),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                if (_controller.activeTraining == null) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ActiveWorkoutScreen(
+                      training: _controller.activeTraining!,
+                      trainingDay: day,
+                      exerciseLookup: widget.exerciseLookup,
+                      localizedDayName: day.day.toLocalizedWeekdayName(l10n),
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.play_arrow_rounded, size: 24),
+              label: const Text(
+                'Empezar Entrenamiento',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -84,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
                 _buildProgressBanner(context, l10n, theme, profile),
                 const SizedBox(height: 16),
-                _buildRemindersBanner(context, theme),
+                _buildRemindersBanner(context, theme,l10n),
               ],
             ),
           );
@@ -362,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// Builds a clickable banner that navigates to the reminders management screen.
-  Widget _buildRemindersBanner(BuildContext context, ThemeData theme) {
+  Widget _buildRemindersBanner(BuildContext context, ThemeData theme, AppLocalizations l10n) {
     final isDarkMode = theme.brightness == Brightness.dark;
     const MaterialColor bannerColor = Colors.orange;
 
@@ -406,7 +406,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Daily Reminders',
+                    l10n.dailyReminders,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -415,7 +415,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Manage supplements and tasks',
+                    l10n.dailyDesc,
                     style: TextStyle(fontSize: 13, color: theme.hintColor),
                   ),
                 ],

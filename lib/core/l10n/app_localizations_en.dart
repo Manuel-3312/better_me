@@ -526,4 +526,134 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get languageWarning =>
       'Note: The selected language will be used by the AI to generate your personalized diet and training plans.';
+
+  @override
+  String get workoutRoutineTitle => 'Workout Routine';
+
+  @override
+  String get exerciseLabel => 'Exercise';
+
+  @override
+  String get unknownExercise => 'Unknown exercise';
+
+  @override
+  String get setLabel => 'Set';
+
+  @override
+  String get repsLabel => 'reps';
+
+  @override
+  String get restAction => 'Rest';
+
+  @override
+  String get restTitle => 'Rest Time';
+
+  @override
+  String get nextExerciseLabel => 'Next exercise:';
+
+  @override
+  String get skipRestAction => 'Skip rest';
+
+  @override
+  String get stopWorkoutConfirm => 'Are you sure you want to stop the workout?';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get workoutCompletedTitle => 'Workout Completed!!!';
+
+  @override
+  String get backToMenuAction => 'Back to menu';
+
+  @override
+  String get musclesTargeted => 'Muscles Targeted';
+
+  @override
+  String get exerciseDetails => 'Exercise Details';
+
+  @override
+  String get logout => 'Log out';
+
+  @override
+  String get logoutTitle => 'Log out?';
+
+  @override
+  String get logoutContent =>
+      'Are you sure you want to log out? You will need to enter your credentials again to access your account.';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get createAccount => 'Create your account';
+
+  @override
+  String get loginSubtitle => 'Log in to continue your progress';
+
+  @override
+  String get registerSubtitle => 'Join BetterMe and transform your life';
+
+  @override
+  String get emailLabel => 'Email address';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get loginButton => 'LOG IN';
+
+  @override
+  String get registerButton => 'SIGN UP';
+
+  @override
+  String get noAccountPrompt => 'Don\'t have an account? Sign up here';
+
+  @override
+  String get hasAccountPrompt => 'Already have an account? Log in';
+
+  @override
+  String get fillAllFields => 'Please fill in all fields.';
+
+  @override
+  String get unexpectedError => 'An unexpected error occurred.';
+
+  @override
+  String get searchRoutine => 'Find a routine or a goal...';
+
+  @override
+  String get searchDiet => 'Find a diet or a goal...';
+
+  @override
+  String get dailyReminders => 'Daily Reminders';
+
+  @override
+  String get noRemindersSet => 'No reminders set';
+
+  @override
+  String get newReminder => 'New Reminder';
+
+  @override
+  String get title => 'Title';
+
+  @override
+  String get titleHint => 'e.g., Creatine';
+
+  @override
+  String get descriptionOptional => 'Description (Optional)';
+
+  @override
+  String get descriptionHint => 'e.g., 5g with water';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get reminderDeleted => 'Reminder deleted';
+
+  @override
+  String get dailyDesc => 'Manage supplements and tasks';
 }

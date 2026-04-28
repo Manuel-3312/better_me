@@ -1,12 +1,20 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/database/database_helper.dart';
 import '../domain/models/profile.dart';
 
 class ProfileRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   Future<int> createProfile(Profile profile) async {
     final db = await _dbHelper.database;
-    return await db.insert('profile', profile.toMap());
+    final currentUser = _supabase.auth.currentUser;
+
+    if (currentUser == null) throw Exception('No hay usuario logueado');
+
+    final profileWithUser = profile.copyWith(userId: currentUser.id);
+
+    return await db.insert('profile', profileWithUser.toMap());
   }
 
   Future<Profile?> getProfileById(int id) async {
@@ -26,16 +34,21 @@ class ProfileRepository {
 
   Future<List<Profile>> getAllProfiles() async {
     final db = await _dbHelper.database;
+    final currentUser = _supabase.auth.currentUser;
 
-    final List<Map<String, dynamic>> result = await db.query('profile');
+    if (currentUser == null) return [];
+
+    final List<Map<String, dynamic>> result = await db.query(
+      'profile',
+      where: 'user_id = ?',
+      whereArgs: [currentUser.id],
+    );
 
     return result.map((map) => Profile.fromMap(map)).toList();
   }
 
-  /// Updates an existing profile in the database.
-  /// Uses the profile's unique ID to target the correct record.
   Future<int> updateProfile(Profile profile) async {
-    final db = await DatabaseHelper.instance.database;
+    final db = await _dbHelper.database;
 
     return await db.update(
       'profile',
@@ -44,7 +57,6 @@ class ProfileRepository {
         'sex': profile.sex,
         'weight': profile.weight,
         'height': profile.height,
-        // Assuming birthDate is stored as an ISO 8601 string in the database
         'birth_date': profile.birthDate.toIso8601String(),
       },
       where: 'id_profile = ?',
@@ -52,9 +64,8 @@ class ProfileRepository {
     );
   }
 
-  /// Deletes a profile from the database using its unique identifier.
   Future<int> deleteProfile(int idProfile) async {
-    final db = await DatabaseHelper.instance.database;
+    final db = await _dbHelper.database;
     return await db.delete(
       'profile',
       where: 'id_profile = ?',
@@ -62,13 +73,12 @@ class ProfileRepository {
     );
   }
 
-  /// Updates the active diet and training plans for a specific profile.
   Future<void> updateActivePlans(
-    int profileId,
-    int? dietId,
-    int? trainingId,
-  ) async {
-    final db = await DatabaseHelper.instance.database;
+      int profileId,
+      int? dietId,
+      int? trainingId,
+      ) async {
+    final db = await _dbHelper.database;
     await db.update(
       'profile',
       {'active_diet_id': dietId, 'active_training_id': trainingId},

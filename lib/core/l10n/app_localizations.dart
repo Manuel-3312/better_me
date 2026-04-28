@@ -1039,6 +1039,264 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nota: El idioma seleccionado será el que utilice la IA para generar tus planes de dieta y entrenamiento personalizados.'**
   String get languageWarning;
+
+  /// No description provided for @workoutRoutineTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Rutina de entreno'**
+  String get workoutRoutineTitle;
+
+  /// No description provided for @exerciseLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejercicio'**
+  String get exerciseLabel;
+
+  /// No description provided for @unknownExercise.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejercicio desconocido'**
+  String get unknownExercise;
+
+  /// No description provided for @setLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Serie'**
+  String get setLabel;
+
+  /// No description provided for @repsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'repeticiones'**
+  String get repsLabel;
+
+  /// No description provided for @restAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Descansar'**
+  String get restAction;
+
+  /// No description provided for @restTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Descanso'**
+  String get restTitle;
+
+  /// No description provided for @nextExerciseLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Siguiente ejercicio:'**
+  String get nextExerciseLabel;
+
+  /// No description provided for @skipRestAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Saltar descanso'**
+  String get skipRestAction;
+
+  /// No description provided for @stopWorkoutConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro que desea detener el entrenamiento?'**
+  String get stopWorkoutConfirm;
+
+  /// No description provided for @yes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sí'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In es, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @workoutCompletedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrenamiento completado!!!'**
+  String get workoutCompletedTitle;
+
+  /// No description provided for @backToMenuAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver al menú'**
+  String get backToMenuAction;
+
+  /// No description provided for @musclesTargeted.
+  ///
+  /// In es, this message translates to:
+  /// **'Músculos implicados'**
+  String get musclesTargeted;
+
+  /// No description provided for @exerciseDetails.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalles del Ejercicio'**
+  String get exerciseDetails;
+
+  /// No description provided for @logout.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get logout;
+
+  /// No description provided for @logoutTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cerrar sesión?'**
+  String get logoutTitle;
+
+  /// No description provided for @logoutContent.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que deseas cerrar tu sesión actual? Tendrás que volver a introducir tus credenciales para entrar.'**
+  String get logoutContent;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Bienvenido de nuevo'**
+  String get welcomeBack;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu cuenta'**
+  String get createAccount;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicia sesión para continuar tu progreso'**
+  String get loginSubtitle;
+
+  /// No description provided for @registerSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Únete a BetterMe y transforma tu vida'**
+  String get registerSubtitle;
+
+  /// No description provided for @emailLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo electrónico'**
+  String get emailLabel;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña'**
+  String get passwordLabel;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In es, this message translates to:
+  /// **'INICIAR SESIÓN'**
+  String get loginButton;
+
+  /// No description provided for @registerButton.
+  ///
+  /// In es, this message translates to:
+  /// **'REGISTRARSE'**
+  String get registerButton;
+
+  /// No description provided for @noAccountPrompt.
+  ///
+  /// In es, this message translates to:
+  /// **'¿No tienes cuenta? Regístrate aquí'**
+  String get noAccountPrompt;
+
+  /// No description provided for @hasAccountPrompt.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Ya tienes cuenta? Inicia sesión'**
+  String get hasAccountPrompt;
+
+  /// No description provided for @fillAllFields.
+  ///
+  /// In es, this message translates to:
+  /// **'Por favor, rellena todos los campos.'**
+  String get fillAllFields;
+
+  /// No description provided for @unexpectedError.
+  ///
+  /// In es, this message translates to:
+  /// **'Ha ocurrido un error inesperado.'**
+  String get unexpectedError;
+
+  /// No description provided for @searchRoutine.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar rutina u objetivo...'**
+  String get searchRoutine;
+
+  /// No description provided for @searchDiet.
+  ///
+  /// In es, this message translates to:
+  /// **'Encuentra una dieta o un objetivo...'**
+  String get searchDiet;
+
+  /// No description provided for @dailyReminders.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorios'**
+  String get dailyReminders;
+
+  /// No description provided for @noRemindersSet.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay recordatorios'**
+  String get noRemindersSet;
+
+  /// No description provided for @newReminder.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo Recordatorio'**
+  String get newReminder;
+
+  /// No description provided for @title.
+  ///
+  /// In es, this message translates to:
+  /// **'Título'**
+  String get title;
+
+  /// No description provided for @titleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej., Creatina'**
+  String get titleHint;
+
+  /// No description provided for @descriptionOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción (Opcional)'**
+  String get descriptionOptional;
+
+  /// No description provided for @descriptionHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej., 5g con agua'**
+  String get descriptionHint;
+
+  /// No description provided for @time.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora'**
+  String get time;
+
+  /// No description provided for @reminderDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio eliminado'**
+  String get reminderDeleted;
+
+  /// No description provided for @dailyDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Gestionar suplementos y tareas'**
+  String get dailyDesc;
 }
 
 class _AppLocalizationsDelegate

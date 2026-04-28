@@ -4,8 +4,8 @@ import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/profile/data/profile_repository.dart';
 import 'package:better_me/features/profile/domain/models/weight_entry.dart';
 import 'package:better_me/features/profile/data/weight_repository.dart';
+import 'package:better_me/features/profile/data/cloud_sync_service.dart';
 
-/// Controller responsible for managing the creation and updating of user profiles.
 class CreateProfileController extends ChangeNotifier {
   final ProfileRepository _profileRepository = ProfileRepository();
   final WeightRepository _weightRepository = WeightRepository();
@@ -15,12 +15,9 @@ class CreateProfileController extends ChangeNotifier {
   DateTime? _selectedDate;
 
   bool get isSaving => _isSaving;
-
   String get selectedSex => _selectedSex;
-
   DateTime? get selectedDate => _selectedDate;
 
-  /// Initializes the controller state based on an existing profile, if provided.
   void initialize(Profile? existingProfile) {
     if (existingProfile != null) {
       _selectedSex = existingProfile.sex;
@@ -38,7 +35,6 @@ class CreateProfileController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Validates and persists the profile data, handling both creation and updates.
   Future<Profile?> saveProfile({
     required Profile? existingProfile,
     required String name,
@@ -55,6 +51,7 @@ class CreateProfileController extends ChangeNotifier {
 
       var profileToSave = Profile(
         idProfile: existingProfile?.idProfile,
+        userId: existingProfile?.userId ?? '',
         name: name,
         sex: _selectedSex,
         weight: weight,
@@ -81,6 +78,8 @@ class CreateProfileController extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('last_profile_id', newId);
       }
+
+      await CloudSyncService().backupProfilesToCloud();
 
       return profileToSave;
     } catch (e) {

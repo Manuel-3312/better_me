@@ -1,8 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-/// Singleton helper class for managing the local SQLite database.
-/// Handles initialization, configuration, creation, and upgrading of tables.
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -21,7 +19,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -45,12 +43,19 @@ class DatabaseHelper {
         )
       ''');
     }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE local_exercises ADD COLUMN secondary_muscle_ids TEXT');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE profile ADD COLUMN user_id TEXT DEFAULT ""');
+    }
   }
 
   Future _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE profile (
         id_profile INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
         name TEXT NOT NULL,
         sex TEXT NOT NULL,
         weight REAL NOT NULL,
@@ -76,6 +81,7 @@ class DatabaseHelper {
         category_id INTEGER NOT NULL,
         category_name TEXT NOT NULL,
         main_muscle_id INTEGER,
+        secondary_muscle_ids TEXT,
         exercise_image_url TEXT
       )
     ''');

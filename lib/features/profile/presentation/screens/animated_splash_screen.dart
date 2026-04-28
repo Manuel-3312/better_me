@@ -9,13 +9,9 @@ import 'package:better_me/features/profile/domain/models/profile.dart';
 import 'package:better_me/features/home/presentation/screens/main_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
 import 'package:better_me/features/profile/presentation/screens/create_profile_screen.dart';
+import 'package:better_me/features/auth/data/auth_service.dart';
+import 'package:better_me/features/auth/presentation/screens/auth_screen.dart';
 
-/// A unified entry screen that combines a high-fidelity SVG logo animation
-/// with layout stabilization and intelligent routing logic.
-///
-/// This screen handles user locale preferences, checks the database state for profiles,
-/// and intelligently routes the user to the Main, Choose Profile, or Create Profile screens
-/// upon completion of the intro animation via an optimized, fluid swipe gesture.
 class AnimatedSplashScreen extends StatefulWidget {
   const AnimatedSplashScreen({super.key});
 
@@ -30,14 +26,10 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   late Animation<double> _starFadeAnimation;
   late Animation<double> _starScaleAnimation;
 
-  /// Tracks whether the welcome and language selector UI is visible.
   bool _showWelcomeUI = false;
-
-  /// Stores the last active profile if one is found in local storage.
   Profile? _lastActiveProfile;
-
-  /// Tracks whether the local database contains any user profiles.
   bool _hasProfiles = false;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -90,9 +82,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
       }
     });
 
-    // Fix cold start animation jank:
-    // Wait for the first frame and add a slight delay to ensure UI thread readiness
-    // before starting the complex drawing animation.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 150), () {
         if (mounted) {
@@ -102,9 +91,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
     });
   }
 
-  /// Determines the routing state by checking local storage and database.
-  ///
-  /// First checks for a saved session ('last_profile_id') and fallbacks to checking total profile count.
   Future<void> _checkApplicationState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -129,18 +115,14 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
     }
   }
 
-  /// Handles routing intelligently with an optimized, highly professional fluid slide transition.
-  ///
-  /// Instead of just replacing the screen, this uses a layered effect with perspective:
-  /// 1. The entering widget (e.g., MainScreen) slides UP from Y=1.0 to 0.0.
-  /// 2. This primary motion uses a graceful physical curve (`fastLinearToSlowEaseIn`) to feel professional.
-  /// 3. A FadeTransition is superposed to start the fade gracefully, which makes any performance hiccups less obvious.
-  /// 4. An optimized BoxShadow is used against the black background to add depth.
   void _onSwipeUp(BuildContext context) {
     if (!_showWelcomeUI) return;
 
     Widget targetScreen;
-    if (_lastActiveProfile != null) {
+
+    if (!_authService.isAuthenticated) {
+      targetScreen = const AuthScreen();
+    } else if (_lastActiveProfile != null) {
       targetScreen = MainScreen(profile: _lastActiveProfile!);
     } else if (_hasProfiles) {
       targetScreen = const ChooseProfileScreen();
@@ -276,7 +258,6 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen>
   }
 }
 
-/// A specialized widget providing locale switching and AI language awareness.
 class _LanguageSelector extends StatelessWidget {
   const _LanguageSelector();
 
@@ -322,7 +303,6 @@ class _LanguageSelector extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        // AI Language Warning Note
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Text(
@@ -341,8 +321,6 @@ class _LanguageSelector extends StatelessWidget {
   }
 }
 
-/// Painter for the high-fidelity SVG wave and star logo.
-/// Draws a neon wave line followed by a scaling, fading star.
 class SvgLogoPainter extends CustomPainter {
   final Animation<double> drawingPercent;
   final Animation<double> starOpacity;
@@ -356,7 +334,7 @@ class SvgLogoPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double sc = size.width / 100; // Scaling factor based on size
+    final double sc = size.width / 100;
 
     final mainPaint = Paint()
       ..color = const Color(0xFF0052FF)
@@ -370,10 +348,7 @@ class SvgLogoPainter extends CustomPainter {
       ..strokeWidth = 4.0 * sc
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(
-        BlurStyle.normal,
-        8,
-      ); // Neon glow mask
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
     final path = Path();
     path.moveTo(10 * sc, 65 * sc);
@@ -384,7 +359,6 @@ class SvgLogoPainter extends CustomPainter {
     path.lineTo(55 * sc, 65 * sc);
     path.cubicTo(70 * sc, 65 * sc, 80 * sc, 55 * sc, 88 * sc, 25 * sc);
 
-    // Draw the main animated wave path (neon effect first, then solid)
     final ui.PathMetrics metrics = path.computeMetrics();
     for (final ui.PathMetric metric in metrics) {
       final animatedPath = metric.extractPath(
@@ -395,14 +369,12 @@ class SvgLogoPainter extends CustomPainter {
       canvas.drawPath(animatedPath, mainPaint);
     }
 
-    // Star logic (only draw if visible)
     if (starOpacity.value > 0) {
       final starPaint = Paint()
         ..color = const Color(0xFF0052FF).withValues(alpha: starOpacity.value)
         ..style = PaintingStyle.fill;
 
       canvas.save();
-      // Translate to star center, apply rotate/scale, then translate back
       canvas.translate(88 * sc, 23.5 * sc);
       canvas.rotate(math.pi / 3);
       canvas.scale(starScale.value);

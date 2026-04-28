@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:better_me/core/database/database_helper.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/main.dart';
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
+import 'package:better_me/features/auth/presentation/screens/auth_screen.dart';
+import 'package:better_me/core/utils/dialog_helper.dart';
+import 'database_seeder.dart';
+import 'package:better_me/features/profile/data/cloud_sync_service.dart';
 
-/// Screen responsible for application-wide configurations and preferences.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -17,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          l10n.dashboardTitle, // Or your specific Settings key
+          l10n.dashboardTitle,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -38,8 +44,6 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-
-          // Language Selector Section
           _buildActionTile(
             context: context,
             icon: Icons.translate,
@@ -59,21 +63,28 @@ class SettingsScreen extends StatelessWidget {
                   DropdownMenuItem(value: 'es', child: Text('🇪🇸 ES')),
                   DropdownMenuItem(value: 'en', child: Text('🇬🇧 EN')),
                 ],
-                onChanged: (String? newLocale) {
+                onChanged: (String? newLocale) async {
                   if (newLocale != null) {
                     BetterMeApp.setLocale(context, Locale(newLocale));
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(newLocale == 'es'
+                            ? 'Sincronizando base de datos de ejercicios...'
+                            : 'Syncing exercise database...'),
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                    await CloudSyncService().syncExerciseCatalog();
                   }
                 },
               ),
             ),
           ),
-
-          // AI Language Warning
           Padding(
             padding: const EdgeInsets.only(top: 12.0, bottom: 8.0),
             child: _buildInfoCard(theme, l10n.languageWarning),
           ),
-
           const SizedBox(height: 12),
           _buildActionTile(
             context: context,
@@ -90,12 +101,69 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
+          const SizedBox(height: 32),
+          _buildActionTile(
+            context: context,
+            icon: Icons.cloud_upload,
+            title: 'Migrar API Wger (Dev)',
+            color: Colors.teal,
+            onTap: () async {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Iniciando migración...')),
+              );
+
+              await DatabaseSeeder.populateSupabaseFromWger();
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Migración completada')),
+                );
+              }
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildActionTile(
+            context: context,
+            icon: Icons.logout,
+            title: l10n.logout,
+            color: Colors.redAccent,
+            onTap: () async {
+              final bool confirm = await DialogHelper.showDeleteConfirmation(
+                context: context,
+                title: l10n.logoutTitle,
+                content: l10n.logoutContent,
+                cancelText: l10n.cancel,
+                deleteText: l10n.logout,
+              );
+
+              if (!confirm) return;
+
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('last_profile_id');
+
+              final db = await DatabaseHelper.instance.database;
+              await db.delete('profile');
+              await db.delete('diet');
+              await db.delete('training');
+              await db.delete('weight_history');
+              await db.delete('progress_entries');
+
+              await Supabase.instance.client.auth.signOut();
+
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
+                      (route) => false,
+                );
+              }
+            },
+          ),
         ],
       ),
     );
   }
 
-  /// Builds a small informative card to warn about AI generation language.
   Widget _buildInfoCard(ThemeData theme, String message) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -129,7 +197,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  /// Reusable list tile for settings actions.
   Widget _buildActionTile({
     required BuildContext context,
     required IconData icon,

@@ -3,6 +3,9 @@ class Profile {
   /// Unique identifier for the profile.
   final int? idProfile;
 
+  /// The user's unique identifier.
+  final String userId;
+
   /// The user's name.
   final String name;
 
@@ -26,6 +29,7 @@ class Profile {
 
   const Profile({
     this.idProfile,
+    required this.userId,
     required this.name,
     required this.sex,
     required this.weight,
@@ -39,6 +43,7 @@ class Profile {
   Map<String, dynamic> toMap() {
     return {
       'id_profile': idProfile,
+      'user_id': userId,
       'name': name,
       'sex': sex,
       'weight': weight,
@@ -53,6 +58,7 @@ class Profile {
   factory Profile.fromMap(Map<String, dynamic> map) {
     return Profile(
       idProfile: map['id_profile'] as int?,
+      userId: map['user_id'] ?? '',
       name: map['name'] as String,
       sex: map['sex'] as String,
       weight: (map['weight'] as num).toDouble(),
@@ -66,6 +72,7 @@ class Profile {
   /// Creates a copy of this [Profile] but with the given fields replaced with the new values.
   Profile copyWith({
     int? idProfile,
+    String? userId,
     String? name,
     String? sex,
     double? weight,
@@ -76,6 +83,7 @@ class Profile {
   }) {
     return Profile(
       idProfile: idProfile ?? this.idProfile,
+      userId: userId ?? this.userId,
       name: name ?? this.name,
       sex: sex ?? this.sex,
       weight: weight ?? this.weight,

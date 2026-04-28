@@ -1,40 +1,27 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Service responsible for communicating with the Google Gemini API.
-/// It utilizes strict generation configurations to ensure robust JSON responses.
 class GeminiService {
-  /// The core generative model instance from the Google AI SDK.
-  late final GenerativeModel _model;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  /// Initializes the generative model using the secure API key.
-  /// Enforces a strict JSON response MIME type to prevent parsing errors.
-  GeminiService() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
-
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception('GEMINI_API_KEY is not defined in the .env file.');
-    }
-
-    _model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: apiKey,
-      // This is a crucial configuration for production. It forces the AI
-      // to return a valid JSON structure natively, ignoring conversational text.
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-      ),
-    );
-  }
-
-  /// Sends a tailored prompt to the AI model and returns the generated text response.
   Future<String?> generateContent(String prompt) async {
     try {
-      final content = [Content.text(prompt)];
-      final response = await _model.generateContent(content);
+      final response = await _supabase.functions.invoke(
+        'generate-plan',
+        body: {'prompt': prompt},
+      );
 
-      return response.text;
+      final data = response.data;
+
+      debugPrint('=== AI RESPONSE ===');
+      debugPrint(data.toString());
+      debugPrint('================================');
+
+      if (data != null && data['candidates'] != null && (data['candidates'] as List).isNotEmpty) {
+        return data['candidates'][0]['content']['parts'][0]['text'];
+      }
+
+      return null;
     } catch (e) {
       debugPrint('ERROR GENERATING AI CONTENT');
       debugPrint(e.toString());

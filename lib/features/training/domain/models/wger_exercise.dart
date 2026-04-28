@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class WgerExercise {
   final int id;
   final String name;
@@ -117,22 +119,12 @@ class WgerExercise {
       'category_id': categoryId,
       'category_name': categoryName,
       'main_muscle_id': mainMuscleId,
-      'secondary_muscle_ids': secondaryMuscleIds.join(','),
+      'secondary_muscle_ids': jsonEncode(secondaryMuscleIds),
       'exercise_image_url': exerciseImageUrl,
     };
   }
 
   factory WgerExercise.fromMap(Map<String, dynamic> map) {
-    List<int> parsedSecondary = [];
-    if (map['secondary_muscle_ids'] != null && map['secondary_muscle_ids'].toString().isNotEmpty) {
-      parsedSecondary = map['secondary_muscle_ids']
-          .toString()
-          .split(',')
-          .map((e) => int.tryParse(e.trim()) ?? 0)
-          .where((e) => e != 0)
-          .toList();
-    }
-
     return WgerExercise(
       id: map['id'] as int,
       name: map['name'] as String,
@@ -140,7 +132,9 @@ class WgerExercise {
       categoryId: map['category_id'] as int,
       categoryName: map['category_name'] as String,
       mainMuscleId: map['main_muscle_id'] as int?,
-      secondaryMuscleIds: parsedSecondary,
+      secondaryMuscleIds: map['secondary_muscle_ids'] != null
+          ? List<int>.from(jsonDecode(map['secondary_muscle_ids'] as String))
+          : [],
       exerciseImageUrl: map['exercise_image_url'] as String?,
     );
   }

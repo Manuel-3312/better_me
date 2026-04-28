@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/presentation/screens/animated_splash_screen.dart';
@@ -11,12 +12,14 @@ import 'package:better_me/features/profile/presentation/screens/animated_splash_
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final results = await Future.wait([
-    dotenv.load(fileName: ".env"),
-    SharedPreferences.getInstance(),
-  ]);
+  await dotenv.load(fileName: ".env");
 
-  final prefs = results[1] as SharedPreferences;
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL'] ?? '',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+  );
+
+  final prefs = await SharedPreferences.getInstance();
 
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
@@ -26,10 +29,12 @@ void main() async {
   final String? savedTheme = prefs.getString('theme_mode');
   final String? savedLocale = prefs.getString('selected_locale');
 
-  runApp(BetterMeApp(
-    initialTheme: _parseTheme(savedTheme),
-    initialLocale: savedLocale ?? 'es',
-  ));
+  runApp(
+    BetterMeApp(
+      initialTheme: _parseTheme(savedTheme),
+      initialLocale: savedLocale ?? 'es',
+    ),
+  );
 }
 
 ThemeMode _parseTheme(String? themeStr) {
@@ -54,8 +59,8 @@ class BetterMeApp extends StatefulWidget {
   });
 
   static _BetterMeAppState of(BuildContext context) {
-    final _BetterMeAppState? result =
-    context.findAncestorStateOfType<_BetterMeAppState>();
+    final _BetterMeAppState? result = context
+        .findAncestorStateOfType<_BetterMeAppState>();
     if (result != null) return result;
     throw Exception('BetterMeApp state not found in context');
   }
@@ -102,10 +107,8 @@ class _BetterMeAppState extends State<BetterMeApp> {
       debugShowCheckedModeBanner: false,
       locale: _locale,
       themeMode: _themeMode,
-
       theme: _AppTheme.light,
       darkTheme: _AppTheme.dark,
-
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -113,6 +116,17 @@ class _BetterMeAppState extends State<BetterMeApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+
+      builder: (context, child) {
+        return GestureDetector(
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: child,
+        );
+      },
+
       home: const AnimatedSplashScreen(),
     );
   }
