@@ -5,6 +5,7 @@ import 'package:better_me/features/profile/data/profile_repository.dart';
 import 'package:better_me/features/profile/domain/models/weight_entry.dart';
 import 'package:better_me/features/profile/data/weight_repository.dart';
 import 'package:better_me/features/profile/data/cloud_sync_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CreateProfileController extends ChangeNotifier {
   final ProfileRepository _profileRepository = ProfileRepository();
@@ -42,13 +43,11 @@ class CreateProfileController extends ChangeNotifier {
     required double height,
   }) async {
     if (_selectedDate == null) return null;
-
     _isSaving = true;
     notifyListeners();
 
     try {
       final isEditing = existingProfile != null;
-
       var profileToSave = Profile(
         idProfile: existingProfile?.idProfile,
         userId: existingProfile?.userId ?? '',
@@ -63,6 +62,25 @@ class CreateProfileController extends ChangeNotifier {
 
       if (isEditing) {
         await _profileRepository.updateProfile(profileToSave);
+        if (existingProfile.name != name) {
+          final supabase = Supabase.instance.client;
+          final userId = existingProfile.userId;
+
+          await supabase.from('profile')
+              .update({'name': name})
+              .eq('user_id', userId)
+              .eq('name', existingProfile.name);
+
+          await supabase.from('diet')
+              .update({'profile_name': name})
+              .eq('user_id', userId)
+              .eq('profile_name', existingProfile.name);
+
+          await supabase.from('training')
+              .update({'profile_name': name})
+              .eq('user_id', userId)
+              .eq('profile_name', existingProfile.name);
+        }
       } else {
         final newId = await _profileRepository.createProfile(profileToSave);
         profileToSave = profileToSave.copyWith(idProfile: newId);

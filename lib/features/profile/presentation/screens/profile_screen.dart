@@ -9,7 +9,6 @@ import 'package:better_me/features/profile/presentation/widgets/weight_entry_dia
 import 'package:better_me/features/progress/presentation/screens/progress_timeline_screen.dart';
 import 'package:better_me/features/reminders/presentation/screens/reminders_screen.dart';
 
-/// Screen responsible for displaying and managing the user's profile and body metrics.
 class ProfileScreen extends StatefulWidget {
   final Profile profile;
 
@@ -27,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _controller = ProfileController();
     _controller.initialize(widget.profile);
+    _controller.refreshProfileData();
   }
 
   @override
@@ -35,7 +35,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  /// Opens the weight entry dialog to record a new weight measurement.
   Future<void> _openWeightDialog() async {
     final bool? wasUpdated = await showDialog<bool>(
       context: context,
@@ -84,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
                 _buildProgressBanner(context, l10n, theme, profile),
                 const SizedBox(height: 16),
-                _buildRemindersBanner(context, theme,l10n),
+                _buildRemindersBanner(context, theme, l10n),
               ],
             ),
           );
@@ -93,7 +92,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// Builds the profile card containing primary health metrics and basic user info.
   Widget _buildProfileCard(
     BuildContext context,
     AppLocalizations l10n,
@@ -264,7 +262,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// Helper widget for displaying a specific physical metric with its icon.
   Widget _buildMetricColumn(
     String label,
     IconData icon,
@@ -287,7 +284,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// Builds a clickable banner that navigates to the progress timeline.
   Widget _buildProgressBanner(
     BuildContext context,
     AppLocalizations l10n,
@@ -361,8 +357,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// Builds a clickable banner that navigates to the reminders management screen.
-  Widget _buildRemindersBanner(BuildContext context, ThemeData theme, AppLocalizations l10n) {
+  Widget _buildRemindersBanner(
+    BuildContext context,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
     final isDarkMode = theme.brightness == Brightness.dark;
     const MaterialColor bannerColor = Colors.orange;
 

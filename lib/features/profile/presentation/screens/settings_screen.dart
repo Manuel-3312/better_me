@@ -7,7 +7,6 @@ import 'package:better_me/main.dart';
 import 'package:better_me/features/profile/presentation/screens/choose_profile_screen.dart';
 import 'package:better_me/features/auth/presentation/screens/auth_screen.dart';
 import 'package:better_me/core/utils/dialog_helper.dart';
-import 'database_seeder.dart';
 import 'package:better_me/features/profile/data/cloud_sync_service.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -112,7 +111,6 @@ class SettingsScreen extends StatelessWidget {
                 const SnackBar(content: Text('Iniciando migración...')),
               );
 
-              await DatabaseSeeder.populateSupabaseFromWger();
 
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
