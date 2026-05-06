@@ -9,9 +9,6 @@ import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart
 import 'package:better_me/core/utils/snackbar_helper.dart';
 
 /// Screen responsible for displaying and managing daily reminders.
-///
-/// Utilizes NotificationService for scheduling local push notifications
-/// and PreferencesService for persisting user reminder data.
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
 
@@ -33,7 +30,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
     _initializeServicesAndData();
   }
 
-  /// Initializes required services and loads persisted reminders.
   Future<void> _initializeServicesAndData() async {
     await _notificationService.initialize();
     await _loadReminders();
@@ -45,7 +41,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
     }
   }
 
-  /// Retrieves saved reminders from local preferences.
   Future<void> _loadReminders() async {
     try {
       final String? storedData = await PreferencesService.getString(
@@ -53,8 +48,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
       );
       if (storedData != null && storedData.isNotEmpty) {
         final List<dynamic> decodedList = jsonDecode(storedData);
-        _reminders =
-            decodedList.map((item) => Reminder.fromJson(item)).toList();
+        _reminders = decodedList
+            .map((item) => Reminder.fromJson(item as Map<String, dynamic>))
+            .toList();
       }
     } catch (e) {
       debugPrint('Error loading reminders: $e');
@@ -62,7 +58,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
     }
   }
 
-  /// Persists the current list of reminders to local preferences.
   Future<void> _saveReminders() async {
     try {
       final String encodedData = jsonEncode(
@@ -74,31 +69,37 @@ class _RemindersScreenState extends State<RemindersScreen> {
     }
   }
 
-  /// Toggles the active state of a reminder, updating persistence and notifications.
+  /// Toggles the active state of a reminder
   Future<void> _toggleReminder(int index, bool isEnabled) async {
     setState(() {
       _reminders[index] = _reminders[index].copyWith(isEnabled: isEnabled);
     });
 
-    final currentReminder = _reminders[index];
-    final notificationId = currentReminder.id.hashCode;
-
-    if (isEnabled) {
-      await _notificationService.scheduleDailyReminder(
-        id: notificationId,
-        title: currentReminder.title,
-        body: currentReminder.description ?? '',
-        hour: currentReminder.hour,
-        minute: currentReminder.minute,
-      );
-    } else {
-      await _notificationService.cancelReminder(notificationId);
-    }
-
+    // 1. GUARDAMOS PRIMERO (Aseguramos la persistencia de datos)
     await _saveReminders();
+
+    // 2. EJECUTAMOS NOTIFICACIÓN PROTEGIDA (Evita crasheos ocultos)
+    try {
+      final currentReminder = _reminders[index];
+      final notificationId = currentReminder.id.hashCode;
+
+      if (isEnabled) {
+        await _notificationService.scheduleDailyReminder(
+          id: notificationId,
+          title: currentReminder.title,
+          body: currentReminder.description ?? '',
+          hour: currentReminder.hour,
+          minute: currentReminder.minute,
+        );
+      } else {
+        await _notificationService.cancelReminder(notificationId);
+      }
+    } catch (e) {
+      debugPrint('Error configurando notificación local: $e');
+    }
   }
 
-  /// Deletes a reminder, cancels its notification, and updates persistence.
+  /// Deletes a reminder
   Future<void> _deleteReminder(int index) async {
     final reminder = _reminders[index];
     final notificationId = reminder.id.hashCode;
@@ -108,8 +109,14 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _reminders.removeAt(index);
     });
 
-    await _notificationService.cancelReminder(notificationId);
+    // GUARDAMOS PRIMERO
     await _saveReminders();
+
+    try {
+      await _notificationService.cancelReminder(notificationId);
+    } catch (e) {
+      debugPrint('Error cancelando notificación: $e');
+    }
 
     if (mounted) {
       SnackbarHelper.showUndoSnackbar(
@@ -120,16 +127,23 @@ class _RemindersScreenState extends State<RemindersScreen> {
           setState(() {
             _reminders.insert(index, reminder);
           });
-          if (reminder.isEnabled) {
-            await _notificationService.scheduleDailyReminder(
-              id: notificationId,
-              title: reminder.title,
-              body: reminder.description ?? '',
-              hour: reminder.hour,
-              minute: reminder.minute,
-            );
-          }
+
+          // GUARDAMOS PRIMERO AL DESHACER
           await _saveReminders();
+
+          if (reminder.isEnabled) {
+            try {
+              await _notificationService.scheduleDailyReminder(
+                id: notificationId,
+                title: reminder.title,
+                body: reminder.description ?? '',
+                hour: reminder.hour,
+                minute: reminder.minute,
+              );
+            } catch (e) {
+              debugPrint('Error reactivando notificación al deshacer: $e');
+            }
+          }
         },
       );
     }
@@ -247,15 +261,20 @@ class _RemindersScreenState extends State<RemindersScreen> {
         _reminders.add(newReminder);
       });
 
-      await _notificationService.scheduleDailyReminder(
-        id: newReminder.id.hashCode,
-        title: newReminder.title,
-        body: newReminder.description ?? '',
-        hour: newReminder.hour,
-        minute: newReminder.minute,
-      );
-
+      // GUARDAMOS PRIMERO AL CREAR
       await _saveReminders();
+
+      try {
+        await _notificationService.scheduleDailyReminder(
+          id: newReminder.id.hashCode,
+          title: newReminder.title,
+          body: newReminder.description ?? '',
+          hour: newReminder.hour,
+          minute: newReminder.minute,
+        );
+      } catch (e) {
+        debugPrint('Error programando notificación nueva: $e');
+      }
     }
   }
 
@@ -286,7 +305,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
     );
   }
 
-  /// Builds the placeholder state when no reminders exist.
   Widget _buildEmptyState(ThemeData theme, AppLocalizations l10n) {
     return Center(
       child: Column(
@@ -307,7 +325,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
     );
   }
 
-  /// Builds the scrollable list of active and inactive reminders.
   Widget _buildRemindersList(ThemeData theme, AppLocalizations l10n) {
     return ListView.builder(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 100),

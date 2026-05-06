@@ -41,18 +41,18 @@ class Reminder {
       'description': description,
       'hour': hour,
       'minute': minute,
-      'isEnabled': isEnabled ? 1 : 0,
+      'isEnabled': isEnabled,
     };
   }
 
   factory Reminder.fromJson(Map<String, dynamic> json) {
     return Reminder(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String?,
-      hour: json['hour'] as int,
-      minute: json['minute'] as int,
-      isEnabled: (json['isEnabled'] as int) == 1,
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString(),
+      hour: (json['hour'] as num?)?.toInt() ?? 0,
+      minute: (json['minute'] as num?)?.toInt() ?? 0,
+      isEnabled: json['isEnabled'] == true || json['isEnabled'] == 1 || json['isEnabled'] == '1',
     );
   }
 }

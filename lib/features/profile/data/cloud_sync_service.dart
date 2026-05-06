@@ -71,7 +71,9 @@ class CloudSyncService {
       final localProfiles = await _localRepo.getAllProfiles();
 
       for (final cloudMap in cloudProfiles) {
-        final existsLocally = localProfiles.any((p) => p.name == cloudMap['name']);
+        final existsLocally = localProfiles.any(
+          (p) => p.name == cloudMap['name'],
+        );
 
         if (!existsLocally) {
           final newProfile = Profile(
@@ -115,7 +117,8 @@ class CloudSyncService {
             'generated_content': diet.generatedContent,
           };
 
-          final existing = await _supabase.from('diet')
+          final existing = await _supabase
+              .from('diet')
               .select('id_diet')
               .eq('user_id', currentUser.id)
               .eq('profile_name', profile.name)
@@ -123,13 +126,18 @@ class CloudSyncService {
               .maybeSingle();
 
           if (existing != null) {
-            await _supabase.from('diet').update(dietMap).eq('id_diet', existing['id_diet']);
+            await _supabase
+                .from('diet')
+                .update(dietMap)
+                .eq('id_diet', existing['id_diet']);
           } else {
             await _supabase.from('diet').insert(dietMap);
           }
         }
 
-        final trainings = await _trainingRepo.getTrainingsByProfile(profile.idProfile!);
+        final trainings = await _trainingRepo.getTrainingsByProfile(
+          profile.idProfile!,
+        );
         for (final training in trainings) {
           final trainingMap = {
             'user_id': currentUser.id,
@@ -141,7 +149,12 @@ class CloudSyncService {
             'generated_content': training.generatedContent,
           };
 
-          final existing = await _supabase.from('training')
+          debugPrint(
+            'Intentando guardar rutina: ${training.name}',
+          ); // <-- LOG AÑADIDO
+
+          final existing = await _supabase
+              .from('training')
               .select('id_training')
               .eq('user_id', currentUser.id)
               .eq('profile_name', profile.name)
@@ -149,14 +162,28 @@ class CloudSyncService {
               .maybeSingle();
 
           if (existing != null) {
-            await _supabase.from('training').update(trainingMap).eq('id_training', existing['id_training']);
+            debugPrint('Rutina ya existe, actualizando...'); // <-- LOG AÑADIDO
+            await _supabase
+                .from('training')
+                .update(trainingMap)
+                .eq('id_training', existing['id_training']);
           } else {
+            debugPrint(
+              'Rutina nueva, insertando: $trainingMap',
+            ); // <-- LOG AÑADIDO
             await _supabase.from('training').insert(trainingMap);
           }
+          debugPrint(
+            '¡Rutina guardada con éxito en Supabase!',
+          ); // <-- LOG AÑADIDO
         }
       }
     } catch (e) {
-      debugPrint('Error backup planes: $e');
+      // AQUÍ ESTÁ EL CAMBIO IMPORTANTE: Vamos a imprimir el error de forma muy visible
+      debugPrint('=============================================');
+      debugPrint('❌ ERROR FATAL AL GUARDAR EN SUPABASE:');
+      debugPrint(e.toString());
+      debugPrint('=============================================');
     }
   }
 
@@ -167,12 +194,19 @@ class CloudSyncService {
 
       final localProfiles = await _localRepo.getAllProfiles();
 
-      final cloudDiets = await _supabase.from('diet').select().eq('user_id', currentUser.id);
+      final cloudDiets = await _supabase
+          .from('diet')
+          .select()
+          .eq('user_id', currentUser.id);
       for (final cloudMap in cloudDiets) {
-        final targetProfile = localProfiles.where((p) => p.name == cloudMap['profile_name']).firstOrNull;
+        final targetProfile = localProfiles
+            .where((p) => p.name == cloudMap['profile_name'])
+            .firstOrNull;
 
         if (targetProfile != null && targetProfile.idProfile != null) {
-          final localDiets = await _dietRepo.getDietsByProfile(targetProfile.idProfile!);
+          final localDiets = await _dietRepo.getDietsByProfile(
+            targetProfile.idProfile!,
+          );
           final exists = localDiets.any((d) => d.name == cloudMap['name']);
 
           if (!exists) {
@@ -189,12 +223,19 @@ class CloudSyncService {
         }
       }
 
-      final cloudTrainings = await _supabase.from('training').select().eq('user_id', currentUser.id);
+      final cloudTrainings = await _supabase
+          .from('training')
+          .select()
+          .eq('user_id', currentUser.id);
       for (final cloudMap in cloudTrainings) {
-        final targetProfile = localProfiles.where((p) => p.name == cloudMap['profile_name']).firstOrNull;
+        final targetProfile = localProfiles
+            .where((p) => p.name == cloudMap['profile_name'])
+            .firstOrNull;
 
         if (targetProfile != null && targetProfile.idProfile != null) {
-          final localTrainings = await _trainingRepo.getTrainingsByProfile(targetProfile.idProfile!);
+          final localTrainings = await _trainingRepo.getTrainingsByProfile(
+            targetProfile.idProfile!,
+          );
           final exists = localTrainings.any((t) => t.name == cloudMap['name']);
 
           if (!exists) {
@@ -238,7 +279,8 @@ class CloudSyncService {
       for (final cloudMap in cloudExercises) {
         List<int> parsedSecondaryIds = [];
         if (cloudMap['secondary_muscle_ids'] != null) {
-          final decodedList = jsonDecode(cloudMap['secondary_muscle_ids']) as List;
+          final decodedList =
+              jsonDecode(cloudMap['secondary_muscle_ids']) as List;
           parsedSecondaryIds = decodedList.map((e) => e as int).toList();
         }
 

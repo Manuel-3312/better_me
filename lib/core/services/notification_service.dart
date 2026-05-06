@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
 
-/// Service responsible for managing local push notifications.
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
 
@@ -13,19 +14,33 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  /// Initializes the notification settings for the supported platforms.
   Future<void> initialize() async {
     tz.initializeTimeZones();
 
+    try {
+      dynamic tzInfo = await FlutterTimezone.getLocalTimezone();
+      String timeZoneName = tzInfo.toString();
+
+      if (timeZoneName.startsWith('TimezoneInfo(')) {
+        timeZoneName = timeZoneName.substring(13).split(',').first.trim();
+      }
+
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      debugPrint('Timezone configured: $timeZoneName');
+    } catch (e) {
+      debugPrint('Error configuring timezone: $e');
+      tz.setLocalLocation(tz.getLocation('Europe/Madrid'));
+    }
+
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    AndroidInitializationSettings('ic_notification');
 
     const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
-        );
+    DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
 
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
@@ -33,9 +48,9 @@ class NotificationService {
     );
 
     await _notificationsPlugin.initialize(settings: initSettings);
+    await requestExactAlarmPermission();
   }
 
-  /// Schedules a daily repeating notification at the specified time.
   Future<void> scheduleDailyReminder({
     required int id,
     required String title,
@@ -63,7 +78,6 @@ class NotificationService {
     );
   }
 
-  /// Cancels a specific scheduled notification by its integer ID.
   Future<void> cancelReminder(int id) async {
     await _notificationsPlugin.cancel(id: id);
   }
@@ -84,5 +98,14 @@ class NotificationService {
     }
 
     return scheduledDate;
+  }
+  Future<void> requestExactAlarmPermission() async {
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+    _notificationsPlugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidImplementation != null) {
+      await androidImplementation.requestExactAlarmsPermission();
+    }
   }
 }

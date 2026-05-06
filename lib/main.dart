@@ -8,12 +8,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/presentation/screens/animated_splash_screen.dart';
-
+import 'core/services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
-
+  await NotificationService().initialize();
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
