@@ -10,6 +10,7 @@ import 'package:better_me/features/diets/presentation/screens/diet_detail_screen
 import 'package:better_me/core/presentation/widgets/primary_gradient_button.dart';
 import 'coockbook_screen.dart';
 import 'create_diet_screen.dart';
+import 'package:better_me/main.dart';
 
 /// Primary interface for displaying and managing the user's dietary plans.
 class DietsScreen extends StatefulWidget {
@@ -21,12 +22,33 @@ class DietsScreen extends StatefulWidget {
   State<DietsScreen> createState() => _DietsScreenState();
 }
 
-class _DietsScreenState extends State<DietsScreen> {
+class _DietsScreenState extends State<DietsScreen> with RouteAware, AutomaticKeepAliveClientMixin {
   late final DietsController _controller;
 
   String _searchQuery = '';
   String _sortOption = 'Más recientes';
   final TextEditingController _searchController = TextEditingController();
+  @override
+  bool get wantKeepAlive => true;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    _searchController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    if (widget.profile.idProfile != null) {
+      _controller.loadDiets(widget.profile.idProfile!);
+    }
+  }
 
   @override
   void initState() {
@@ -35,13 +57,6 @@ class _DietsScreenState extends State<DietsScreen> {
     if (widget.profile.idProfile != null) {
       _controller.loadDiets(widget.profile.idProfile!);
     }
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _controller.dispose();
-    super.dispose();
   }
 
   List<Diet> _getFilteredAndSortedDiets(AppLocalizations l10n) {
@@ -349,6 +364,7 @@ class _DietsScreenState extends State<DietsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;

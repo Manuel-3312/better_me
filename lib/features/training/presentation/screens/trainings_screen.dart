@@ -17,6 +17,7 @@ import './training_detail_screen.dart';
 import 'package:better_me/features/training/data/favorite_exercises_repository.dart';
 import 'package:better_me/features/training/domain/models/favorite_exercise.dart';
 import 'favorite_exercises_screen.dart';
+import 'package:better_me/main.dart';
 
 class TrainingsScreen extends StatefulWidget {
   final Profile profile;
@@ -27,10 +28,12 @@ class TrainingsScreen extends StatefulWidget {
   State<TrainingsScreen> createState() => _TrainingsScreenState();
 }
 
-class _TrainingsScreenState extends State<TrainingsScreen> {
+class _TrainingsScreenState extends State<TrainingsScreen> with RouteAware, AutomaticKeepAliveClientMixin{
   final TrainingRepository _repository = TrainingRepository();
   final ExerciseLocalDatabase _localDb = ExerciseLocalDatabase();
   late final GeminiService _geminiService;
+  @override
+  bool get wantKeepAlive => true;
 
   List<Training> _trainings = [];
   bool _isLoadingTrainings = true;
@@ -50,9 +53,21 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _loadTrainings();
   }
 
   Future<void> _loadTrainings() async {
@@ -89,12 +104,15 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
       searchQuery: _searchQuery,
       sortOption: _sortOption,
       getName: (training) => training.name,
-      getObjective: (training) => _getLocalizedObjective(training.objective, l10n),
+      getObjective: (training) =>
+          _getLocalizedObjective(training.objective, l10n),
       getId: (training) => training.idTraining ?? 0,
     );
   }
 
-  Future<void> _generateTrainingInBackground(Training preliminaryTraining) async {
+  Future<void> _generateTrainingInBackground(
+    Training preliminaryTraining,
+  ) async {
     setState(() => _pendingTraining = preliminaryTraining);
 
     final messenger = ScaffoldMessenger.of(context);
@@ -222,7 +240,11 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     }
   }
 
-  Widget _buildObjectiveIcon(String objective, ThemeData theme, Color iconColor) {
+  Widget _buildObjectiveIcon(
+    String objective,
+    ThemeData theme,
+    Color iconColor,
+  ) {
     String assetPath;
     switch (objective) {
       case 'strength':
@@ -271,13 +293,13 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                )
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                      )
                     : null,
                 filled: true,
                 fillColor: theme.cardColor,
@@ -318,12 +340,12 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
   }
 
   Widget _buildTrainingCard(
-      Training training,
-      ThemeData theme,
-      AppLocalizations l10n,
-      Color trainingColor, {
-        bool isPending = false,
-      }) {
+    Training training,
+    ThemeData theme,
+    AppLocalizations l10n,
+    Color trainingColor, {
+    bool isPending = false,
+  }) {
     final localizedObjective = _getLocalizedObjective(training.objective, l10n);
 
     final card = Card(
@@ -338,7 +360,12 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.only(left: 12, right: 8, top: 12, bottom: 12),
+        contentPadding: const EdgeInsets.only(
+          left: 12,
+          right: 8,
+          top: 12,
+          bottom: 12,
+        ),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -364,46 +391,48 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
         ),
         trailing: isPending
             ? Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              color: trainingColor,
-            ),
-          ),
-        )
+                padding: const EdgeInsets.only(right: 8.0),
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: trainingColor,
+                  ),
+                ),
+              )
             : Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                color: Colors.redAccent.withValues(alpha: 0.8),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: Colors.redAccent.withValues(alpha: 0.8),
+                    ),
+                    onPressed: () => _confirmAndDeleteTraining(training),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: theme.hintColor,
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
-              onPressed: () => _confirmAndDeleteTraining(training),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: theme.hintColor,
-            ),
-            const SizedBox(width: 8),
-          ],
-        ),
         onTap: isPending
             ? null
-            : () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TrainingDetailScreen(
-                training: training,
-              ),
-            ),
-          );
-        },
+            : () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        TrainingDetailScreen(training: training),
+                  ),
+                );
+                // NOTA: Dejé el _loadTrainings() original aquí como pediste para no borrar código innecesariamente,
+                // aunque didPopNext ya se encargará de refrescar la pantalla también.
+                _loadTrainings();
+              },
       ),
     );
 
@@ -413,7 +442,11 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
     return card;
   }
 
-  Widget _buildBodyContent(ThemeData theme, AppLocalizations l10n, Color trainingColor) {
+  Widget _buildBodyContent(
+    ThemeData theme,
+    AppLocalizations l10n,
+    Color trainingColor,
+  ) {
     if (_isLoadingTrainings && _pendingTraining == null) {
       return Center(child: CircularProgressIndicator(color: trainingColor));
     }
@@ -436,7 +469,9 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              _searchQuery.isEmpty ? l10n.noTrainingsMessage : 'No hay rutinas que coincidan',
+              _searchQuery.isEmpty
+                  ? l10n.noTrainingsMessage
+                  : 'No hay rutinas que coincidan',
               style: TextStyle(fontSize: 16, color: theme.hintColor),
             ),
           ],
@@ -444,7 +479,8 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
       );
     }
 
-    final int itemCount = displayTrainings.length + (_pendingTraining != null ? 1 : 0);
+    final int itemCount =
+        displayTrainings.length + (_pendingTraining != null ? 1 : 0);
 
     return ListView.builder(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 100),
@@ -474,10 +510,13 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final Color trainingColor = isDarkMode ? theme.colorScheme.primary : Colors.blueAccent;
+    final Color trainingColor = isDarkMode
+        ? theme.colorScheme.primary
+        : Colors.blueAccent;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -498,7 +537,8 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => FavoriteExercisesScreen(profile: widget.profile),
+                  builder: (context) =>
+                      FavoriteExercisesScreen(profile: widget.profile),
                 ),
               );
             },
@@ -507,10 +547,8 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
       ),
       body: Column(
         children: [
-          _buildSearchBar(theme,l10n),
-          Expanded(
-            child: _buildBodyContent(theme, l10n, trainingColor),
-          ),
+          _buildSearchBar(theme, l10n),
+          Expanded(child: _buildBodyContent(theme, l10n, trainingColor)),
         ],
       ),
       floatingActionButton: Opacity(
@@ -522,15 +560,19 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
               gradient: LinearGradient(
                 colors: isDarkMode
                     ? [
-                  theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
-                  theme.colorScheme.surface.withValues(alpha: 0.9),
-                ]
+                        theme.colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.8,
+                        ),
+                        theme.colorScheme.surface.withValues(alpha: 0.9),
+                      ]
                     : [trainingColor, trainingColor.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: isDarkMode ? Border.all(color: trainingColor.withValues(alpha: 0.3)) : null,
+              border: isDarkMode
+                  ? Border.all(color: trainingColor.withValues(alpha: 0.3))
+                  : null,
               boxShadow: [
                 BoxShadow(
                   color: trainingColor.withValues(alpha: 0.2),
@@ -547,7 +589,8 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
                   final Training? preliminaryTraining = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CreateTrainingScreen(profile: widget.profile),
+                      builder: (context) =>
+                          CreateTrainingScreen(profile: widget.profile),
                     ),
                   );
 
@@ -556,7 +599,10 @@ class _TrainingsScreenState extends State<TrainingsScreen> {
                   }
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

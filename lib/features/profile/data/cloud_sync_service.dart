@@ -53,7 +53,7 @@ class CloudSyncService {
         }
       }
     } catch (e) {
-      debugPrint('Error backup perfiles: $e');
+      debugPrint('Error backing up profiles: $e');
       rethrow;
     }
   }
@@ -90,7 +90,7 @@ class CloudSyncService {
         }
       }
     } catch (e) {
-      debugPrint('Error restore perfiles: $e');
+      debugPrint('Error restoring profiles: $e');
       rethrow;
     }
   }
@@ -149,9 +149,7 @@ class CloudSyncService {
             'generated_content': training.generatedContent,
           };
 
-          debugPrint(
-            'Intentando guardar rutina: ${training.name}',
-          ); // <-- LOG AÑADIDO
+          debugPrint('Attempting to save training: ${training.name}');
 
           final existing = await _supabase
               .from('training')
@@ -162,26 +160,21 @@ class CloudSyncService {
               .maybeSingle();
 
           if (existing != null) {
-            debugPrint('Rutina ya existe, actualizando...'); // <-- LOG AÑADIDO
+            debugPrint('Training already exists, updating...');
             await _supabase
                 .from('training')
                 .update(trainingMap)
                 .eq('id_training', existing['id_training']);
           } else {
-            debugPrint(
-              'Rutina nueva, insertando: $trainingMap',
-            ); // <-- LOG AÑADIDO
+            debugPrint('New training, inserting: $trainingMap');
             await _supabase.from('training').insert(trainingMap);
           }
-          debugPrint(
-            '¡Rutina guardada con éxito en Supabase!',
-          ); // <-- LOG AÑADIDO
+          debugPrint('Training successfully saved in Supabase!');
         }
       }
     } catch (e) {
-      // AQUÍ ESTÁ EL CAMBIO IMPORTANTE: Vamos a imprimir el error de forma muy visible
       debugPrint('=============================================');
-      debugPrint('❌ ERROR FATAL AL GUARDAR EN SUPABASE:');
+      debugPrint('❌ FATAL ERROR SAVING TO SUPABASE:');
       debugPrint(e.toString());
       debugPrint('=============================================');
     }
@@ -252,7 +245,7 @@ class CloudSyncService {
         }
       }
     } catch (e) {
-      debugPrint('Error restore planes: $e');
+      debugPrint('Error restoring plans: $e');
     }
   }
 
@@ -301,7 +294,7 @@ class CloudSyncService {
         await localDb.insertExercises(exercisesToInsert);
       }
     } catch (e) {
-      debugPrint('Error sincronizando catálogo: $e');
+      debugPrint('Error syncing catalog: $e');
     }
   }
 
@@ -316,6 +309,32 @@ class CloudSyncService {
       debugPrint('Download completed successfully.');
     } catch (e) {
       debugPrint('Error during complete download: $e');
+    }
+  }
+
+  Future<void> backupDietsToCloud() async {
+    try {
+      final currentUser = _supabase.auth.currentUser;
+      if (currentUser == null) throw Exception('User not authenticated');
+
+      final localProfiles = await _localRepo.getAllProfiles();
+
+      for (final profile in localProfiles) {
+        if (profile.idProfile == null) continue;
+
+        final localDiets = await _dietRepo.getDietsByProfile(
+          profile.idProfile!,
+        );
+
+        for (final diet in localDiets) {
+          final dietMap = diet.toMap();
+          dietMap['user_id'] = currentUser.id;
+
+          await _supabase.from('diet').upsert(dietMap);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error syncing diets to the cloud: $e');
     }
   }
 }

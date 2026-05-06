@@ -7,8 +7,8 @@ import 'package:better_me/features/training/domain/models/wger_exercise.dart';
 import 'package:better_me/features/training/data/training_repository.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
-// TODO: Asegúrate de que esta ruta coincida con la ubicación de tu archivo
 import 'package:better_me/features/training/presentation/widgets/muscle_anatomy_widget.dart';
+import 'package:better_me/features/profile/data/cloud_sync_service.dart';
 
 class TrainingDetailScreen extends StatefulWidget {
   final Training training;
@@ -61,6 +61,9 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
           generatedContent: updatedJson,
         );
         await _repository.saveFullAiTrainingPlan(updatedTraining, _aiPlan!);
+        CloudSyncService().backupPlansToCloud().catchError((e) {
+          debugPrint('Error uploading reorder to Supabase: $e');
+        });
       } catch (e) {
         debugPrint('Error saving reordered plan: $e');
       }

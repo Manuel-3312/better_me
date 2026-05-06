@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:better_me/features/profile/domain/models/profile.dart';
+import 'package:better_me/features/profile/data/cloud_sync_service.dart';
 import 'package:better_me/features/diets/data/diet_repository.dart';
 import 'package:better_me/features/diets/domain/models/diet.dart';
 import 'package:better_me/features/diets/domain/models/ai_diet_plan.dart';
@@ -9,7 +11,6 @@ import 'package:better_me/core/network/gemini_service.dart';
 import 'package:better_me/features/diets/data/favorite_meals_repository.dart';
 import 'package:better_me/features/diets/domain/models/favorite_meal.dart';
 
-/// Controller responsible for managing the state and business logic of diet plans.
 class DietsController extends ChangeNotifier {
   final DietRepository _repository = DietRepository();
   final GeminiService _geminiService = GeminiService();
@@ -20,19 +21,11 @@ class DietsController extends ChangeNotifier {
   String? _error;
   Diet? _pendingDiet;
 
-  /// Gets the current list of available diet plans.
   List<Diet> get diets => _diets;
-
-  /// Indicates whether a background operation is currently in progress.
   bool get isLoading => _isLoading;
-
-  /// Contains the error message if a recent operation failed.
   String? get error => _error;
-
-  /// Holds the preliminary diet configuration while the AI generation is in progress.
   Diet? get pendingDiet => _pendingDiet;
 
-  /// Fetches all diet plans associated with the specified profile identifier.
   Future<void> loadDiets(int profileId) async {
     _isLoading = true;
     _error = null;
@@ -48,7 +41,6 @@ class DietsController extends ChangeNotifier {
     }
   }
 
-  /// Synthesizes a personalized diet plan using the generative AI service.
   Future<void> generateDietInBackground({
     required Diet preliminaryDiet,
     required Profile profile,
@@ -99,7 +91,12 @@ class DietsController extends ChangeNotifier {
         generatedContent: cleanJsonString,
       );
 
-      await _repository.createDiet(finalDiet);
+      await _repository.saveFullAiDietPlan(finalDiet);
+
+      CloudSyncService().backupPlansToCloud().catchError((e) {
+        debugPrint('Error uploading diet to Supabase: $e');
+      });
+
       onSuccess();
     } catch (e) {
       debugPrint('Error generating diet: $e');
@@ -110,22 +107,23 @@ class DietsController extends ChangeNotifier {
     }
   }
 
-  /// Temporarily removes a diet from the active list.
   void removeDietLocally(int index) {
     _diets.removeAt(index);
     notifyListeners();
   }
 
-  /// Restores a previously removed diet to the active list.
   void restoreDietLocally(int index, Diet diet) {
     _diets.insert(index, diet);
     notifyListeners();
   }
 
-  /// Permanently deletes a diet record from the local database.
   Future<void> deleteDietPermanently(int dietId) async {
     try {
       await _repository.deleteDiet(dietId);
+      await Supabase.instance.client
+          .from('diet')
+          .delete()
+          .eq('id_diet', dietId);
     } catch (e) {
       debugPrint('Error deleting diet from database: $e');
     }

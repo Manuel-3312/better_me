@@ -9,6 +9,8 @@ import 'package:better_me/core/network/gemini_service.dart';
 import 'package:better_me/features/training/data/exercise_local_database.dart';
 import 'package:better_me/features/training/data/favorite_exercises_repository.dart';
 import 'package:better_me/features/training/domain/models/favorite_exercise.dart';
+import 'package:better_me/features/profile/data/cloud_sync_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Controller responsible for managing the state and business logic of training plans.
 class TrainingsController extends ChangeNotifier {
@@ -108,6 +110,9 @@ class TrainingsController extends ChangeNotifier {
       );
 
       await _repository.saveFullAiTrainingPlan(finalTraining, aiPlan);
+      CloudSyncService().backupPlansToCloud().catchError((e) {
+        debugPrint('Error saving routine on Supabase: $e');
+      });
       onSuccess();
     } catch (e) {
       debugPrint('Error generating training: $e');
@@ -134,6 +139,12 @@ class TrainingsController extends ChangeNotifier {
   Future<void> deleteTrainingPermanently(int trainingId) async {
     try {
       await _repository.deleteTraining(trainingId);
+
+      await Supabase.instance.client
+          .from('training')
+          .delete()
+          .eq('id_training', trainingId);
+
     } catch (e) {
       debugPrint('Error deleting training from database: $e');
     }

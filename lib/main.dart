@@ -9,6 +9,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 import 'package:better_me/features/profile/presentation/screens/animated_splash_screen.dart';
 import 'core/services/notification_service.dart';
+
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -20,7 +23,6 @@ void main() async {
   );
 
   final prefs = await SharedPreferences.getInstance();
-
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -109,6 +111,7 @@ class _BetterMeAppState extends State<BetterMeApp> {
       themeMode: _themeMode,
       theme: _AppTheme.light,
       darkTheme: _AppTheme.dark,
+      navigatorObservers: [routeObserver],
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
