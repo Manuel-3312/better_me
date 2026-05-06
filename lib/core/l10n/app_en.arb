@@ -306,5 +306,7 @@
   "descriptionHint": "e.g., 5g with water",
   "time": "Time",
   "reminderDeleted": "Reminder deleted",
-  "dailyDesc": "Manage supplements and tasks"
+  "dailyDesc": "Manage supplements and tasks",
+  "confirmPasswordLabel": "Confirm password",
+  "passwordsDoNotMatch": "Passwords do not match"
 }

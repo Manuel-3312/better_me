@@ -656,4 +656,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyDesc => 'Manage supplements and tasks';
+
+  @override
+  String get confirmPasswordLabel => 'Confirm password';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
 }

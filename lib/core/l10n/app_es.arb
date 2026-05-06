@@ -304,5 +304,7 @@
   "descriptionHint": "Ej., 5g con agua",
   "time": "Hora",
   "reminderDeleted": "Recordatorio eliminado",
-  "dailyDesc": "Gestionar suplementos y tareas"
+  "dailyDesc": "Gestionar suplementos y tareas",
+  "confirmPasswordLabel": "Confirmar contraseña",
+  "passwordsDoNotMatch": "Las contraseñas no coinciden"
 }

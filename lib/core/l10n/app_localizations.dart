@@ -1297,6 +1297,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Gestionar suplementos y tareas'**
   String get dailyDesc;
+
+  /// No description provided for @confirmPasswordLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar contraseña'**
+  String get confirmPasswordLabel;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In es, this message translates to:
+  /// **'Las contraseñas no coinciden'**
+  String get passwordsDoNotMatch;
 }
 
 class _AppLocalizationsDelegate
