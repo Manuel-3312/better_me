@@ -26,7 +26,7 @@ class _DietsScreenState extends State<DietsScreen> with RouteAware, AutomaticKee
   late final DietsController _controller;
 
   String _searchQuery = '';
-  String _sortOption = 'Más recientes';
+  String _sortOption = 'recent';
   final TextEditingController _searchController = TextEditingController();
   @override
   bool get wantKeepAlive => true;
@@ -159,7 +159,9 @@ class _DietsScreenState extends State<DietsScreen> with RouteAware, AutomaticKee
     }
   }
 
-  Widget _buildSearchBar(ThemeData theme,AppLocalizations l10n) {
+  Widget _buildSearchBar(ThemeData theme, AppLocalizations l10n) {
+    final isEs = Localizations.localeOf(context).languageCode == 'es';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -196,23 +198,23 @@ class _DietsScreenState extends State<DietsScreen> with RouteAware, AutomaticKee
           const SizedBox(width: 8),
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),
-            tooltip: 'Ordenar',
+            tooltip: isEs ? 'Ordenar' : 'Sort',
             initialValue: _sortOption,
             onSelected: (String newValue) {
               setState(() => _sortOption = newValue);
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'Más recientes',
-                child: Text('Más recientes'),
+              PopupMenuItem<String>(
+                value: 'recent',
+                child: Text(isEs ? 'Más recientes' : 'Most recent'),
               ),
-              const PopupMenuItem<String>(
-                value: 'A-Z',
-                child: Text('Nombre (A-Z)'),
+              PopupMenuItem<String>(
+                value: 'az',
+                child: Text(isEs ? 'Nombre (A-Z)' : 'Name (A-Z)'),
               ),
-              const PopupMenuItem<String>(
-                value: 'Z-A',
-                child: Text('Nombre (Z-A)'),
+              PopupMenuItem<String>(
+                value: 'za',
+                child: Text(isEs ? 'Nombre (Z-A)' : 'Name (Z-A)'),
               ),
             ],
           ),

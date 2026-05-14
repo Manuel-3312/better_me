@@ -1,3 +1,4 @@
+/// Represents an AI-generated diet plan containing multiple days.
 class AiDietPlan {
   final List<DietDay> days;
 
@@ -5,6 +6,7 @@ class AiDietPlan {
     required this.days,
   });
 
+  /// Creates an [AiDietPlan] instance from a JSON map.
   factory AiDietPlan.fromJson(Map<String, dynamic> json) {
     var daysList = json['days'] as List? ?? [];
     return AiDietPlan(
@@ -12,6 +14,7 @@ class AiDietPlan {
     );
   }
 
+  /// Converts the [AiDietPlan] instance to a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'days': days.map((day) => day.toJson()).toList(),
@@ -19,6 +22,7 @@ class AiDietPlan {
   }
 }
 
+/// Represents a single day within a diet plan, including its meals and calories.
 class DietDay {
   final int day;
   final int totalCalories;
@@ -30,6 +34,7 @@ class DietDay {
     required this.meals,
   });
 
+  /// Creates a [DietDay] instance from a JSON map.
   factory DietDay.fromJson(Map<String, dynamic> json) {
     var mealsList = json['meals'] as List? ?? [];
     return DietDay(
@@ -39,6 +44,7 @@ class DietDay {
     );
   }
 
+  /// Converts the [DietDay] instance to a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'day': day,
@@ -48,6 +54,7 @@ class DietDay {
   }
 }
 
+/// Represents a specific meal with its nutritional info, ingredients, and steps.
 class DietMeal {
   final String type;
   final String name;
@@ -67,6 +74,7 @@ class DietMeal {
     required this.preparationSteps,
   });
 
+  /// Creates a [DietMeal] instance from a JSON map.
   factory DietMeal.fromJson(Map<String, dynamic> json) {
     var ingredientsList = json['ingredients'] as List? ?? [];
     var preparationList = json['preparationSteps'] as List? ?? [];
@@ -82,6 +90,7 @@ class DietMeal {
     );
   }
 
+  /// Converts the [DietMeal] instance to a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'type': type,
@@ -95,6 +104,7 @@ class DietMeal {
   }
 }
 
+/// Represents the macronutrient breakdown of a meal (protein, carbs, and fats).
 class DietMacros {
   final int protein;
   final int carbs;
@@ -106,6 +116,7 @@ class DietMacros {
     required this.fats,
   });
 
+  /// Creates a [DietMacros] instance from a JSON map.
   factory DietMacros.fromJson(Map<String, dynamic> json) {
     return DietMacros(
       protein: json['protein'] ?? 0,
@@ -114,6 +125,7 @@ class DietMacros {
     );
   }
 
+  /// Converts the [DietMacros] instance to a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'protein': protein,

@@ -5,6 +5,7 @@ import 'package:better_me/features/profile/presentation/screens/animated_splash_
 import 'package:better_me/features/profile/data/cloud_sync_service.dart';
 import 'package:better_me/core/l10n/app_localizations.dart';
 
+/// A screen widget that handles user authentication (Login and Registration).
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -18,8 +19,13 @@ class _AuthScreenState extends State<AuthScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  /// Toggles between Login (true) and Registration (false) modes.
   bool _isLogin = true;
+
+  /// Indicates if an authentication request is currently in progress.
   bool _isLoading = false;
+
+  /// Toggles password visibility in the text fields.
   bool _obscurePassword = true;
 
   @override
@@ -30,17 +36,22 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
+  /// Validates input, performs auth action (login/signup), and handles cloud sync.
   Future<void> _submit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
     final l10n = AppLocalizations.of(context)!;
 
-    if (email.isEmpty || password.isEmpty || (!_isLogin && confirmPassword.isEmpty)) {
+    // Basic validation to ensure no required fields are empty.
+    if (email.isEmpty ||
+        password.isEmpty ||
+        (!_isLogin && confirmPassword.isEmpty)) {
       _showError(l10n.fillAllFields);
       return;
     }
 
+    // Validate password matching during registration.
     if (!_isLogin && password != confirmPassword) {
       _showError(l10n.passwordsDoNotMatch);
       return;
@@ -50,14 +61,17 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       if (_isLogin) {
+        // Log in and restore user data from the cloud.
         await _authService.signInWithEmail(email: email, password: password);
         await CloudSyncService().restoreProfilesFromCloud();
         await CloudSyncService().restorePlansFromCloud();
         await CloudSyncService().syncExerciseCatalog();
       } else {
+        // Register a new user.
         await _authService.signUpWithEmail(email: email, password: password);
       }
 
+      // On successful auth, navigate to the splash screen.
       if (_authService.isAuthenticated && mounted) {
         Navigator.pushReplacement(
           context,
@@ -73,13 +87,11 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  /// Displays a SnackBar with the provided error [message].
   void _showError(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
     );
   }
 
@@ -116,10 +128,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 Text(
                   _isLogin ? l10n.loginSubtitle : l10n.registerSubtitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: theme.hintColor,
-                  ),
+                  style: TextStyle(fontSize: 16, color: theme.hintColor),
                 ),
                 const SizedBox(height: 48),
                 TextField(
@@ -128,7 +137,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.emailLabel,
                     prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -139,10 +150,17 @@ class _AuthScreenState extends State<AuthScreen> {
                     labelText: l10n.passwordLabel,
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
                 if (!_isLogin) ...[
@@ -154,10 +172,18 @@ class _AuthScreenState extends State<AuthScreen> {
                       labelText: l10n.confirmPasswordLabel,
                       prefixIcon: const Icon(Icons.lock_reset_outlined),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ],
@@ -175,14 +201,21 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
                       : Text(
-                    _isLogin ? l10n.loginButton : l10n.registerButton,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                  ),
+                          _isLogin ? l10n.loginButton : l10n.registerButton,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 24),
                 TextButton(

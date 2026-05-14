@@ -103,25 +103,6 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 32),
           _buildActionTile(
             context: context,
-            icon: Icons.cloud_upload,
-            title: 'Migrar API Wger (Dev)',
-            color: Colors.teal,
-            onTap: () async {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Iniciando migración...')),
-              );
-
-
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Migración completada')),
-                );
-              }
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildActionTile(
-            context: context,
             icon: Icons.logout,
             title: l10n.logout,
             color: Colors.redAccent,

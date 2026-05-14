@@ -1,18 +1,22 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+/// Singleton class to manage local SQLite database operations.
 class DatabaseHelper {
+  /// Global instance of the database helper.
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
 
   DatabaseHelper._init();
 
+  /// Gets the active database instance, initializing it if necessary.
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB('betterme_v3.db');
     return _database!;
   }
 
+  /// Initializes and opens the database at the specified file path.
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
@@ -26,10 +30,12 @@ class DatabaseHelper {
     );
   }
 
+  /// Enables foreign keys for SQLite to maintain data integrity.
   Future _onConfigure(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
   }
 
+  /// Handles database migrations when the version number increases.
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('''
@@ -44,13 +50,18 @@ class DatabaseHelper {
       ''');
     }
     if (oldVersion < 3) {
-      await db.execute('ALTER TABLE local_exercises ADD COLUMN secondary_muscle_ids TEXT');
+      await db.execute(
+        'ALTER TABLE local_exercises ADD COLUMN secondary_muscle_ids TEXT',
+      );
     }
     if (oldVersion < 4) {
-      await db.execute('ALTER TABLE profile ADD COLUMN user_id TEXT DEFAULT ""');
+      await db.execute(
+        'ALTER TABLE profile ADD COLUMN user_id TEXT DEFAULT ""',
+      );
     }
   }
 
+  /// Creates all necessary tables for a fresh database installation.
   Future _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE profile (
@@ -160,6 +171,7 @@ class DatabaseHelper {
     await _insertDefaultDays(db);
   }
 
+  /// Populates the week_day table with default values.
   Future _insertDefaultDays(Database db) async {
     final days = [
       {'name': 'Monday', 'is_weekend': 'N'},

@@ -15,13 +15,13 @@ class SearchHelper {
       return nameMatches || objectiveMatches;
     }).toList();
 
-    if (sortOption == 'A-Z') {
+    if (sortOption == 'az') {
       filteredList.sort(
-        (a, b) => getName(a).toLowerCase().compareTo(getName(b).toLowerCase()),
+            (a, b) => getName(a).toLowerCase().compareTo(getName(b).toLowerCase()),
       );
-    } else if (sortOption == 'Z-A') {
+    } else if (sortOption == 'za') {
       filteredList.sort(
-        (a, b) => getName(b).toLowerCase().compareTo(getName(a).toLowerCase()),
+            (a, b) => getName(b).toLowerCase().compareTo(getName(a).toLowerCase()),
       );
     } else {
       filteredList.sort((a, b) => getId(b).compareTo(getId(a)));

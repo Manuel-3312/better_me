@@ -11,12 +11,14 @@ import 'package:better_me/features/training/data/exercise_local_database.dart';
 import 'package:better_me/features/training/domain/models/wger_exercise.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Service responsible for synchronizing data between local storage and Supabase cloud.
 class CloudSyncService {
   final SupabaseClient _supabase = Supabase.instance.client;
   final ProfileRepository _localRepo = ProfileRepository();
   final DietRepository _dietRepo = DietRepository();
   final TrainingRepository _trainingRepo = TrainingRepository();
 
+  /// Uploads local user profiles to the cloud, updating existing ones or inserting new ones.
   Future<void> backupProfilesToCloud() async {
     try {
       final currentUser = _supabase.auth.currentUser;
@@ -58,6 +60,7 @@ class CloudSyncService {
     }
   }
 
+  /// Downloads profiles from the cloud and saves them locally if they don't already exist.
   Future<void> restoreProfilesFromCloud() async {
     try {
       final currentUser = _supabase.auth.currentUser;
@@ -95,6 +98,7 @@ class CloudSyncService {
     }
   }
 
+  /// Uploads local diets and training plans to the cloud.
   Future<void> backupPlansToCloud() async {
     try {
       final currentUser = _supabase.auth.currentUser;
@@ -105,6 +109,7 @@ class CloudSyncService {
       for (final profile in localProfiles) {
         if (profile.idProfile == null) continue;
 
+        // Backup Diets
         final diets = await _dietRepo.getDietsByProfile(profile.idProfile!);
         for (final diet in diets) {
           final dietMap = {
@@ -135,6 +140,7 @@ class CloudSyncService {
           }
         }
 
+        // Backup Trainings
         final trainings = await _trainingRepo.getTrainingsByProfile(
           profile.idProfile!,
         );
@@ -174,12 +180,13 @@ class CloudSyncService {
       }
     } catch (e) {
       debugPrint('=============================================');
-      debugPrint('❌ FATAL ERROR SAVING TO SUPABASE:');
+      debugPrint('FATAL ERROR SAVING TO SUPABASE:');
       debugPrint(e.toString());
       debugPrint('=============================================');
     }
   }
 
+  /// Downloads diets and training plans from the cloud and saves them locally.
   Future<void> restorePlansFromCloud() async {
     try {
       final currentUser = _supabase.auth.currentUser;
@@ -187,6 +194,7 @@ class CloudSyncService {
 
       final localProfiles = await _localRepo.getAllProfiles();
 
+      // Restore Diets
       final cloudDiets = await _supabase
           .from('diet')
           .select()
@@ -216,6 +224,7 @@ class CloudSyncService {
         }
       }
 
+      // Restore Trainings
       final cloudTrainings = await _supabase
           .from('training')
           .select()
@@ -249,6 +258,7 @@ class CloudSyncService {
     }
   }
 
+  /// Replaces the local exercise catalog with the cloud version based on the app's selected language.
   Future<void> syncExerciseCatalog() async {
     try {
       final currentUser = _supabase.auth.currentUser;
@@ -298,20 +308,22 @@ class CloudSyncService {
     }
   }
 
+  /// Performs a full data restore from the cloud (profiles, plans, and exercises). Usually called on login.
   Future<void> syncAllDataOnLogin() async {
     try {
       debugPrint('Starting full cloud download...');
 
       await restoreProfilesFromCloud();
-
       await restorePlansFromCloud();
       await syncExerciseCatalog();
+
       debugPrint('Download completed successfully.');
     } catch (e) {
       debugPrint('Error during complete download: $e');
     }
   }
 
+  /// Specifically backs up all local diets to the cloud.
   Future<void> backupDietsToCloud() async {
     try {
       final currentUser = _supabase.auth.currentUser;

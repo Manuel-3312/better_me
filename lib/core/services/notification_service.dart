@@ -4,6 +4,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 
+/// Singleton service for managing local notifications.
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
 
@@ -14,6 +15,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  /// Initializes the notification plugin, timezones, and requests permissions.
   Future<void> initialize() async {
     tz.initializeTimeZones();
 
@@ -33,14 +35,14 @@ class NotificationService {
     }
 
     const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings('ic_notification');
+        AndroidInitializationSettings('ic_notification');
 
     const DarwinInitializationSettings iosSettings =
-    DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
@@ -51,6 +53,7 @@ class NotificationService {
     await requestExactAlarmPermission();
   }
 
+  /// Schedules a daily repeating notification at the specified time.
   Future<void> scheduleDailyReminder({
     required int id,
     required String title,
@@ -78,10 +81,12 @@ class NotificationService {
     );
   }
 
+  /// Cancels a scheduled notification by its [id].
   Future<void> cancelReminder(int id) async {
     await _notificationsPlugin.cancel(id: id);
   }
 
+  /// Calculates the next occurrence of the specified [hour] and [minute].
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduledDate = tz.TZDateTime(
@@ -99,10 +104,14 @@ class NotificationService {
 
     return scheduledDate;
   }
+
+  /// Requests exact alarm permissions for Android devices.
   Future<void> requestExactAlarmPermission() async {
     final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-    _notificationsPlugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+        _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
 
     if (androidImplementation != null) {
       await androidImplementation.requestExactAlarmsPermission();

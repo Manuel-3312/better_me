@@ -16,6 +16,7 @@ import 'package:better_me/features/training/presentation/screens/trainings_scree
 import 'package:better_me/features/profile/presentation/screens/profile_screen.dart';
 import 'package:better_me/features/training/data/exercise_sync_service.dart';
 
+/// The root navigation screen containing the BottomNavigationBar and PageView.
 class MainScreen extends StatefulWidget {
   final Profile profile;
 
@@ -38,6 +39,7 @@ class _MainScreenState extends State<MainScreen> {
   Map<int, WgerExercise> _exerciseLookup = {};
 
   bool _isLoadingData = true;
+  /// Prevents immediate rendering of tabs for smoother splash screen transitions.
   bool _canRenderTabs = false;
 
   @override
@@ -47,6 +49,7 @@ class _MainScreenState extends State<MainScreen> {
 
     _runSilentSync();
 
+    // Delays UI rendering and data loading to ensure smooth entry animations.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 850), () {
         if (mounted) {
@@ -59,6 +62,7 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  /// Triggers a background sync for the exercise database based on device language.
   void _runSilentSync() {
     final String deviceLanguage = Platform.localeName.split('_')[0];
     ExerciseSyncService().syncIfNeeded(deviceLanguage);
@@ -70,6 +74,7 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
+  /// Concurrently fetches diets, trainings, and exercises to populate the Today screen.
   Future<void> _loadAllApplicationData() async {
     if (!mounted) return;
     setState(() => _isLoadingData = true);
@@ -100,6 +105,7 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  /// Handles BottomNavigationBar taps and animates to the selected page.
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
     _pageController.animateToPage(
@@ -109,6 +115,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  /// Updates state when the PageView is swiped and reloads data if returning to 'Today'.
   void _onPageChanged(int index) {
     setState(() => _selectedIndex = index);
     if (index == 0) _loadAllApplicationData();
@@ -119,6 +126,7 @@ class _MainScreenState extends State<MainScreen> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
+    // Show empty scaffold during transition delay.
     if (!_canRenderTabs) {
       return Scaffold(backgroundColor: theme.scaffoldBackgroundColor);
     }

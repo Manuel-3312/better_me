@@ -11,6 +11,7 @@ import 'package:better_me/core/network/gemini_service.dart';
 import 'package:better_me/features/diets/data/favorite_meals_repository.dart';
 import 'package:better_me/features/diets/domain/models/favorite_meal.dart';
 
+/// Controller managing the state and business logic for user diets.
 class DietsController extends ChangeNotifier {
   final DietRepository _repository = DietRepository();
   final GeminiService _geminiService = GeminiService();
@@ -26,6 +27,7 @@ class DietsController extends ChangeNotifier {
   String? get error => _error;
   Diet? get pendingDiet => _pendingDiet;
 
+  /// Fetches and loads the list of diets for a specific [profileId].
   Future<void> loadDiets(int profileId) async {
     _isLoading = true;
     _error = null;
@@ -41,6 +43,7 @@ class DietsController extends ChangeNotifier {
     }
   }
 
+  /// Generates a personalized diet plan via AI, saves it locally, and syncs it to the cloud.
   Future<void> generateDietInBackground({
     required Diet preliminaryDiet,
     required Profile profile,
@@ -52,6 +55,7 @@ class DietsController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Check if user wants to include their favorite meals in the AI prompt.
       final includeFavs = await _favoritesRepository.getIncludeFavoritesPreference();
       List<FavoriteMeal> targetFavorites = [];
 
@@ -62,6 +66,7 @@ class DietsController extends ChangeNotifier {
         );
       }
 
+      // Build the prompt and request content from Gemini.
       final prompt = DietPromptBuilder.buildDietPrompt(
         profile,
         preliminaryDiet,
@@ -74,14 +79,16 @@ class DietsController extends ChangeNotifier {
         throw Exception('Empty AI response');
       }
 
+      // Clean and validate the JSON response.
       final cleanJsonString = responseText
           .replaceAll('```json', '')
           .replaceAll('```', '')
           .trim();
 
       final Map<String, dynamic> jsonMap = jsonDecode(cleanJsonString);
-      AiDietPlan.fromJson(jsonMap);
+      AiDietPlan.fromJson(jsonMap); // Throws if JSON structure is invalid.
 
+      // Create the final diet object and save it.
       final finalDiet = Diet(
         idProfile: preliminaryDiet.idProfile,
         name: preliminaryDiet.name,
@@ -93,6 +100,7 @@ class DietsController extends ChangeNotifier {
 
       await _repository.saveFullAiDietPlan(finalDiet);
 
+      // Attempt cloud backup silently.
       CloudSyncService().backupPlansToCloud().catchError((e) {
         debugPrint('Error uploading diet to Supabase: $e');
       });
@@ -107,16 +115,19 @@ class DietsController extends ChangeNotifier {
     }
   }
 
+  /// Temporarily removes a diet from the UI list at the given [index].
   void removeDietLocally(int index) {
     _diets.removeAt(index);
     notifyListeners();
   }
 
+  /// Restores a previously removed diet at the given [index] (useful for Undo).
   void restoreDietLocally(int index, Diet diet) {
     _diets.insert(index, diet);
     notifyListeners();
   }
 
+  /// Permanently deletes a diet from both the local database and Supabase.
   Future<void> deleteDietPermanently(int dietId) async {
     try {
       await _repository.deleteDiet(dietId);

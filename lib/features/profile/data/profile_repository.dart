@@ -10,7 +10,7 @@ class ProfileRepository {
     final db = await _dbHelper.database;
     final currentUser = _supabase.auth.currentUser;
 
-    if (currentUser == null) throw Exception('No hay usuario logueado');
+    if (currentUser == null) throw Exception('Not user logged');
 
     final profileWithUser = profile.copyWith(userId: currentUser.id);
 

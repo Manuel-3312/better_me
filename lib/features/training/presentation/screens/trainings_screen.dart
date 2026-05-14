@@ -42,7 +42,7 @@ class _TrainingsScreenState extends State<TrainingsScreen> with RouteAware, Auto
   Training? _pendingTraining;
 
   String _searchQuery = '';
-  String _sortOption = 'Más recientes';
+  String _sortOption = 'recent';
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -278,6 +278,8 @@ class _TrainingsScreenState extends State<TrainingsScreen> with RouteAware, Auto
   }
 
   Widget _buildSearchBar(ThemeData theme, AppLocalizations l10n) {
+    final isEs = Localizations.localeOf(context).languageCode == 'es';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -293,13 +295,13 @@ class _TrainingsScreenState extends State<TrainingsScreen> with RouteAware, Auto
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                      )
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                )
                     : null,
                 filled: true,
                 fillColor: theme.cardColor,
@@ -314,23 +316,23 @@ class _TrainingsScreenState extends State<TrainingsScreen> with RouteAware, Auto
           const SizedBox(width: 8),
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),
-            tooltip: 'Ordenar',
+            tooltip: isEs ? 'Ordenar' : 'Sort',
             initialValue: _sortOption,
             onSelected: (String newValue) {
               setState(() => _sortOption = newValue);
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'Más recientes',
-                child: Text('Más recientes'),
+              PopupMenuItem<String>(
+                value: 'recent',
+                child: Text(isEs ? 'Más recientes' : 'Most recent'),
               ),
-              const PopupMenuItem<String>(
-                value: 'A-Z',
-                child: Text('Nombre (A-Z)'),
+              PopupMenuItem<String>(
+                value: 'az',
+                child: Text(isEs ? 'Nombre (A-Z)' : 'Name (A-Z)'),
               ),
-              const PopupMenuItem<String>(
-                value: 'Z-A',
-                child: Text('Nombre (Z-A)'),
+              PopupMenuItem<String>(
+                value: 'za',
+                child: Text(isEs ? 'Nombre (Z-A)' : 'Name (Z-A)'),
               ),
             ],
           ),
