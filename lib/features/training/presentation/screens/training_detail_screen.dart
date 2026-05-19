@@ -9,6 +9,8 @@ import 'package:better_me/core/l10n/app_localizations.dart';
 
 import 'package:better_me/features/training/presentation/widgets/muscle_anatomy_widget.dart';
 import 'package:better_me/features/profile/data/cloud_sync_service.dart';
+import 'package:better_me/features/training/data/favorite_exercises_repository.dart';
+import 'package:better_me/features/training/domain/models/favorite_exercise.dart';
 
 class TrainingDetailScreen extends StatefulWidget {
   final Training training;
@@ -72,7 +74,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
 
   bool _isFrontMuscle(int? muscleId) {
     if (muscleId == null) return true;
-    // IDs de Wger correspondientes a la parte delantera del cuerpo
     const frontMuscles = [1, 2, 3, 4, 6, 10, 13, 14];
     return frontMuscles.contains(muscleId);
   }
@@ -82,8 +83,15 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (_aiPlan == null || _aiPlan!.days.isEmpty) return Scaffold(appBar: AppBar(), body: Center(child: Text(l10n.noTrainingData)));
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (_aiPlan == null || _aiPlan!.days.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text(l10n.noTrainingData)),
+      );
+    }
 
     final trainingDays = _aiPlan!.days;
 
@@ -112,24 +120,31 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                     child: TabBar(
                       isScrollable: true,
                       tabAlignment: TabAlignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       labelPadding: const EdgeInsets.symmetric(horizontal: 8),
                       indicator: BoxDecoration(
                         color: theme.colorScheme.primary,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.3,
+                            ),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ],
                       ),
                       dividerColor: Colors.transparent,
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelColor: Colors.white,
                       unselectedLabelColor: theme.colorScheme.primary,
-                      tabs: trainingDays.map((day) => _buildDayTab(day, context)).toList(),
+                      tabs: trainingDays
+                          .map((day) => _buildDayTab(day, context))
+                          .toList(),
                     ),
                   ),
                 ),
@@ -137,7 +152,9 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
             ];
           },
           body: TabBarView(
-            children: trainingDays.map((day) => _buildDayView(day, theme, l10n)).toList(),
+            children: trainingDays
+                .map((day) => _buildDayView(day, theme, l10n))
+                .toList(),
           ),
         ),
       ),
@@ -145,7 +162,6 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
   }
 
   Widget _buildDayTab(TrainingDay day, BuildContext context) {
-    // Obtenemos el idioma actual de la app
     final isSpanish = Localizations.localeOf(context).languageCode == 'es';
     final dayLabel = isSpanish ? 'DÍA' : 'DAY';
 
@@ -158,7 +174,11 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
           children: [
             Text(
               dayLabel,
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1),
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
             ),
             Text(
               '${day.day}',
@@ -177,7 +197,10 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [theme.colorScheme.primary.withValues(alpha: 0.08), theme.scaffoldBackgroundColor],
+          colors: [
+            theme.colorScheme.primary.withValues(alpha: 0.08),
+            theme.scaffoldBackgroundColor,
+          ],
         ),
       ),
       child: Column(
@@ -186,7 +209,11 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
           Flexible(
             child: Text(
               widget.training.name,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -196,8 +223,16 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _buildHeaderChip(theme, Icons.fitness_center_rounded, widget.training.objective.toUpperCase()),
-              _buildHeaderChip(theme, Icons.timer_outlined, '${widget.training.maxTime.toInt()} min'),
+              _buildHeaderChip(
+                theme,
+                Icons.fitness_center_rounded,
+                widget.training.objective.toUpperCase(),
+              ),
+              _buildHeaderChip(
+                theme,
+                Icons.timer_outlined,
+                '${widget.training.maxTime.toInt()} min',
+              ),
             ],
           ),
         ],
@@ -218,13 +253,24 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
         children: [
           Icon(icon, size: 14, color: theme.colorScheme.primary),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: theme.hintColor)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: theme.hintColor,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDayView(TrainingDay day, ThemeData theme, AppLocalizations l10n) {
+  Widget _buildDayView(
+    TrainingDay day,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
     final exercises = day.exercises;
     return Column(
       children: [
@@ -232,12 +278,21 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
           child: Row(
             children: [
-              Icon(Icons.track_changes_rounded, size: 18, color: theme.colorScheme.primary),
+              Icon(
+                Icons.track_changes_rounded,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   day.focus.toUpperCase(),
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 1),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    color: theme.colorScheme.primary,
+                    letterSpacing: 1,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -256,14 +311,20 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                 _saveReorderedPlan();
               });
             },
-            itemBuilder: (context, index) => _buildExerciseCard(context, theme, exercises[index], index),
+            itemBuilder: (context, index) =>
+                _buildExerciseCard(context, theme, exercises[index], index),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildExerciseCard(BuildContext context, ThemeData theme, TrainingExercise exercise, int index) {
+  Widget _buildExerciseCard(
+    BuildContext context,
+    ThemeData theme,
+    TrainingExercise exercise,
+    int index,
+  ) {
     final wgerMatch = _catalogMap[exercise.exerciseId];
     return Card(
       key: ValueKey('${exercise.exerciseId}_$index'),
@@ -287,38 +348,64 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.1),
+                  ),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: (wgerMatch?.exerciseImageUrl != null)
                     ? Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Image.network(
-                      wgerMatch!.exerciseImageUrl!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (c, e, s) => Icon(Icons.fitness_center, color: theme.colorScheme.primary)
-                  ),
-                )
-                    : Icon(Icons.fitness_center, color: theme.colorScheme.primary),
+                        padding: const EdgeInsets.all(4.0),
+                        child: Image.network(
+                          wgerMatch!.exerciseImageUrl!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (c, e, s) => Icon(
+                            Icons.fitness_center,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.fitness_center,
+                        color: theme.colorScheme.primary,
+                      ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(wgerMatch?.name ?? 'Ejercicio', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800), overflow: TextOverflow.ellipsis),
+                    Text(
+                      wgerMatch?.name ?? 'Ejercicio',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        _buildMiniBadge(theme, Icons.layers_rounded, '${exercise.sets}x${exercise.reps}'),
+                        _buildMiniBadge(
+                          theme,
+                          Icons.layers_rounded,
+                          '${exercise.sets}x${exercise.reps}',
+                        ),
                         const SizedBox(width: 8),
-                        _buildMiniBadge(theme, Icons.timer_outlined, '${exercise.restSeconds}s'),
+                        _buildMiniBadge(
+                          theme,
+                          Icons.timer_outlined,
+                          '${exercise.restSeconds}s',
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.drag_indicator_rounded, color: theme.hintColor.withValues(alpha: 0.2)),
+              Icon(
+                Icons.drag_indicator_rounded,
+                color: theme.hintColor.withValues(alpha: 0.2),
+              ),
             ],
           ),
         ),
@@ -329,26 +416,43 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
   Widget _buildMiniBadge(ThemeData theme, IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 12, color: theme.colorScheme.primary),
           const SizedBox(width: 4),
-          Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  void _showExerciseDetails(BuildContext context, TrainingExercise exercise, WgerExercise? wgerMatch, ThemeData theme) {
+  void _showExerciseDetails(
+    BuildContext context,
+    TrainingExercise exercise,
+    WgerExercise? wgerMatch,
+    ThemeData theme,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: theme.scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.75, // Ligeramente más grande al inicio
+        initialChildSize: 0.75,
         minChildSize: 0.5,
         maxChildSize: 0.95,
         expand: false,
@@ -358,7 +462,16 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(child: Container(width: 50, height: 5, decoration: BoxDecoration(color: theme.dividerColor, borderRadius: BorderRadius.circular(10)))),
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               if (wgerMatch?.exerciseImageUrl != null)
                 Container(
@@ -366,40 +479,77 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(25),
-                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: theme.dividerColor.withValues(alpha: 0.1),
+                    ),
                   ),
                   padding: const EdgeInsets.all(16),
                   child: Image.network(
-                      wgerMatch!.exerciseImageUrl!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (c, e, s) => const SizedBox()
+                    wgerMatch!.exerciseImageUrl!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (c, e, s) => const SizedBox(),
                   ),
                 ),
               const SizedBox(height: 24),
-              Text(wgerMatch?.name ?? 'Ejercicio', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      wgerMatch?.name ?? 'Ejercicio',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  _FavoriteButton(
+                    profileId: widget.training.idProfile,
+                    exercise: exercise,
+                    trainingObjective: widget.training.objective,
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
-              Text(wgerMatch?.description.replaceAll(RegExp(r'<[^>]*>'), '').trim() ?? exercise.tips, style: const TextStyle(fontSize: 16, height: 1.6)),
+              Text(
+                wgerMatch?.description
+                        .replaceAll(RegExp(r'<[^>]*>'), '')
+                        .trim() ??
+                    exercise.tips,
+                style: const TextStyle(fontSize: 16, height: 1.6),
+              ),
               const SizedBox(height: 32),
 
-              // Aquí hemos metido la Anatomía entre las dos pastillas
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Expanded(child: _buildDetailBadge(theme, Icons.repeat, '${exercise.sets}x${exercise.reps}')),
+                  Expanded(
+                    child: _buildDetailBadge(
+                      theme,
+                      Icons.repeat,
+                      '${exercise.sets}x${exercise.reps}',
+                    ),
+                  ),
 
-                  if (wgerMatch?.mainMuscleId != null)
+                  if (wgerMatch != null && wgerMatch.mainMuscleId != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: MuscleAnatomyWidget(
-                        primaryMuscleId: wgerMatch!.mainMuscleId!,
+                        primaryMuscleId: wgerMatch.mainMuscleId!,
                         secondaryMuscleIds: wgerMatch.secondaryMuscleIds,
                         isFront: _isFrontMuscle(wgerMatch.mainMuscleId),
                         highlightColor: theme.colorScheme.primary,
-                        size: 90, // Un poco más grande para que destaque bien
+                        size: 90,
                       ),
                     ),
 
-                  Expanded(child: _buildDetailBadge(theme, Icons.timer_outlined, '${exercise.restSeconds}s')),
+                  Expanded(
+                    child: _buildDetailBadge(
+                      theme,
+                      Icons.timer_outlined,
+                      '${exercise.restSeconds}s',
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -412,7 +562,11 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
   Widget _buildDetailBadge(ThemeData theme, IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1))),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -425,6 +579,81 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FavoriteButton extends StatefulWidget {
+  final int profileId;
+  final TrainingExercise exercise;
+  final String trainingObjective;
+
+  const _FavoriteButton({
+    required this.profileId,
+    required this.exercise,
+    required this.trainingObjective,
+  });
+
+  @override
+  State<_FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<_FavoriteButton> {
+  final FavoriteExercisesRepository _repo = FavoriteExercisesRepository();
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFavorite();
+  }
+
+  Future<void> _checkFavorite() async {
+    try {
+      final favs = await _repo.getFavorites(
+        widget.profileId,
+        objective: widget.trainingObjective,
+      );
+      if (mounted) {
+        setState(() {
+          _isFavorite = favs.any(
+            (f) => f.exercise.exerciseId == widget.exercise.exerciseId,
+          );
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(
+        _isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+        color: _isFavorite ? Colors.amber : Theme.of(context).hintColor,
+        size: 32,
+      ),
+      onPressed: () async {
+        final newState = !_isFavorite;
+        setState(() => _isFavorite = newState);
+        try {
+          if (newState) {
+            await _repo.addFavorite(
+              FavoriteExercise(
+                idProfile: widget.profileId,
+                exercise: widget.exercise,
+                trainingObjective: widget.trainingObjective,
+              ),
+            );
+          } else {
+            await _repo.removeFavorite(
+              widget.profileId,
+              widget.exercise.exerciseId,
+            );
+          }
+        } catch (_) {
+          if (mounted) setState(() => _isFavorite = !newState);
+        }
+      },
     );
   }
 }
