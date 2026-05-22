@@ -12,7 +12,6 @@ class WgerRepository {
   /// Retrieves a list of correctly parsed exercises that contain execution images.
   Future<List<WgerExercise>> getExercises({int limit = 100, int languageId = 2}) async {
     try {
-      // Pedimos más cantidad porque luego vamos a descartar los que no tengan foto
       final response = await _apiClient.get('/exerciseinfo/?language=$languageId&limit=200');
       final List<dynamic> results = response['results'] as List<dynamic>? ?? [];
 
