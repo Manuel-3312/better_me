@@ -1,5 +1,4 @@
-content = """# BetterMe
-
+# Better Me
 **BetterMe** es una aplicación móvil integral de fitness y nutrición, desarrollada en Flutter. Su núcleo tecnológico se basa en una arquitectura *offline-first* utilizando SQLite, respaldada por **Supabase** para la sincronización en la nube, y potenciada por **Inteligencia Artificial (Gemini)** para la generación de planes altamente personalizados.
 
 ---
