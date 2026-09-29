@@ -1,17 +1,18 @@
 # Better Me
+
 **BetterMe** es una aplicación móvil integral de fitness y nutrición, desarrollada en Flutter. Su núcleo tecnológico se basa en una arquitectura *offline-first* utilizando SQLite, respaldada por **Supabase** para la sincronización en la nube, y potenciada por **Inteligencia Artificial (Gemini)** para la generación de planes altamente personalizados.
 
 ---
 
 ## Características Principales
 
-*   **Planes Generados por IA:** Creación de rutinas de entrenamiento y dietas 100% personalizadas basadas en la biometría del usuario, objetivos, alergias y preferencias.
-*   **Sincronización en la Nube (Supabase):** Autenticación de usuarios y respaldo en tiempo real de perfiles, métricas de progreso y planes generados.
-*   **Entrenamiento Inteligente (RAG):** Las rutinas se generan utilizando *Retrieval-Augmented Generation*, cruzando los datos del usuario con la base de datos de ejercicios de **Wger API**.
-*   **Libro de Cocina (Cookbook) y Ejercicios Favoritos:** El sistema aprende de las preferencias del usuario. La IA prioriza los ejercicios y comidas marcadas como favoritas en futuras generaciones.
-*   **Seguimiento de Progreso:** Registro de peso histórico con gráficos interactivos y galería de fotos para visualizar la transformación física.
-*   **Recordatorios Locales:** Sistema de notificaciones programables para la toma de suplementos o recordatorios diarios.
-*   **Internacionalización (i18n):** Soporte nativo y dinámico para Español e Inglés.
+* **Planes Generados por IA:** Creación de rutinas de entrenamiento y dietas 100% personalizadas basadas en la biometría del usuario, objetivos, alergias y preferencias.
+* **Sincronización en la Nube (Supabase):** Autenticación de usuarios y respaldo en tiempo real de perfiles, métricas de progreso y planes generados.
+* **Entrenamiento Inteligente (RAG):** Las rutinas se generan utilizando *Retrieval-Augmented Generation*, cruzando los datos del usuario con la base de datos de ejercicios de **Wger API**.
+* **Libro de Cocina (Cookbook) y Ejercicios Favoritos:** El sistema aprende de las preferencias del usuario. La IA prioriza los ejercicios y comidas marcadas como favoritas en futuras generaciones.
+* **Seguimiento de Progreso:** Registro de peso histórico con gráficos interactivos y galería de fotos para visualizar la transformación física.
+* **Recordatorios Locales:** Sistema de notificaciones programables para la toma de suplementos o recordatorios diarios.
+* **Internacionalización (i18n):** Soporte nativo y dinámico para Español e Inglés.
 
 ---
 
@@ -24,51 +25,64 @@ La aplicación se comunica con el modelo **Gemini** a través de una **Edge Func
 
 ### Prompt Engineering Avanzado
 El proyecto utiliza utilidades dedicadas (`DietPromptBuilder` y `TrainingPromptBuilder`) para construir *prompts* de sistema que actúan como "nutricionistas y entrenadores de élite".
-*   **Contexto Inyectado:** Se inyectan datos precisos: edad, sexo, peso, altura, alergias, y el inventario local de ejercicios disponibles.
-*   **JSON Estricto:** La IA está fuertemente condicionada (mediante restricciones de prompt) para devolver **exclusivamente objetos JSON válidos** que la aplicación pueda parsear directamente en objetos Dart (ej. `AiTrainingPlan` y `AiDietPlan`).
-*   **Manejo de Alucinaciones:** Al proporcionar a la IA la lista exacta de ejercicios desde la base de datos local (Wger), se elimina el riesgo de que la IA invente ejercicios inexistentes o con nombres incompatibles.
+* **Contexto Inyectado:** Se inyectan datos precisos: edad, sexo, peso, altura, alergias, y el inventario local de ejercicios disponibles.
+* **JSON Estricto:** La IA está fuertemente condicionada (mediante restricciones de prompt) para devolver **exclusivamente objetos JSON válidos** que la aplicación pueda parsear directamente en objetos Dart (ej. `AiTrainingPlan` y `AiDietPlan`).
+* **Manejo de Alucinaciones:** Al proporcionar a la IA la lista exacta de ejercicios desde la base de datos local (Wger), se elimina el riesgo de que la IA invente ejercicios inexistentes o con nombres incompatibles.
 
 ---
 
 ## Stack Tecnológico
 
-*   **Frontend:** Flutter / Dart
-*   **Backend as a Service (BaaS):** Supabase (Auth, Postgres, Edge Functions)
-*   **Base de Datos Local:** SQLite (`sqflite`) para una experiencia *offline-first*
-*   **Inteligencia Artificial:** Google Gemini (vía Supabase Edge Functions)
-*   **APIs Externas:** Wger API para el catálogo de ejercicios estandarizados
-*   **Gestión del Estado:** `ChangeNotifier` (Arquitectura orientada a Controladores de Vistas)
+* **Frontend:** Flutter / Dart
+* **Backend as a Service (BaaS):** Supabase (Auth, Postgres, Edge Functions)
+* **Base de Datos Local:** SQLite (`sqflite`) para una experiencia *offline-first*
+* **Inteligencia Artificial:** Google Gemini (vía Supabase Edge Functions)
+* **APIs Externas:** Wger API para el catálogo de ejercicios estandarizados
+* **Gestión del Estado:** `ChangeNotifier` (Arquitectura orientada a Controladores de Vistas)
 
 ---
 
 ## Arquitectura de Datos: Offline-First + Cloud Sync
 
 BetterMe está diseñada para ser rápida y resistente a la pérdida de conexión:
-1.  **Operaciones Locales:** Todas las lecturas y escrituras (crear perfiles, guardar pesos, generar entrenamientos) se realizan primero en la base de datos local SQLite (`DatabaseHelper`).
-2.  **Sincronización Silenciosa:** El servicio `CloudSyncService` se encarga de realizar copias de seguridad de las dietas, entrenamientos y perfiles hacia **Supabase** en segundo plano.
-3.  **Restauración:** Al iniciar sesión en un nuevo dispositivo, el sistema descarga y restaura de forma transparente todo el historial del usuario desde Supabase hacia el dispositivo local.
+1. **Operaciones Locales:** Todas las lecturas y escrituras (crear perfiles, guardar pesos, generar entrenamientos) se realizan primero en la base de datos local SQLite (`DatabaseHelper`).
+2. **Sincronización Silenciosa:** El servicio `CloudSyncService` se encarga de realizar copias de seguridad de las dietas, entrenamientos y perfiles hacia **Supabase** en segundo plano.
+3. **Restauración:** Al iniciar sesión en un nuevo dispositivo, el sistema descarga y restaura de forma transparente todo el historial del usuario desde Supabase hacia el dispositivo local.
 
 ---
 
 ## Configuración e Instalación
 
 ### Requisitos Previos
-*   Flutter SDK instalado.
-*   Un proyecto activo en Supabase.
+* **Flutter SDK** instalado.
+* Un proyecto activo en **Supabase**.
+* Una clave de API de **Google Gemini** (Google AI Studio).
 
-### Pasos de Instalación
-1. Clona el repositorio:
+### 1. Clonar el Repositorio y Configurar Variables de Entorno (`.env`)
+
+1. Clona el repositorio y entra en el directorio del proyecto:
    ```bash
-   git clone [https://github.com/tu-usuario/better_me.git](https://github.com/tu-usuario/better_me.git)
+   git clone https://github.com/tu-usuario/better_me.git
+   cd better_me
+   ```
 
-### Configuración de la Base de Datos
+2. Crea un archivo `.env` en la raíz del proyecto para las credenciales públicas del cliente (puedes guiarte por `.env.example` si está disponible):
+   ```env
+   SUPABASE_URL=https://tu-proyecto.supabase.co
+   SUPABASE_ANON_KEY=tu_clave_anon_publica_de_supabase
+   ```
+   *(Puedes obtener estos dos valores en el panel de tu proyecto de Supabase, dentro de **Project Settings > API**).*
+
+---
+
+### 2. Configuración de la Base de Datos
 
 El proyecto utiliza un sistema de bases de datos híbrido.
 
-**1. Base de Datos Local (SQLite)**
-No se requiere configuración manual. El motor local se inicializa automáticamente al ejecutar la aplicación por primera vez, creando toda la estructura necesaria de forma local (Offline-first).
+#### A. Base de Datos Local (SQLite)
+No se requiere configuración manual. El motor local se inicializa automáticamente al ejecutar la aplicación por primera vez, creando toda la estructura necesaria de forma local (*Offline-first*).
 
-**2. Base de Datos en la Nube (Supabase)**
+#### B. Base de Datos en la Nube (Supabase)
 Para que el sistema de sincronización (`CloudSyncService`) y la autenticación funcionen, debes preparar la base de datos en tu proyecto de Supabase.
 
 Dirígete a la sección **SQL Editor** en tu panel de Supabase y ejecuta el siguiente script para crear las tablas necesarias:
@@ -123,3 +137,31 @@ CREATE TABLE exercise_catalog (
   secondary_muscle_ids TEXT,
   exercise_image_url TEXT
 );
+```
+
+---
+
+### 3. Configuración de la IA (Gemini + Supabase Edge Functions)
+
+Por seguridad, la clave de **Gemini** nunca se almacena en la aplicación móvil, sino en el entorno seguro de Supabase para ser utilizada por la Edge Function `generate-plan`:
+
+1. Obtén tu API Key en [Google AI Studio](https://aistudio.google.com/).
+2. En tu panel de Supabase, ve a **Edge Functions > Secrets** (o **Project Settings > Vault / Secrets**) y añade la variable `GEMINI_API_KEY`, o configúrala mediante Supabase CLI:
+   ```bash
+   supabase secrets set GEMINI_API_KEY=tu_api_key_de_gemini
+   ```
+3. Despliega la función `generate-plan` en tu proyecto de Supabase:
+   ```bash
+   supabase functions deploy generate-plan
+   ```
+
+---
+
+### 4. Ejecución de la Aplicación
+
+Una vez configuradas las variables y la base de datos, instala las dependencias de Flutter y lanza el proyecto:
+
+```bash
+flutter pub get
+flutter run
+```
