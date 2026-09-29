@@ -1,0 +1,15 @@
+# .gitattributes
+# Used to tell GitHub to ignore native boilerplate code in language statistics.
+
+# Ignore Windows native runner (C++ / CMake)
+windows/* linguist-vendored
+
+# Ignore iOS/macOS native runner (Swift / Objective-C)
+ios/* linguist-vendored
+macos/* linguist-vendored
+
+# Ignore Android native files (Java / Kotlin / XML)
+android/* linguist-vendored
+
+# Ignore Web boilerplate (HTML / JS)
+web/* linguist-vendored

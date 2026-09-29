@@ -1,0 +1,310 @@
+{
+  "@@locale": "es",
+  "headerWelcome": "--- PANTALLA DE BIENVENIDA ---",
+  "welcomeTitle": "Bienvenido a BetterMe",
+  "changeLanguage": "Cambiar idioma",
+  "headerProfile": "--- GESTIÓN DE PERFIL ---",
+  "createProfileTitle": "Añade tus datos",
+  "editProfileTitle": "Editar perfil",
+  "fullName": "Nombre completo",
+  "sex": "Sexo",
+  "weight": "Peso (Kg)",
+  "height": "Altura (cm)",
+  "birthDate": "Fecha de nacimiento",
+  "createButton": "Crear",
+  "updateButton": "Actualizar",
+  "profileCreatedSuccess": "¡Perfil creado con éxito!",
+  "profileUpdatedSuccess": "¡Perfil actualizado con éxito!",
+  "requiredField": "Campo obligatorio",
+  "selectDateWarning": "Por favor, selecciona tu fecha de nacimiento",
+  "male": "Hombre",
+  "female": "Mujer",
+  "headerSelection": "--- SELECCIÓN DE PERFIL ---",
+  "chooseProfileTitle": "Elige tu perfil",
+  "createProfileButton": "Crear perfil",
+  "noProfilesMessage": "Aún no hay perfiles. ¡Crea el primero!",
+  "profileSelected": "Has seleccionado a {profileName}",
+  "@profileSelected": {
+    "placeholders": {
+      "profileName": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteProfileTitle": "Eliminar perfil",
+  "deleteProfileContent": "¿Estás seguro de que quieres eliminar a {profileName}?",
+  "@deleteProfileContent": {
+    "placeholders": {
+      "profileName": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "profileDeleted": "Perfil eliminado",
+  "undo": "Deshacer",
+  "headerDashboard": "--- DASHBOARD ---",
+  "dashboardTitle": "Panel de Control",
+  "welcomeUser": "¡Hola, {name}!",
+  "@welcomeUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ageLabel": "Edad: {years} años",
+  "@ageLabel": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "bmiLabel": "IMC: {value}",
+  "@bmiLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "myDiets": "Dietas",
+  "myWorkouts": "Rutinas",
+  "editProfile": "Editar perfil",
+  "headerDiets": "--- MÓDULO DE DIETAS ---",
+  "dietsTitle": "Dietas",
+  "noDietsMessage": "Aún no hay dietas. ¡Crea la primera!",
+  "createDiet": "Crear Dieta",
+  "featureInProgress": "Formulario de creación en progreso...",
+  "createDietTitle": "Crear nueva dieta",
+  "dietName": "Nombre de la dieta",
+  "dietObjective": "Objetivo principal",
+  "dietAllergies": "Alergias o intolerancias (Opcional)",
+  "dietAdditionalData": "Datos adicionales (Opcional)",
+  "weightLoss": "Pérdida de peso",
+  "muscleGain": "Ganancia muscular",
+  "maintenance": "Mantenimiento",
+  "dietCreatedSuccess": "¡Dieta creada con éxito!",
+  "dietAllergiesHint": "Ej: Cacahuetes, lactosa...",
+  "dietAdditionalDataHint": "Ej: No me gusta el brócoli",
+  "headerTrainings": "--- MÓDULO DE ENTRENAMIENTO ---",
+  "trainingsTitle": "Entrenamientos",
+  "noTrainingsMessage": "Aún no hay rutinas. ¡Crea la primera!",
+  "createTraining": "Crear Rutina",
+  "createTrainingTitle": "Crear nueva rutina",
+  "trainingName": "Nombre de la rutina",
+  "trainingObjective": "Objetivo principal",
+  "hypertrophy": "Hipertrofia",
+  "strength": "Fuerza",
+  "endurance": "Resistencia",
+  "maxDaysLabel": "Días por semana: {days}",
+  "@maxDaysLabel": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "maxTimeLabel": "Tiempo por sesión: {minutes} min",
+  "@maxTimeLabel": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "trainingCreatedSuccess": "¡Rutina creada con éxito!",
+  "generatingDiet": "Generando tu plan personalizado...",
+  "errorGeneratingDiet": "Error al generar la dieta. Inténtalo de nuevo.",
+  "retry": "Reintentar",
+  "noDietData": "No hay datos de dieta disponibles.",
+  "dayNumber": "Día {number}",
+  "@dayNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "kcal": "kcal",
+  "generatingTraining": "Diseñando tu rutina ideal...",
+  "errorGeneratingTraining": "Error al generar la rutina. Inténtalo de nuevo.",
+  "sets": "Series",
+  "reps": "Reps",
+  "rest": "Descanso",
+  "seconds": "s",
+  "noTrainingData": "No hay datos de entrenamiento disponibles.",
+  "setupPlanTitle": "Configurar Plan",
+  "todayTitle": "Hoy",
+  "changeActivePlan": "Cambiar plan activo",
+  "chooseCurrentFocus": "Elige tu enfoque actual",
+  "setupPlanDescription": "Selecciona qué dieta y rutina de entrenamiento quieres seguir día a día.",
+  "activeDiet": "Dieta Activa",
+  "selectDietHint": "Selecciona una dieta",
+  "activeTraining": "Entrenamiento Activo",
+  "selectTrainingHint": "Selecciona una rutina",
+  "saveAndStart": "Guardar y Empezar",
+  "yourMeals": "Tus Comidas",
+  "noDietDataForToday": "Sin datos de dieta para hoy.",
+  "yourTraining": "Tu Entrenamiento",
+  "restDayOrNoData": "Día de descanso o sin datos.",
+  "scheduledExercises": "{count} ejercicios programados",
+  "@scheduledExercises": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monday": "Lunes",
+  "tuesday": "Martes",
+  "wednesday": "Miércoles",
+  "thursday": "Jueves",
+  "friday": "Viernes",
+  "saturday": "Sábado",
+  "sunday": "Domingo",
+  "generatingAiPlan": "Generando plan con IA...",
+  "daysPerWeek": "{count, plural, =1 {1 día/semana} other {{count} días/semana}}",
+  "@daysPerWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingAiPlan": "Cocinando tu plan con IA...",
+  "logWeightTitle": "Registrar peso actual",
+  "invalidWeight": "Por favor, introduce un peso válido",
+  "weightHistory": "Historial de peso",
+  "nightMode": "Modo Noche",
+  "switchProfile": "Cambiar Perfil",
+  "profileTitle": "Perfil",
+  "save": "Guardar",
+  "years": "Years",
+  "restDayTitle": "Día de Descanso",
+  "restDayMessage": "Tus músculos crecen mientras descansas. Disfruta de tu tiempo de recuperación y recarga energías para el próximo entrenamiento.",
+  "deleteTrainingTitle": "Eliminar Entrenamiento",
+  "deleteTrainingContent": "¿Estás seguro de que quieres eliminar este plan de entrenamiento?",
+  "deleteDietTitle": "Eliminar Dieta",
+  "deleteDietContent": "¿Estás seguro de que quieres eliminar esta dieta?",
+  "deleteEntryTitle": "Eliminar Entrada",
+  "deleteEntryContent": "¿Estás seguro de que quieres eliminar este registro de progreso?",
+  "entryDeleted": "Entrada del {date} eliminada",
+  "@entryDeleted": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dietDeleted": "{name} eliminada",
+  "@dietDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trainingDeleted": "{name} eliminado",
+  "@trainingDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noProgressLogged": "Aún no hay progreso registrado.",
+  "logProgress": "Registrar Progreso",
+  "progressTimelineTitle": "Progreso",
+  "minutes": "min",
+  "dateLabel": "Fecha",
+  "weightKgLabel": "Peso (kg)",
+  "invalidNumber": "Ingrese un número válido",
+  "progressPhotos": "Fotos de progreso",
+  "addButton": "Añadir",
+  "noPhotosAdded": "No hay fotos añadidas",
+  "saveProgress": "Guardar progreso",
+  "saveProgressError": "Error al guardar el progreso",
+  "trackTransformation": "Sigue tu transformación corporal",
+  "weightDisplay": "{weight} kg",
+  "@weightDisplay": {
+    "placeholders": {
+      "weight": {
+        "type": "double",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "protein": "Proteínas",
+  "carbs": "Carbohidratos",
+  "fats": "Grasas",
+  "recipe": "Receta",
+  "ingredients": "Ingredientes",
+  "instructions": "Instrucciones",
+  "macros": "Macros",
+  "close": "Cerrar",
+  "total": "Total",
+  "settings": "Ajustes",
+
+  "favoriteExercisesTitle": "Ejercicios Favoritos",
+  "includeInAiPlans": "Incluir en planes de IA futuros",
+  "aiPrioritizeDesc": "La IA intentará priorizar estos ejercicios para el músculo objetivo.",
+  "noFavoritesMessage": "No hay ejercicios favoritos aún.",
+
+  "cookbookTitle": "Libro de Cocina",
+  "includeInAiDiets": "Incluir en futuros planes de IA",
+  "aiPrioritizeMealsDesc": "La IA intentará priorizar estas comidas si coinciden con tus macros.",
+  "cookbookEmpty": "Tu libro de cocina está vacío.",
+  "languageWarning": "Nota: El idioma seleccionado será el que utilice la IA para generar tus planes de dieta y entrenamiento personalizados.",
+
+  "workoutRoutineTitle": "Rutina de entreno",
+  "exerciseLabel": "Ejercicio",
+  "unknownExercise": "Ejercicio desconocido",
+  "setLabel": "Serie",
+  "repsLabel": "repeticiones",
+  "restAction": "Descansar",
+  "restTitle": "Descanso",
+  "nextExerciseLabel": "Siguiente ejercicio:",
+  "skipRestAction": "Saltar descanso",
+  "stopWorkoutConfirm": "¿Estás seguro que desea detener el entrenamiento?",
+  "yes": "Sí",
+  "no": "No",
+  "workoutCompletedTitle": "Entrenamiento completado!!!",
+  "backToMenuAction": "Volver al menú",
+
+  "musclesTargeted": "Músculos implicados",
+  "exerciseDetails": "Detalles del Ejercicio",
+
+  "logout": "Cerrar sesión",
+  "logoutTitle": "¿Cerrar sesión?",
+  "logoutContent": "¿Estás seguro de que deseas cerrar tu sesión actual? Tendrás que volver a introducir tus credenciales para entrar.",
+  "welcomeBack": "Bienvenido de nuevo",
+  "createAccount": "Crea tu cuenta",
+  "loginSubtitle": "Inicia sesión para continuar tu progreso",
+  "registerSubtitle": "Únete a BetterMe y transforma tu vida",
+  "emailLabel": "Correo electrónico",
+  "passwordLabel": "Contraseña",
+  "loginButton": "INICIAR SESIÓN",
+  "registerButton": "REGISTRARSE",
+  "noAccountPrompt": "¿No tienes cuenta? Regístrate aquí",
+  "hasAccountPrompt": "¿Ya tienes cuenta? Inicia sesión",
+  "fillAllFields": "Por favor, rellena todos los campos.",
+  "unexpectedError": "Ha ocurrido un error inesperado.",
+  "searchRoutine": "Buscar rutina u objetivo...",
+  "searchDiet": "Encuentra una dieta o un objetivo...",
+
+  "dailyReminders": "Recordatorios",
+  "noRemindersSet": "No hay recordatorios",
+  "newReminder": "Nuevo Recordatorio",
+  "title": "Título",
+  "titleHint": "Ej., Creatina",
+  "descriptionOptional": "Descripción (Opcional)",
+  "descriptionHint": "Ej., 5g con agua",
+  "time": "Hora",
+  "reminderDeleted": "Recordatorio eliminado",
+  "dailyDesc": "Gestionar suplementos y tareas",
+  "confirmPasswordLabel": "Confirmar contraseña",
+  "passwordsDoNotMatch": "Las contraseñas no coinciden"
+}

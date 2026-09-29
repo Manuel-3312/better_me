@@ -1,0 +1,66 @@
+name: better_me
+description: "TFG de DAM. App que gestiona entrenamientos y dietas con IA."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0
+  fl_chart: ^0.70.0
+  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  path: ^1.8.3
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  flutter_svg: ^2.2.4
+  google_generative_ai: ^0.4.7
+  flutter_dotenv: ^6.0.0
+  shared_preferences: ^2.5.5
+  http: ^1.6.0
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+  supabase_flutter: ^2.12.4
+  flutter_timezone: ^5.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/icons/
+    - assets/images/muscles/
+    - .env
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/better_me.png"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  # The global background color
+  color: "#000814"
+
+  # The "invisible" icon
+  image: assets/icons/transparent.png
+
+  # Specific settings for Android 12+
+  android_12:
+    color: "#000814"
+    image: assets/icons/transparent.png
+    # Correct parameter with underscores:
+    icon_background_color: "#000814"
+
+  fullscreen: true

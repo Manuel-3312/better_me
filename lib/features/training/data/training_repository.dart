@@ -1,0 +1,86 @@
+import 'package:sqflite/sqflite.dart';
+import '../../../core/database/database_helper.dart';
+import '../domain/models/training.dart';
+import '../domain/models/ai_training_plan.dart';
+
+/// Handles SQLite database operations for the Training entity and its relations.
+class TrainingRepository {
+  /// Retrieves all training plans associated with a specific profile ID.
+  /// Returns an empty list if no plans are found.
+  Future<List<Training>> getTrainingsByProfile(int idProfile) async {
+    final db = await DatabaseHelper.instance.database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'training',
+      where: 'id_profile = ?',
+      whereArgs: [idProfile],
+    );
+
+    return List.generate(maps.length, (i) {
+      return Training.fromMap(maps[i]);
+    });
+  }
+
+  /// Inserts a new basic training record into the local SQLite database.
+  /// Returns the auto-generated ID of the newly inserted training.
+  Future<int> createTraining(Training training) async {
+    final db = await DatabaseHelper.instance.database;
+
+    return await db.insert('training', training.toMap());
+  }
+
+  /// Deletes a training record from the local SQLite database by its ID.
+  /// Returns the number of rows affected.
+  Future<int> deleteTraining(int idTraining) async {
+    final db = await DatabaseHelper.instance.database;
+
+    return await db.delete(
+      'training',
+      where: 'id_training = ?',
+      whereArgs: [idTraining],
+    );
+  }
+
+  /// Saves a complete AI-generated training plan into the database using a transaction.
+  /// Matches the updated AiTrainingPlan model using exerciseId and tips.
+  Future<int> saveFullAiTrainingPlan(
+    Training baseTraining,
+    AiTrainingPlan aiPlan,
+  ) async {
+    final db = await DatabaseHelper.instance.database;
+    int newTrainingId = 0;
+
+    await db.transaction((txn) async {
+      newTrainingId = await txn.insert(
+        'training',
+        baseTraining.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      for (final day in aiPlan.days) {
+        final dayData = {
+          'id_training': newTrainingId,
+          'day_number': day.day,
+          'focus': day.focus,
+        };
+
+        final newDayId = await txn.insert('training_day', dayData);
+
+        for (final exercise in day.exercises) {
+          final exerciseData = {
+            'id_training_day': newDayId,
+            'exercise_id': exercise.exerciseId,
+            'sets': exercise.sets,
+            'reps': exercise.reps,
+            'rest_seconds': exercise.restSeconds,
+            'tips': exercise.tips,
+          };
+
+          await txn.insert('exercise', exerciseData);
+        }
+      }
+    });
+
+    return newTrainingId;
+  }
+}
